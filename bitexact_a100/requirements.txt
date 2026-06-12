@@ -1,0 +1,6 @@
+torch>=2.7
+transformers>=5.0
+safetensors
+accelerate
+matplotlib
+numpy
