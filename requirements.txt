@@ -1,0 +1,7 @@
+# Core (runs everywhere, incl. this Mac — no GPU needed)
+numpy>=1.24
+
+# Optional: only for the real-model vLLM backend on a CUDA host
+# vllm>=0.10.0
+# torch
+# pytest   # if you want `pytest tests/` instead of running the file directly
