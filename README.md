@@ -1,27 +1,34 @@
-# DiFR: shared attack/defense harness for inference verification
+# Inference Verification Gym (`ivgym`)
 
-A small, backend-agnostic framework for prototyping **inference-verification**
-attacks and defenses, based on *DiFR: Inference Verification Despite
-Nondeterminism* (Karvonen et al., 2025). The goal is a single harness where you
-can drop in **a new attack** (a way a provider deviates from spec) or **a new
-defense** (a divergence-from-reference score) and immediately get
-detection-AUC curves against everything else.
+**Infrastructure for the inference-verification game.** `ivgym` is a
+standardized environment where a cheating **provider** (an *attack* — a way of
+deviating from a sampling specification) is pitted against a **verifier** (a
+*defense* — a per-token divergence score), and the gym reports how reliably the
+deviation is caught (detection AUC). Attacks and defenses are pluggable
+registries; the `generate → verify → calibrate → evaluate` loop and the backend
+are the fixed infrastructure underneath.
 
-It runs **today, with no GPU**, on a synthetic logit model, and exposes a
-documented **vLLM adapter** so the *same* attack/defense code runs against real
-models on a CUDA host.
+The methodology follows *DiFR: Inference Verification Despite Nondeterminism*
+(Karvonen et al., 2025) — drop in **a new attack** or **a new defense** and
+immediately get detection-AUC curves against everything else.
 
-## Why this design
+It runs **today, with no GPU**, on a synthetic logit model, **and on a real
+model on a GPU** via the HuggingFace backend (`ivgym/backends/hf_gpu.py`) — the
+*same* attack/defense/harness code, validated on an NVIDIA A100-80GB with
+`Qwen/Qwen3-0.6B`. A documented **vLLM adapter** sketches the production path.
 
-DiFR is a hypothesis test: a *provider* emits `(input, output)` pairs claiming
-specification ϕ; a *verifier* recomputes a per-token divergence statistic `S`
-and flags a batch when `S > τ`. Everything in the paper is a choice of:
+## The game, as infrastructure
 
-| Axis        | Paper instances                                          | Here |
+The verification game is a hypothesis test: a *provider* emits `(input, output)`
+pairs claiming specification ϕ; a *verifier* recomputes a per-token divergence
+statistic `S` and flags a batch when `S > τ`. `ivgym` makes the three axes of
+that game into pluggable registries and holds everything else fixed:
+
+| Axis        | Built-in instances                                       | Where |
 |-------------|----------------------------------------------------------|------|
-| **Attack**  | 4-bit quant, fp8 KV cache, wrong temp/seed, sampling bug, adversarial-temp | `difr/attacks.py` |
-| **Defense** | Token-DiFR margin (+clipped/likelihood), cross-entropy, Activation-DiFR, TOPLOC | `difr/defenses.py` |
-| **Backend** | vLLM / HF across GPUs                                    | `difr/backends/` |
+| **Attack** (provider deviation) | 4-bit quant, fp8 KV cache, wrong temp/seed, sampling bug, adversarial-temp | `ivgym/attacks.py` |
+| **Defense** (verifier score)    | Token-DiFR margin (+clipped/likelihood), cross-entropy, Activation-DiFR, TOPLOC | `ivgym/defenses.py` |
+| **Backend** (the arena)         | synthetic CPU + **real HF GPU**; vLLM sketched           | `ivgym/backends/` |
 
 So the framework makes those three axes pluggable registries and keeps the
 generate → verify → calibrate → evaluate loop fixed.
@@ -29,7 +36,7 @@ generate → verify → calibrate → evaluate loop fixed.
 ## Layout
 
 ```
-difr/
+ivgym/
   sampling.py            seed-synced Gumbel-Max + top-k/top-p (Alg. 1)
   core.py                SamplingSpec, Sequence/TokenStep, VerifyContext
   attacks.py             Attack base + registry (honest, quant, temp, seed, bug, adv-temp)
@@ -39,20 +46,22 @@ difr/
   backends/
     base.py              Backend protocol
     synthetic.py         fake LLM — runs with no GPU
-    vllm_adapter.py      contract + skeleton for real models
+    hf_gpu.py            REAL model on a GPU (transformers); same protocol
+    vllm_adapter.py      contract + skeleton for the vLLM production path
 experiments/
   exp_adversarial_temp.py   reproduces Fig. 2 (CE defeated, Token-DiFR survives)
   exp_sweep.py              attack × defense AUC grid (Table 2 / Fig. 1 shape)
+  exp_gpu.py                exp_sweep on a real model on a GPU
 tests/test_smoke.py
 ```
 
 ## Run it
 
 ```bash
-# from inference-verification/
-../.venv/bin/python -m experiments.exp_adversarial_temp   # headline result
-../.venv/bin/python -m experiments.exp_sweep              # full grid
-../.venv/bin/python tests/test_smoke.py                   # sanity checks
+# from inference-verification-gym/
+.venv/bin/python -m experiments.exp_adversarial_temp   # headline result
+.venv/bin/python -m experiments.exp_sweep              # full grid
+.venv/bin/python tests/test_smoke.py                   # sanity checks
 ```
 
 Representative sweep output (synthetic backend, batch=1000 tokens):
@@ -79,10 +88,50 @@ which need real models):
   few tokens but is blind to sampling-only changes (temp/seed) — it never sees
   the sampler.
 
+## Run on a GPU (real model)
+
+On a CUDA host (validated: single A100-80GB, CUDA 13, torch 2.8). `torch` is the
+only heavy dep; reuse a system install if present.
+
+```bash
+# from inference-verification-gym/
+python -m venv --system-site-packages .venv   # reuse system torch if available
+.venv/bin/pip install "transformers>=4.44" accelerate safetensors
+.venv/bin/python -m experiments.exp_gpu        # downloads Qwen/Qwen3-0.6B on first run
+```
+
+Override with env vars: `IVGYM_MODEL`, `IVGYM_PROMPTS`, `IVGYM_TOKENS`, `IVGYM_BATCH`.
+
+Real-model output (Qwen3-0.6B, 12 prompts × 48 tokens, batch=200, ~5 min):
+
+```
+      attack |       token_difr    cross_entropy  activation_difr
+  quant_4bit |           1.0000           0.7832           1.0000
+      kv_fp8 |           0.8471           0.9999           1.0000
+    temp_1.1 |           0.9318           1.0000           0.5447
+     seed_43 |           1.0000           0.9998           0.3315
+      bug_k2 |           0.4429           1.0000           0.4992
+     bug_k32 |           0.9316           0.9966           0.4273
+```
+
+Same qualitative structure as the synthetic backend, now over a real LLM's logit
+geometry: **Token-DiFR** dominates quantization, seed errors and large sampling
+bugs; **cross-entropy** is the one metric that flags the temperature shift;
+**Activation-DiFR** saturates on forward-pass attacks (quant/fp8 → 1.0) but is
+blind to sampling-only changes (temp/seed). The tiny `bug_k2` (1%-rate flip of
+the top-2 tokens) is the hard case — push `IVGYM_BATCH` / `IVGYM_TOKENS` up to
+recover it, exactly as the paper's batch-size sweep predicts.
+
+How attacks map onto the real model: temperature/seed are real `SamplingSpec`
+changes and the sampling bug really hijacks the sampler; the forward-pass
+attacks (quant/fp8) apply their logit/activation perturbation on top of the real
+Qwen3 logits — the same model the synthetic backend uses, with a real base
+distribution. See `ivgym/backends/hf_gpu.py` for the full contract.
+
 ## Add a new attack
 
 ```python
-from difr.attacks import Attack, register
+from ivgym.attacks import Attack, register
 
 @register
 class MyAttack(Attack):
@@ -98,7 +147,7 @@ class MyAttack(Attack):
 ## Add a new defense
 
 ```python
-from difr.defenses import Defense, register
+from ivgym.defenses import Defense, register
 
 @register
 class MyDefense(Defense):
@@ -113,7 +162,9 @@ Both are picked up automatically by `exp_sweep.py` and the harness.
 
 ## Moving to real models
 
-Implement the three methods in `difr/backends/vllm_adapter.py` on a CUDA host.
+The HF GPU backend (`ivgym/backends/hf_gpu.py`) already runs the harness against a
+real model — start there. For the higher-throughput **vLLM** production path,
+implement the three methods in `ivgym/backends/vllm_adapter.py` on a CUDA host.
 Attacks map to real vLLM config (`quantization=...`, `kv_cache_dtype="fp8"`,
 `SamplingParams(temperature=, seed=)`); the verifier does one prefill pass over
 `prompt + claimed_tokens` and reads logits/activations. Defenses and the harness
@@ -126,4 +177,6 @@ need no changes. See the module docstring for the full contract.
   aggregation (the paper monitors several detectors in parallel).
 - Communication-cost Pareto sweep for Activation-DiFR vs TOPLOC (k × J).
 - Real vLLM backend implementation + the temp-0 spot-check mode (Appendix D).
+  (The HF GPU backend in `ivgym/backends/hf_gpu.py` now runs the harness against a
+  real model end-to-end; vLLM remains for higher throughput.)
 ```

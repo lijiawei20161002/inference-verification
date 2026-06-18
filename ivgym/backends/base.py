@@ -31,7 +31,7 @@ class Backend(Protocol):
         prompt_id: int,
         n_tokens: int,
         spec: SamplingSpec,
-        attack: "object",          # difr.attacks.Attack
+        attack: "object",          # ivgym.attacks.Attack
         record_activations: bool,
         proj_seed: int,
         proj_dim: int,

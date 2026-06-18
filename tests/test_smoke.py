@@ -9,11 +9,11 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from difr import attacks, defenses, harness
-from difr.backends.synthetic import SyntheticBackend
-from difr.core import SamplingSpec
-from difr.metrics import roc_auc, tpr_at_fpr
-from difr.sampling import gumbel_noise, position_seed
+from ivgym import attacks, defenses, harness
+from ivgym.backends.synthetic import SyntheticBackend
+from ivgym.core import SamplingSpec
+from ivgym.metrics import roc_auc, tpr_at_fpr
+from ivgym.sampling import gumbel_noise, position_seed
 
 
 def test_seed_sync_is_deterministic():

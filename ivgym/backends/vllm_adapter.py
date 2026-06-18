@@ -26,9 +26,9 @@ Implementation notes
   per-position logits and final-hidden-state activations. Cache per sequence.
 * generate: issue a normal vLLM request with a per-request seed
   (vLLM passes a torch.Generator to exponential() for Gumbel noise -- match it
-  in difr.sampling.gumbel_noise so the verifier reconstructs identical noise).
+  in ivgym.sampling.gumbel_noise so the verifier reconstructs identical noise).
 * Activation fingerprints: register a forward hook on the final norm layer,
-  project with the shared orthogonal matrix (difr.backends.synthetic._projection),
+  project with the shared orthogonal matrix (ivgym.backends.synthetic._projection),
   and store on TokenStep.fingerprint.
 """
 from __future__ import annotations

@@ -1,7 +1,14 @@
 # Core (runs everywhere, incl. this Mac — no GPU needed)
 numpy>=1.24
 
-# Optional: only for the real-model vLLM backend on a CUDA host
+# Optional: real-model GPU backend (difr/backends/hf_gpu.py) on a CUDA host.
+# torch is the only heavy dep — reuse a system install via
+#   python -m venv --system-site-packages .venv
+# torch>=2.4
+# transformers>=4.44
+# accelerate
+# safetensors
+
+# Optional: the higher-throughput vLLM production path (vllm_adapter.py)
 # vllm>=0.10.0
-# torch
 # pytest   # if you want `pytest tests/` instead of running the file directly

@@ -15,10 +15,10 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from difr import attacks, defenses, harness
-from difr.attacks import AdversarialTemp
-from difr.backends.synthetic import SyntheticBackend
-from difr.core import SamplingSpec
+from ivgym import attacks, defenses, harness
+from ivgym.attacks import AdversarialTemp
+from ivgym.backends.synthetic import SyntheticBackend
+from ivgym.core import SamplingSpec
 
 N_PROMPTS = 80
 N_TOKENS = 256
