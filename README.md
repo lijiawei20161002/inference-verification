@@ -21,10 +21,28 @@ model on a GPU** via the HuggingFace backend (`ivgym/backends/hf_gpu.py`) — th
 
 ## The game, as infrastructure
 
-The verification game is a hypothesis test: a *provider* emits `(input, output)`
-pairs claiming specification ϕ; a *verifier* recomputes a per-token divergence
-statistic `S` and flags a batch when `S > τ`. `ivgym` makes the three axes of
-that game into pluggable registries and holds everything else fixed:
+The verification game is a hypothesis test between two parties who agree on a
+sampling spec ϕ. The **provider (attacker)** emits `(input, output)` pairs
+*claiming* it ran ϕ on the reference model, but may secretly deviate (cheaper
+quantized weights, wrong seed/temperature, a sampler bug, or exfiltrated
+weights). The **verifier (defender)** recomputes under ϕ — it never sees the
+attack — scores each claimed token for divergence, aggregates those scores into
+a batch statistic `S`, and flags the batch when `S > τ`. The **defender wins**
+when it flags a deviating provider while keeping the honest false-positive rate
+under budget (AUC → 1 / high TPR@FPR); the **attacker wins** when it deviates
+yet keeps `S` indistinguishable from honest (AUC ≈ 0.5).
+
+DiFR specifies a score for a *single token*; the **aggregation across tokens**
+and the **classification rule** are `ivgym`'s own (specified, not implicit):
+per-token scores are winsorized at the 99.9th honest percentile, a batch of `b`
+tokens is averaged into `S` (`harness.batch_means`), and the decision is
+`S > τ` with **τ fixed by a target false-positive rate** (the `(1−α)` honest
+quantile, `metrics.tpr_at_fpr`). See **[docs/GAME.md](docs/GAME.md)** for the
+full formalization — players, win conditions, the exact per-token→batch→decide
+pipeline, and how this relates to the stego paper's `SAFE`-set security game.
+
+`ivgym` makes the three axes of that game into pluggable registries and holds
+everything else fixed:
 
 | Axis        | Built-in instances                                       | Where |
 |-------------|----------------------------------------------------------|------|
