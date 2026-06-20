@@ -8,6 +8,8 @@ deviation is caught (detection AUC). Attacks and defenses are pluggable
 registries; the `generate → verify → calibrate → evaluate` loop and the backend
 are the fixed infrastructure underneath.
 
+![ivgym demo](docs/demo.gif)
+
 The methodology follows *DiFR: Inference Verification Despite Nondeterminism*
 (Karvonen et al., 2025) — drop in **a new attack** or **a new defense** and
 immediately get detection-AUC curves against everything else.
