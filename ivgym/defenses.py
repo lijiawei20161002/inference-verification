@@ -16,8 +16,27 @@ from .sampling import filtered_logits, log_softmax
 _REGISTRY: dict[str, "Defense"] = {}
 
 
-def register(d: "Defense") -> "Defense":
-    _REGISTRY[d.name] = d
+def register(d):
+    """Register a defense. Accepts either a `Defense` *instance* or a `Defense`
+    *subclass* (instantiated with its defaults) so it works as a class
+    decorator:
+
+        @register
+        class MyDefense(Defense):
+            name = "my_defense"
+            def score(self, ctx): ...
+
+    Returns its argument unchanged, so it is decorator-safe.
+    """
+    if isinstance(d, type):
+        inst = d()
+        # Restore a subclass-declared `name` in case a dataclass __init__ reset
+        # it (mirrors ivgym.attacks.register).
+        inst.name = d.name
+        d_inst = inst
+    else:
+        d_inst = d
+    _REGISTRY[d_inst.name] = d_inst
     return d
 
 

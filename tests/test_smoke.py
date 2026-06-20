@@ -68,6 +68,49 @@ def test_seed_mismatch_only_caught_by_token_difr():
     assert np.mean(td) > np.mean(ce) + 0.25       # Token-DiFR dominates
 
 
+def test_register_accepts_class_and_instance():
+    """The documented `@register class MyAttack(Attack)` decorator pattern must
+    land a usable *instance* in the registry (not the bare class)."""
+    @attacks.register
+    class _ClassAttack(attacks.Attack):
+        name = "tmp_class_attack"
+
+    @defenses.register
+    class _ClassDefense(defenses.Defense):
+        name = "tmp_class_defense"
+        needs_seed = False
+        def score(self, ctx):
+            return 0.0
+
+    atk = attacks.get("tmp_class_attack")
+    dfn = defenses.get("tmp_class_defense")
+    assert not isinstance(atk, type) and not isinstance(dfn, type)
+    # instance methods must be callable (they would fail on a bare class)
+    assert atk.provider_spec(SamplingSpec()) == SamplingSpec()
+    del attacks._REGISTRY["tmp_class_attack"], defenses._REGISTRY["tmp_class_defense"]
+
+
+def test_plugin_loading_and_backend_factory():
+    """Loading an external strategy file registers its strategies, and the
+    backend factory resolves the synthetic backend by name."""
+    from experiments.run import load_strategies
+    from ivgym.backends import make_backend
+
+    root = Path(__file__).resolve().parents[1]
+    load_strategies([str(root / "examples" / "custom_strategies.py")])
+    assert "logit_spike" in attacks.all_attacks()
+    assert "topk_overlap" in defenses.all_defenses()
+
+    be = make_backend("synthetic", vocab=256)
+    spec = SamplingSpec()
+    d = [defenses.get("token_difr"), defenses.get("topk_overlap")]
+    honest = harness.verify(be, harness.generate_dataset(be, attacks.get("honest"), spec, 40, 128), spec, d)
+    spike = harness.verify(be, harness.generate_dataset(be, attacks.get("logit_spike"), spec, 40, 128), spec, d)
+    res = {r.defense: r for r in harness.evaluate(honest, spike, d, [800], n_batches=300, seed=0)}
+    assert res["token_difr"].auc > 0.95     # custom attack is strongly detectable
+    assert res["topk_overlap"].auc > 0.55   # custom defense beats chance on it
+
+
 def test_metrics():
     neg = np.array([0.0, 0.1, 0.2, 0.3])
     pos = np.array([0.4, 0.5, 0.6, 0.7])

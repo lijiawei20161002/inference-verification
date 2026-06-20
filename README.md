@@ -49,9 +49,12 @@ ivgym/
     hf_gpu.py            REAL model on a GPU (transformers); same protocol
     vllm_adapter.py      contract + skeleton for the vLLM production path
 experiments/
+  run.py                    pluggable CLI: --strategies <file> --backend <name> (no edits)
   exp_adversarial_temp.py   reproduces Fig. 2 (CE defeated, Token-DiFR survives)
   exp_sweep.py              attack × defense AUC grid (Table 2 / Fig. 1 shape)
   exp_gpu.py                exp_sweep on a real model on a GPU
+examples/
+  custom_strategies.py      template: a custom attack + a custom defense
 tests/test_smoke.py
 ```
 
@@ -128,37 +131,74 @@ attacks (quant/fp8) apply their logit/activation perturbation on top of the real
 Qwen3 logits — the same model the synthetic backend uses, with a real base
 distribution. See `ivgym/backends/hf_gpu.py` for the full contract.
 
-## Add a new attack
+## Add your own attack / defense (no edits to the library)
+
+Write a file that registers your strategies and point the runner at it with
+`--strategies`. Nothing in `ivgym/` is touched — importing your file runs the
+`@register` decorators, which add the strategies to the same registries the
+harness and every backend already use. A complete, runnable template lives in
+[`examples/custom_strategies.py`](examples/custom_strategies.py).
+
+A new **attack** (provider deviation). Subclass `Attack` and override any of the
+hooks; the `@dataclass` form lets you parametrize it:
 
 ```python
+from dataclasses import dataclass
 from ivgym.attacks import Attack, register
 
 @register
+@dataclass
 class MyAttack(Attack):
-    name = "my_attack"
-    def provider_spec(self, ref):           # change sampling params, or
+    name: str = "my_attack"
+    def provider_spec(self, ref):               # change sampling params, or
         return ref.replace(temperature=0.8)
-    def logit_bias_sigma(self):             # perturb the forward pass, or
+    def logit_bias_sigma(self):                 # perturb the forward pass, or
         return 0.3, 0.1
     def sample_override(self, rng, top_k_ids):  # hijack the sampler
         return None
 ```
 
-## Add a new defense
+A new **defense** (verifier score, higher = more divergent from reference):
 
 ```python
+from dataclasses import dataclass
 from ivgym.defenses import Defense, register
 
 @register
+@dataclass
 class MyDefense(Defense):
-    name = "my_defense"
-    needs_seed = True          # needs shared Gumbel noise?
-    needs_activation = False   # needs activation fingerprints?
-    def score(self, ctx):      # higher = more divergent from reference
+    name: str = "my_defense"
+    needs_seed: bool = True          # needs shared Gumbel noise?
+    needs_activation: bool = False   # needs activation fingerprints?
+    def score(self, ctx):
         ...
 ```
 
-Both are picked up automatically by `exp_sweep.py` and the harness.
+`@register` accepts either a class (instantiated with its defaults, as above) or
+a pre-built instance, e.g. `register(MyAttack(name="my_attack_hot", temp=1.3))`.
+
+Then run the sweep — your strategies are scored against everything else, on the
+backend you choose, with no other changes:
+
+```bash
+# list everything that is registered (built-ins + your file)
+.venv/bin/python -m experiments.run --strategies examples/custom_strategies.py --list
+
+# full sweep including your strategies (synthetic backend, no GPU)
+.venv/bin/python -m experiments.run --strategies examples/custom_strategies.py
+
+# pick the matchups and the batch size
+.venv/bin/python -m experiments.run --strategies examples/custom_strategies.py \
+    --attacks logit_spike quant_4bit --defenses token_difr cross_entropy topk_overlap
+
+# the SAME command on a real model on a GPU
+.venv/bin/python -m experiments.run --backend hf_gpu \
+    --strategies examples/custom_strategies.py
+```
+
+`experiments/run.py --help` lists every flag (`--prompts`, `--tokens`,
+`--batch`, `--n-batches`, `--vocab`, `--backend`). The legacy `exp_sweep.py` /
+`exp_adversarial_temp.py` scripts still reproduce the fixed paper grids.
 
 ## Moving to real models
 

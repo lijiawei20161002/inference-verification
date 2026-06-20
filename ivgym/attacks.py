@@ -23,8 +23,26 @@ from .core import SamplingSpec
 _REGISTRY: dict[str, "Attack"] = {}
 
 
-def register(attack: "Attack") -> "Attack":
-    _REGISTRY[attack.name] = attack
+def register(attack):
+    """Register an attack. Accepts either an `Attack` *instance* or an `Attack`
+    *subclass* (which is instantiated with its defaults) so it works as a
+    class decorator:
+
+        @register
+        class MyAttack(Attack):
+            name = "my_attack"
+
+    Returns its argument unchanged, so it is decorator-safe.
+    """
+    if isinstance(attack, type):
+        inst = attack()
+        # `Attack` is a dataclass, so the inherited __init__ resets a plain
+        # class-level `name = "..."` to the base default. Restore the
+        # subclass-declared name so the registry key is correct.
+        inst.name = attack.name
+    else:
+        inst = attack
+    _REGISTRY[inst.name] = inst
     return attack
 
 
