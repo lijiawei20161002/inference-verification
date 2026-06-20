@@ -14,7 +14,7 @@ immediately get detection-AUC curves against everything else.
 
 It runs **today, with no GPU**, on a synthetic logit model, **and on a real
 model on a GPU** via the HuggingFace backend (`ivgym/backends/hf_gpu.py`) — the
-*same* attack/defense/harness code, validated on an NVIDIA A100-80GB with
+*same* attack/defense/harness code, validated on an NVIDIA H100-80GB with
 `Qwen/Qwen3-0.6B`. A documented **vLLM adapter** sketches the production path.
 
 ## The game, as infrastructure
@@ -93,37 +93,48 @@ which need real models):
 
 ## Run on a GPU (real model)
 
-On a CUDA host (validated: single A100-80GB, CUDA 13, torch 2.8). `torch` is the
-only heavy dep; reuse a system install if present.
+On a CUDA host (validated: single H100-80GB, torch 2.8.0+cu128, transformers 5.x).
+`torch` is the only heavy dep; reuse a system install if present.
 
 ```bash
 # from inference-verification-gym/
 python -m venv --system-site-packages .venv   # reuse system torch if available
 .venv/bin/pip install "transformers>=4.44" accelerate safetensors
-.venv/bin/python -m experiments.exp_gpu        # downloads Qwen/Qwen3-0.6B on first run
+.venv/bin/python -m experiments.exp_gpu        # downloads Qwen/Qwen3-0.6B on first run (~3 min at defaults)
+
+# headline numbers below use a larger token pool for clean AUCs (~13 min on an H100):
+IVGYM_PROMPTS=20 IVGYM_TOKENS=128 IVGYM_BATCH=1000 .venv/bin/python -m experiments.exp_gpu
 ```
 
 Override with env vars: `IVGYM_MODEL`, `IVGYM_PROMPTS`, `IVGYM_TOKENS`, `IVGYM_BATCH`.
 
-Real-model output (Qwen3-0.6B, 12 prompts × 48 tokens, batch=200, ~5 min):
+Real-model output (Qwen3-0.6B, 20 prompts × 128 tokens, batch=1000, ~13.5 min on an H100-80GB):
 
 ```
       attack |       token_difr    cross_entropy  activation_difr
-  quant_4bit |           1.0000           0.7832           1.0000
-      kv_fp8 |           0.8471           0.9999           1.0000
-    temp_1.1 |           0.9318           1.0000           0.5447
-     seed_43 |           1.0000           0.9998           0.3315
-      bug_k2 |           0.4429           1.0000           0.4992
-     bug_k32 |           0.9316           0.9966           0.4273
+  quant_4bit |           1.0000           0.9186           1.0000
+      kv_fp8 |           1.0000           0.9931           1.0000
+    temp_1.1 |           1.0000           1.0000           0.0000
+     seed_43 |           1.0000           1.0000           0.0000
+      bug_k2 |           1.0000           0.1347           0.0000
+     bug_k32 |           1.0000           0.9791           0.0000
 ```
 
-Same qualitative structure as the synthetic backend, now over a real LLM's logit
-geometry: **Token-DiFR** dominates quantization, seed errors and large sampling
-bugs; **cross-entropy** is the one metric that flags the temperature shift;
-**Activation-DiFR** saturates on forward-pass attacks (quant/fp8 → 1.0) but is
-blind to sampling-only changes (temp/seed). The tiny `bug_k2` (1%-rate flip of
-the top-2 tokens) is the hard case — push `IVGYM_BATCH` / `IVGYM_TOKENS` up to
-recover it, exactly as the paper's batch-size sweep predicts.
+Over a real LLM's logit geometry, with a large enough token pool the picture is crisp:
+
+- **Token-DiFR** catches *every* attack (AUC 1.0 across the board) — the strong,
+  general detector that sees both forward-pass and sampling deviations.
+- **Activation-DiFR** is perfectly bifurcated: 1.0 on forward-pass attacks
+  (quant/fp8) and 0.0 on every sampling-only change (temp/seed/bug) — it never
+  sees the sampler.
+- **Cross-entropy** flags almost everything (0.92–1.0) but is blinded by the tiny
+  `bug_k2` (1%-rate flip of the top-2 tokens, AUC 0.13) — the hard case, where
+  only Token-DiFR still holds at 1.0.
+
+At the smaller default pool (12 prompts × 48 tokens, batch=200, ~3 min) the same
+structure is visible but noisier — several AUCs sit near or below 0.5. Push
+`IVGYM_PROMPTS` / `IVGYM_TOKENS` / `IVGYM_BATCH` up to sharpen them, exactly as
+the paper's batch-size sweep predicts.
 
 How attacks map onto the real model: temperature/seed are real `SamplingSpec`
 changes and the sampling bug really hijacks the sampler; the forward-pass

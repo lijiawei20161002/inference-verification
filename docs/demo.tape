@@ -15,7 +15,7 @@ Set BorderRadius 8
 
 # --- silent setup ---
 Hide
-Type "cd /Users/lijiawei/Desktop/inference-verification" Enter
+Type "cd /root/inference-verification" Enter
 Type "setopt interactivecomments" Enter
 Type "alias py='python3'" Enter
 Type "clear" Enter
