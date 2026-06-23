@@ -79,6 +79,11 @@ class SyntheticBackend:
             else:
                 token = gumbel_max_sample(logits, pspec.temperature, g,
                                           pspec.top_k, pspec.top_p)
+                # Seed-aware attacks may swap the claimed token for one inside the
+                # verifier's indistinguishable set (default hook is a no-op).
+                alt = attack.resample(filt, g, pspec, token, prng)
+                if alt is not None:
+                    token = int(alt)
 
             fp = None
             if record_activations:

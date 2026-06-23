@@ -38,6 +38,10 @@ tokens is averaged into `S` (`harness.batch_means`), and the decision is
 quantile, `metrics.tpr_at_fpr`). See **[docs/GAME.md](docs/GAME.md)** for the
 full formalization — players, win conditions, the exact per-token→batch→decide
 pipeline, and how this relates to the stego paper's `SAFE`-set security game.
+See **[docs/ATTACKS.md](docs/ATTACKS.md)** for two worked *attacker wins* (AUC ≈
+0.5): a SAFE-set substitution against the seed-synced verifier, and a
+quantize+spoof compute cheat against the seed-free verifier — with figures and
+the structural reason each is the best possible against its verifier.
 
 `ivgym` makes the three axes of that game into pluggable registries and holds
 everything else fixed:
@@ -70,9 +74,14 @@ experiments/
   run.py                    pluggable CLI: --strategies <file> --backend <name> (no edits)
   exp_adversarial_temp.py   reproduces Fig. 2 (CE defeated, Token-DiFR survives)
   exp_sweep.py              attack × defense AUC grid (Table 2 / Fig. 1 shape)
+  exp_safe_set.py           indistinguishable SAFE-set substitution (seed-synced)
+  exp_seed_free.py          indistinguishable compute cheat (seed-free verifier)
+  figures.py                render docs/figures/*.png from the two sweeps
   exp_gpu.py                exp_sweep on a real model on a GPU
 examples/
   custom_strategies.py      template: a custom attack + a custom defense
+  safe_set_strategies.py    seed-aware SAFE-set substitution attack
+  seed_free_strategies.py   quant + temp-retune + fingerprint-spoof attack
 tests/test_smoke.py
 ```
 

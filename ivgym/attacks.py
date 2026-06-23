@@ -78,6 +78,21 @@ class Attack:
         """Return a token id to force (sampling bug), or None for normal sampling."""
         return None
 
+    def resample(self, filt: np.ndarray, gumbel: np.ndarray, spec: SamplingSpec,
+                 honest_token: int, rng: np.random.Generator) -> int | None:
+        """Seed-aware token choice (default: keep the honest token).
+
+        Unlike `sample_override` (which only sees the filtered top-k ids), this
+        hook receives the *shared* per-position Gumbel noise and filtered logits
+        the verifier will use. Because the sampling seed in phi is public, the
+        provider can reconstruct exactly the `z = filt + temp*gumbel` the
+        verifier scores against. A seed-aware attacker uses that to deviate only
+        inside the verifier's indistinguishable ("SAFE") set -- substituting a
+        token whose post-Gumbel margin to the honest winner is below the honest
+        score envelope. Return a token id to claim instead of `honest_token`, or
+        None to stay honest. Forward-pass attacks (quant/fp8) ignore this."""
+        return None
+
     def perturb_logits(self, base: np.ndarray, rng: np.random.Generator) -> np.ndarray:
         extra, bias = self.logit_bias_sigma()
         out = base + rng.normal(0.0, self.benign_sigma, base.shape)
