@@ -2,7 +2,7 @@
 
 A backend knows how to (a) produce the *true* logits / activations for a
 (prompt, position) under the reference model, and (b) generate provider
-sequences given an Attack. Swap the synthetic backend for the vLLM adapter
+sequences given an Attack. Swap the HF-GPU backend for the vLLM adapter
 without touching attacks, defenses, or the harness.
 """
 from __future__ import annotations

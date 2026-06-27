@@ -1,14 +1,22 @@
-# Core (runs everywhere, incl. this Mac — no GPU needed)
+# Pure-numpy core (sampling, metrics, harness) + the dependency-free tests.
 numpy>=1.24
 
-# Optional: real-model GPU backend (difr/backends/hf_gpu.py) on a CUDA host.
-# torch is the only heavy dep — reuse a system install via
-#   python -m venv --system-site-packages .venv
-# torch>=2.4
-# transformers>=4.44
-# accelerate
-# safetensors
+# Real-model GPU backend (ivgym/backends/hf_gpu.py) -- required to run the
+# experiments; needs a CUDA host. torch is the only heavy dep -- reuse a system
+# install via:  python -m venv --system-site-packages .venv
+torch>=2.4
+transformers>=4.44
+accelerate
+safetensors
 
-# Optional: the higher-throughput vLLM production path (vllm_adapter.py)
+# Optional: the llm_judge I/O detector (experiments/exp_io_detector_gpu.py).
+# anthropic
+
+# Optional: render the Pareto figure (docs/figures/*.png).
+# matplotlib
+
+# Optional: the higher-throughput vLLM production path (vllm_adapter.py).
 # vllm>=0.10.0
-# pytest   # if you want `pytest tests/` instead of running the file directly
+
+# Optional: pytest, if you want `pytest tests/` instead of running the file directly.
+# pytest

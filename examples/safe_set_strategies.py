@@ -22,12 +22,10 @@ tokens that differ from the honest sample (a covert channel / cheaper tie-break
 it can only deviate on the fraction of tokens whose margin is below `epsilon`,
 and `epsilon` is bounded by the honest score envelope.
 
-Run
+Run (on a real model on a GPU)
 ---
     python -m experiments.run --strategies examples/safe_set_strategies.py \
         --attacks safe_set_eps0.05 safe_set_eps0.2 safe_set_eps0.5 safe_set_eps1.0
-
-    python -m experiments.exp_safe_set        # batch-size sweep + capacity
 """
 from __future__ import annotations
 

@@ -94,3 +94,13 @@ def _softmax(x: np.ndarray) -> np.ndarray:
 def log_softmax(x: np.ndarray) -> np.ndarray:
     x = x - np.max(x)
     return x - np.log(np.exp(x).sum())
+
+
+def projection(seed: int, k: int, d: int) -> np.ndarray:
+    """Random orthonormal-rows projection matrix P in R^{k x d} (JL / Activation-DiFR).
+    Shared by every backend so provider and verifier project activations with the
+    same matrix (the Activation-DiFR fingerprint contract)."""
+    rng = np.random.default_rng(seed)
+    m = rng.standard_normal((k, d))
+    q, _ = np.linalg.qr(m.T)        # d x k, orthonormal columns
+    return q[:, :k].T               # k x d

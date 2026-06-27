@@ -6,7 +6,7 @@ defenses, and harness run unchanged against real models on a GPU box.
 
 How the abstractions map to real inference
 ------------------------------------------
-Attacks (provider side) become real vLLM config, not synthetic noise:
+Attacks (provider side) become real vLLM config:
     honest        -> reference LLM(...) config
     quant_4bit    -> LLM(quantization="awq"/"gptq"/...)         # or bitsandbytes 4-bit
     kv_fp8        -> LLM(kv_cache_dtype="fp8")
@@ -16,7 +16,7 @@ Attacks (provider side) become real vLLM config, not synthetic noise:
     adv_quant_temp-> quantization + tuned SamplingParams(temperature=t)
 
 Defenses are backend-independent and need no change: they consume
-`reference_logits` / `reference_activation` exactly as the synthetic backend
+`reference_logits` / `reference_activation` exactly as the HF-GPU backend
 provides them.
 
 Implementation notes
@@ -28,7 +28,7 @@ Implementation notes
   (vLLM passes a torch.Generator to exponential() for Gumbel noise -- match it
   in ivgym.sampling.gumbel_noise so the verifier reconstructs identical noise).
 * Activation fingerprints: register a forward hook on the final norm layer,
-  project with the shared orthogonal matrix (ivgym.backends.synthetic._projection),
+  project with the shared orthogonal matrix (ivgym.sampling.projection),
   and store on TokenStep.fingerprint.
 """
 from __future__ import annotations

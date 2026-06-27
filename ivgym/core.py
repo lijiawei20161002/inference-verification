@@ -1,7 +1,7 @@
 """Core data structures: specification, traces, and the verify context.
 
-These are backend-agnostic. The synthetic backend and a future vLLM adapter
-both produce `Sequence` objects and answer `recompute_logits` / activations.
+These are backend-agnostic. The HF-GPU backend and a future vLLM adapter both
+produce `Sequence` objects and answer `recompute_logits` / activations.
 """
 from __future__ import annotations
 

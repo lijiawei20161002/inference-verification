@@ -5,17 +5,19 @@ A standardized environment for the inference-verification game: a cheating
 Defense) scores per-token divergence, and the gym reports how reliably the
 deviation is caught (detection AUC). Attacks and defenses are pluggable
 registries; the generate -> verify -> calibrate -> evaluate loop and the
-backend (synthetic CPU or a real model on a GPU) are the fixed infrastructure.
+backend (a real model on a GPU via HuggingFace transformers) are the fixed
+infrastructure.
 
-Quick start:
-    from ivgym.backends.synthetic import SyntheticBackend
+Quick start (needs a CUDA host with torch + transformers):
+    from ivgym.backends.hf_gpu import HFGPUBackend
     from ivgym.core import SamplingSpec
     from ivgym import attacks, defenses, harness
 
-    backend = SyntheticBackend()
+    backend = HFGPUBackend(model_name="Qwen/Qwen3-0.6B")
     spec = SamplingSpec()
     honest = harness.verify(backend,
-        harness.generate_dataset(backend, attacks.get("honest"), spec, 50, 256),
+        harness.generate_dataset(backend, attacks.get("honest"), spec, 20, 128,
+                                 record_activations=True),
         spec, list(defenses.all_defenses().values()))
 """
 from . import attacks, defenses, harness, io_detectors, metrics, sampling  # noqa: F401

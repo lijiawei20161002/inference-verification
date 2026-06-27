@@ -6,8 +6,8 @@ Drop your own attacks/defenses in a file like this, then point the runner at it:
 
 No library files are edited: importing this module runs the `@register`
 decorators, which add the strategies to the same registries the harness and
-every backend already use. The two strategies below run unchanged on the
-synthetic backend *and* on a real model on a GPU (`--backend hf_gpu`).
+every backend already use. The two strategies below run unchanged on a real
+model on a GPU (the default `hf_gpu` backend).
 """
 from __future__ import annotations
 

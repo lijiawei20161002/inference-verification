@@ -23,10 +23,12 @@ This attack composes three moves:
      the *binding* between the reported fingerprint and the served output; the
      seed-free setting provides no such binding.
 
-The point of the experiment (`experiments/exp_seed_free.py`) is that against the
-seed-free panel this is indistinguishable (AUC ~ 0.5, TPR@1% ~ chance) while
-genuinely quantizing -- yet the SAME attack is caught instantly by Token-DiFR
-once seed-sync is available. Seed synchronization is what buys robustness.
+The point is that against the seed-free panel this is indistinguishable
+(AUC ~ 0.5, TPR@1% ~ chance) while genuinely quantizing -- yet the SAME attack is
+caught instantly by Token-DiFR once seed-sync is available. Seed synchronization
+is what buys robustness. Run it against the panel with:
+
+    python -m experiments.run --strategies examples/seed_free_strategies.py
 """
 from __future__ import annotations
 
@@ -62,8 +64,9 @@ class AdvQuantTempSpoof(Attack):
 
 
 # A couple of registered instances for `--list` / the standard runner. NOTE:
-# provider_temp here is a placeholder -- exp_seed_free.py tunes it per quant
-# strength at runtime so mean CE matches honest. Untuned, the CE detector fires.
+# provider_temp here is a fixed placeholder -- to make the attack output-matched
+# you would tune it per quant strength so mean CE matches honest. Untuned, the
+# cross-entropy detector fires.
 for q in (0.7, 1.0, 1.4):
     register_attack(AdvQuantTempSpoof(
         name=f"adv_quant_spoof_q{q}", extra_sigma=0.30 * q, bias_sigma=0.10 * q))

@@ -1,5 +1,11 @@
 """Smoke + sanity tests. Run: .venv/bin/python -m pytest tests/ -q
-(or just `.venv/bin/python tests/test_smoke.py` for a dependency-free run)."""
+(or just `.venv/bin/python tests/test_smoke.py` for a dependency-free run).
+
+These cover the backend-agnostic core (sampling RNG, the JL projection, the
+metrics, and the registry/plugin contract). Backend behaviour (attack detection
+AUCs) is exercised by the GPU experiments (`experiments/exp_gpu.py`,
+`experiments/exp_io_detector_gpu.py`), which need a CUDA host and a model
+download, so they are not part of this dependency-free suite."""
 from __future__ import annotations
 
 import sys
@@ -9,11 +15,10 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from ivgym import attacks, defenses, harness
-from ivgym.backends.synthetic import SyntheticBackend
+from ivgym import attacks, defenses
 from ivgym.core import SamplingSpec
 from ivgym.metrics import roc_auc, tpr_at_fpr
-from ivgym.sampling import gumbel_noise, position_seed
+from ivgym.sampling import gumbel_noise, position_seed, projection
 
 
 def test_seed_sync_is_deterministic():
@@ -24,48 +29,14 @@ def test_seed_sync_is_deterministic():
     assert not np.array_equal(a, c)
 
 
-def test_honest_vs_honest_is_chance():
-    """Two honest runs should be indistinguishable (AUC ~ 0.5)."""
-    be = SyntheticBackend(vocab=256)
-    spec = SamplingSpec()
-    defs = [defenses.get("token_difr"), defenses.get("cross_entropy")]
-    s1 = harness.verify(be, harness.generate_dataset(be, attacks.get("honest"), spec, 40, 128), spec, defs)
-    s2 = harness.verify(be, harness.generate_dataset(be, attacks.get("honest"), spec, 40, 128), spec, defs)
-    # Null comparison -> AUC ~ 0.5. token_difr is heavy-tailed (mostly zeros),
-    # so average several sampling seeds rather than trust one draw.
-    for d in defs:
-        aucs = [harness.evaluate(s1, s2, [d], [200], n_batches=300, winsor_pct=99.9, seed=es)[0].auc
-                for es in range(6)]
-        assert 0.40 <= np.mean(aucs) <= 0.60, f"{d.name} mean AUC={np.mean(aucs):.3f}"
-
-
-def test_quantization_detected_by_token_difr():
-    be = SyntheticBackend(vocab=256)
-    spec = SamplingSpec()
-    d = [defenses.get("token_difr")]
-    honest = harness.verify(be, harness.generate_dataset(be, attacks.get("honest"), spec, 40, 128), spec, d)
-    quant = harness.verify(be, harness.generate_dataset(be, attacks.get("quant_4bit"), spec, 40, 128), spec, d)
-    res = harness.evaluate(honest, quant, d, [500], n_batches=300, winsor_pct=99.9, seed=2)
-    assert res[0].auc > 0.95
-
-
-def test_seed_mismatch_only_caught_by_token_difr():
-    spec = SamplingSpec()
-    defs = [defenses.get("token_difr"), defenses.get("cross_entropy")]
-    # A wrong seed redraws tokens from the SAME distribution, so CE has no real
-    # signal -- but any single frozen dataset carries ~1 s.e. of spurious CE gap.
-    # Average over independent datasets (different model_seed) to get the true null.
-    td, ce = [], []
-    for ms in range(5):
-        be = SyntheticBackend(vocab=256, model_seed=ms)
-        honest = harness.verify(be, harness.generate_dataset(be, attacks.get("honest"), spec, 40, 128), spec, defs)
-        seed_atk = harness.verify(be, harness.generate_dataset(be, attacks.get("seed_43"), spec, 40, 128), spec, defs)
-        r = {x.defense: x for x in harness.evaluate(honest, seed_atk, defs, [500], n_batches=300, seed=ms)}
-        td.append(r["token_difr"].auc)
-        ce.append(r["cross_entropy"].auc)
-    assert min(td) > 0.95                         # seed-synced metric always catches it
-    assert np.mean(ce) < 0.7                       # distribution unchanged -> CE near blind
-    assert np.mean(td) > np.mean(ce) + 0.25       # Token-DiFR dominates
+def test_projection_is_seeded_and_orthonormal():
+    """The Activation-DiFR projection must be reproducible from its seed (so
+    provider and verifier share it) and have orthonormal rows."""
+    p = projection(123, 32, 256)
+    assert p.shape == (32, 256)
+    assert np.array_equal(p, projection(123, 32, 256))            # seeded -> reproducible
+    assert not np.array_equal(p, projection(124, 32, 256))        # seed actually matters
+    np.testing.assert_allclose(p @ p.T, np.eye(32), atol=1e-9)    # orthonormal rows
 
 
 def test_register_accepts_class_and_instance():
@@ -90,25 +61,18 @@ def test_register_accepts_class_and_instance():
     del attacks._REGISTRY["tmp_class_attack"], defenses._REGISTRY["tmp_class_defense"]
 
 
-def test_plugin_loading_and_backend_factory():
-    """Loading an external strategy file registers its strategies, and the
-    backend factory resolves the synthetic backend by name."""
+def test_plugin_loading_registers_strategies():
+    """Loading an external strategy file registers its strategies into the same
+    registries the harness and every backend use (the no-edit extension path)."""
     from experiments.run import load_strategies
-    from ivgym.backends import make_backend
 
     root = Path(__file__).resolve().parents[1]
     load_strategies([str(root / "examples" / "custom_strategies.py")])
     assert "logit_spike" in attacks.all_attacks()
     assert "topk_overlap" in defenses.all_defenses()
-
-    be = make_backend("synthetic", vocab=256)
-    spec = SamplingSpec()
-    d = [defenses.get("token_difr"), defenses.get("topk_overlap")]
-    honest = harness.verify(be, harness.generate_dataset(be, attacks.get("honest"), spec, 40, 128), spec, d)
-    spike = harness.verify(be, harness.generate_dataset(be, attacks.get("logit_spike"), spec, 40, 128), spec, d)
-    res = {r.defense: r for r in harness.evaluate(honest, spike, d, [800], n_batches=300, seed=0)}
-    assert res["token_difr"].auc > 0.95     # custom attack is strongly detectable
-    assert res["topk_overlap"].auc > 0.55   # custom defense beats chance on it
+    # the registered objects are usable instances, not bare classes
+    assert not isinstance(attacks.get("logit_spike"), type)
+    assert not isinstance(defenses.get("topk_overlap"), type)
 
 
 def test_metrics():

@@ -1,7 +1,8 @@
-"""Attack x defense sweep on a REAL model on a GPU (the on-GPU twin of exp_sweep).
+"""Attack x defense detection-AUC sweep on a REAL model on a GPU.
 
-Same harness, same attacks, same defenses -- but logits and activations come
-from a real LLM (default Qwen/Qwen3-0.6B) on CUDA via ivgym.backends.hf_gpu.
+The standard sweep: every built-in attack scored by every built-in defense, with
+logits and activations from a real LLM (default Qwen/Qwen3-0.6B) on CUDA via
+ivgym.backends.hf_gpu.
 
 Run:  .venv/bin/python -m experiments.exp_gpu
 Env overrides: IVGYM_MODEL, IVGYM_PROMPTS, IVGYM_TOKENS, IVGYM_BATCH.

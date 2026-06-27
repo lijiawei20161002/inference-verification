@@ -10,7 +10,7 @@ from .core import IOContext, SamplingSpec, Sequence, VerifyContext
 from .defenses import Defense
 from .io_detectors import IODetector
 from .metrics import roc_auc, tpr_at_fpr
-from .sampling import gumbel_noise, position_seed
+from .sampling import gumbel_noise, position_seed, projection
 
 
 @dataclass
@@ -33,10 +33,8 @@ def generate_dataset(backend, attack: Attack, spec: SamplingSpec, n_prompts: int
 def verify(backend, sequences: list[Sequence], spec: SamplingSpec,
            defenses: list[Defense], proj_seed: int = 123, proj_dim: int = 32) -> TokenScores:
     """Run the verifier over provider sequences, scoring each token with each defense."""
-    from .backends.synthetic import _projection
-
     needs_act = any(d.needs_activation for d in defenses)
-    proj = _projection(proj_seed, proj_dim, backend.hidden_dim) if needs_act else None
+    proj = projection(proj_seed, proj_dim, backend.hidden_dim) if needs_act else None
     out = {d.name: [] for d in defenses}
     cfg = sequences[0].config_name if sequences else "?"
 

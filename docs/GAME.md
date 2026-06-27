@@ -24,8 +24,8 @@ et al., 2025), not a fork of either codebase:
   Gumbel-Max sampler (`ivgym/sampling.py`), the per-token margin score
   (`ivgym/defenses.py`), and the generate→verify→calibrate→evaluate loop
   (`ivgym/harness.py`) are reimplemented in pure numpy from the paper's
-  Algorithm 1 / metric definitions so the gym runs with no GPU. The HF-GPU
-  backend then validates the *same* code on a real model.
+  Algorithm 1 / metric definitions, and run against a real model on a GPU via
+  the HF-GPU backend (`ivgym/backends/hf_gpu.py`).
 - It does **not** build on top of
   [`RoyRin/inference_verification_for_model_weight_exfil`](https://github.com/RoyRin/inference_verification_for_model_weight_exfil).
   The exfiltration *threat model* (a provider serving different/cheaper/stolen
@@ -159,8 +159,9 @@ It is a one-shot hypothesis test with a fixed FPR budget α:
   at that same τ — **TPR@α ≈ α / AUC ≈ 0.5**. The canonical attacker win in the
   repo is `adv_quant_temp` vs. `cross_entropy`: quantize for the compute saving,
   then retune temperature so mean NLL matches honest, collapsing the
-  cross-entropy detector (paper Fig. 2, reproduced by
-  `experiments/exp_adversarial_temp.py`).
+  cross-entropy detector (paper Fig. 2). Both the attack (`adv_quant_temp`) and
+  the defense (`cross_entropy`) are built-ins, so the matchup runs via
+  `experiments/run.py --attacks adv_quant_temp --defenses cross_entropy token_difr`.
 
 The interesting result is that an attack that beats one defense need not beat
 another: `adv_quant_temp` defeats `cross_entropy` but **not** seed-synchronized

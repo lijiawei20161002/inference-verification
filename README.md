@@ -12,10 +12,11 @@ The methodology follows *DiFR: Inference Verification Despite Nondeterminism*
 (Karvonen et al., 2025) — drop in **a new attack** or **a new defense** and
 immediately get detection-AUC curves against everything else.
 
-It runs **today, with no GPU**, on a synthetic logit model, **and on a real
-model on a GPU** via the HuggingFace backend (`ivgym/backends/hf_gpu.py`) — the
-*same* attack/defense/harness code, validated on an NVIDIA H100-80GB with
-`Qwen/Qwen3-0.6B`. A documented **vLLM adapter** sketches the production path.
+It runs on **a real model on a GPU** via the HuggingFace backend
+(`ivgym/backends/hf_gpu.py`), validated on an NVIDIA H100-80GB with
+`Qwen/Qwen3-0.6B`. The attack/defense/harness/metrics core is pure numpy and
+backend-agnostic; a documented **vLLM adapter** sketches the higher-throughput
+production path.
 
 ## The game, as infrastructure
 
@@ -38,10 +39,12 @@ tokens is averaged into `S` (`harness.batch_means`), and the decision is
 quantile, `metrics.tpr_at_fpr`). See **[docs/GAME.md](docs/GAME.md)** for the
 full formalization — players, win conditions, the exact per-token→batch→decide
 pipeline, and how this relates to the stego paper's `SAFE`-set security game.
-See **[docs/ATTACKS.md](docs/ATTACKS.md)** for two worked *attacker wins* (AUC ≈
-0.5): a SAFE-set substitution against the seed-synced verifier, and a
-quantize+spoof compute cheat against the seed-free verifier — with figures and
-the structural reason each is the best possible against its verifier.
+Two worked *attacker wins* (AUC ≈ 0.5) ship as pluggable example strategies — a
+SAFE-set substitution against the seed-synced verifier
+([`examples/safe_set_strategies.py`](examples/safe_set_strategies.py)) and a
+quantize+temp-retune compute cheat against the seed-free verifier
+([`examples/seed_free_strategies.py`](examples/seed_free_strategies.py)) — run
+either against the built-in defenses with `experiments/run.py --strategies`.
 
 `ivgym` makes the three axes of that game into pluggable registries and holds
 everything else fixed:
@@ -50,7 +53,7 @@ everything else fixed:
 |-------------|----------------------------------------------------------|------|
 | **Attack** (provider deviation) | 4-bit quant, fp8 KV cache, wrong temp/seed, sampling bug, adversarial-temp | `ivgym/attacks.py` |
 | **Defense** (verifier score)    | Token-DiFR margin (+clipped/likelihood), cross-entropy, Activation-DiFR, TOPLOC | `ivgym/defenses.py` |
-| **Backend** (the arena)         | synthetic CPU + **real HF GPU**; vLLM sketched           | `ivgym/backends/` |
+| **Backend** (the arena)         | **real HF GPU** (transformers); vLLM sketched            | `ivgym/backends/` |
 
 So the framework makes those three axes pluggable registries and keeps the
 generate → verify → calibrate → evaluate loop fixed.
@@ -70,129 +73,30 @@ ivgym/
   harness.py             generate_dataset / verify / winsorize / batch_means / evaluate
   backends/
     base.py              Backend protocol
-    synthetic.py         fake LLM — runs with no GPU
-    hf_gpu.py            REAL model on a GPU (transformers); same protocol
+    hf_gpu.py            REAL model on a GPU (transformers) — the arena
     vllm_adapter.py      contract + skeleton for the vLLM production path
 experiments/
-  run.py                    pluggable CLI: --strategies <file> --backend <name> (no edits)
-  exp_adversarial_temp.py   reproduces Fig. 2 (CE defeated, Token-DiFR survives)
-  exp_sweep.py              attack × defense AUC grid (Table 2 / Fig. 1 shape)
-  exp_safe_set.py           indistinguishable SAFE-set substitution (seed-synced)
-  exp_seed_free.py          indistinguishable compute cheat (seed-free verifier)
-  exp_io_detector.py        black-box I/O detectors vs recomputation (white-box-ness validator)
-  figures.py                render docs/figures/*.png from the two sweeps
-  exp_gpu.py                exp_sweep on a real model on a GPU
+  run.py                    pluggable CLI: --strategies <file> --attacks/--defenses (no edits)
+  exp_gpu.py                attack × defense AUC grid on a real model (Table 2 / Fig. 1 shape)
+  exp_io_detector_gpu.py    black-box I/O detectors vs recomputation, incl. the LLM judge
 examples/
   custom_strategies.py      template: a custom attack + a custom defense
   safe_set_strategies.py    seed-aware SAFE-set substitution attack
   seed_free_strategies.py   quant + temp-retune + fingerprint-spoof attack
-tests/test_smoke.py
+tests/test_smoke.py         backend-agnostic unit tests (sampling, projection, metrics, registry)
 ```
 
 ## Run it
 
-```bash
-# from inference-verification-gym/
-.venv/bin/python -m experiments.exp_adversarial_temp   # headline result
-.venv/bin/python -m experiments.exp_sweep              # full grid
-.venv/bin/python tests/test_smoke.py                   # sanity checks
-```
-
-Representative sweep output (synthetic backend, batch=1000 tokens):
-
-```
-      attack |       token_difr    cross_entropy  activation_difr
-  quant_4bit |           1.000            0.683            1.000
-      kv_fp8 |           0.949            0.643            1.000
-    temp_1.1 |           0.765            0.998            0.432
-     seed_43 |           1.000            0.569            0.554
-      bug_k2 |           0.860            0.538            0.485
-     bug_k32 |           0.874            0.694            0.628
-```
-
-(Fully reproducible — seeded end to end.)
-
-This recovers the paper's *conceptual* structure (not its absolute numbers,
-which need real models):
-
-- **Token-DiFR** dominates on quantization, seed errors, and sampling bugs.
-- **Cross-entropy** is the one metric that catches a tiny temperature shift —
-  and is *defeated* by the adversarial-temperature attack (`exp_adversarial_temp`).
-- **Activation-DiFR** saturates on forward-pass deviations (quant/fp8) with very
-  few tokens but is blind to sampling-only changes (temp/seed) — it never sees
-  the sampler.
-
-## Black-box detectors: validating *that recomputation is necessary*
-
-All the defenses above are **white-box / recomputation** detectors: the verifier
-re-runs the reference model `M` and is handed `ref_logits`. `ivgym/io_detectors.py`
-adds the **black-box / input-output** analogue — an `IODetector` scores
-`(prompt, claimed_tokens)` **without recomputing `M`** (it may call a *cheap,
-different* proxy model, never `M`'s own forward pass). This ports the white-box vs
-black-box detector split from Clymer et al., *Lessons from building a model-organism
-testbed* (2025): a black-box predictor is used as a **validator of white-box-ness** —
-if outputs alone can't tell an attack from honest while recomputation nails it, the
-recomputation defense is providing genuine information beyond behaviour.
-
-```bash
-.venv/bin/python -m experiments.exp_io_detector   # no GPU; writes docs/figures/fig3_io_pareto.png
-```
-
-Detectability = `max(AUC, 1-AUC)` (a black-box signal that *reverses* under an
-attack still separates it); compare every cell to the honest-null floor (a second
-independent honest draw from the same `M`). Synthetic, 100×256 tokens, batch=200:
-
-```
-            attack |  token_difr |  surface_stat  surface_rank surface_tokens   regime
-     (honest null) |       0.550 |         0.516         0.541         0.577    floor
-        quant_4bit |       0.960 |         0.524         0.668         0.523    RECOMPUTE-DOMINANT
-            kv_fp8 |       0.790 |         0.515         0.603         0.510    RECOMPUTE-DOMINANT
-           seed_43 |       1.000 |         0.580         0.517         0.505    RECOMPUTE-DOMINANT
-  quant_spoof_q0.2 |       0.785 |         0.500         0.595         0.501    RECOMPUTE-DOMINANT
-          temp_1.1 |       0.687 |         0.815         0.844         0.523    I/O-DOMINANT
-  safe_set_eps0.05 |       0.558 |         0.584         0.558         0.506    NEITHER (at floor)
-```
-
-- **Role 2 (headline).** `seed_43` (wrong sampling seed — redraws the *same*
-  distribution) and the constructed `quant_spoof` (quantize + retune temperature to
-  output-match) are **RECOMPUTE-DOMINANT**: token_difr is high while every cheap I/O
-  detector sits at its honest-null floor (`quant_spoof`'s proxy-NLL is exactly 0.500).
-  That gap is a quantitative proof the deviation is invisible in the outputs.
-- **Honest caveat.** A *high* I/O-AUC (e.g. `temp_1.1`) is **not** a verifier win —
-  it means the attack is crude enough to catch from outputs alone (a statement about
-  the *attack*, not the verifier).
-- **Complementarity (beyond the original plan).** SAFE-set substitution is built to
-  evade token_difr (it deviates only inside token_difr's near-tie blind spot). As its
-  covert budget `epsilon` grows, a cheap proxy-NLL *outpaces* recomputation — the I/O
-  detector dominates exactly the attack engineered against recomputation. Neither
-  family dominates everywhere; they are complementary.
-
-  ```
-   epsilon |  token_difr | surface_stat (proxy-NLL)
-      0.05 |       0.539 |        0.574   <- proxy-NLL > token_difr
-      0.20 |       0.623 |        0.731   <- proxy-NLL > token_difr
-      0.50 |       0.720 |        0.922   <- proxy-NLL > token_difr
-  ```
-
-- **Held-out-attack generalization.** A `LearnedSeqIODetector` (numpy logistic on
-  output-only features) trained on `quant_4bit` only stays ≈ chance on held-out
-  attacks and on `seed_43` (≈0.59) — an output-invisible deviation no black-box
-  detector catches regardless of training. That is the information recomputation adds.
-
-The `LLMJudgeIODetector` (zero-shot Claude judge over prompt+continuation) is gated
-behind a real-text backend (`hf_gpu`); on the synthetic backend there is no text, so
-it is skipped. ![Fig 3](docs/figures/fig3_io_pareto.png)
-
-## Run on a GPU (real model)
-
 On a CUDA host (validated: single H100-80GB, torch 2.8.0+cu128, transformers 5.x).
-`torch` is the only heavy dep; reuse a system install if present.
+`torch` is the only heavy dependency; reuse a system install if present.
 
 ```bash
-# from inference-verification-gym/
-python -m venv --system-site-packages .venv   # reuse system torch if available
+# from inference-verification/
+python -m venv --system-site-packages .venv     # reuse system torch if available
 .venv/bin/pip install "transformers>=4.44" accelerate safetensors
-.venv/bin/python -m experiments.exp_gpu        # downloads Qwen/Qwen3-0.6B on first run (~3 min at defaults)
+.venv/bin/python -m experiments.exp_gpu          # downloads Qwen/Qwen3-0.6B on first run (~3 min at defaults)
+.venv/bin/python tests/test_smoke.py             # backend-agnostic sanity checks (no GPU needed)
 
 # headline numbers below use a larger token pool for clean AUCs (~13 min on an H100):
 IVGYM_PROMPTS=20 IVGYM_TOKENS=128 IVGYM_BATCH=1000 .venv/bin/python -m experiments.exp_gpu
@@ -229,10 +133,69 @@ structure is visible but noisier — several AUCs sit near or below 0.5. Push
 the paper's batch-size sweep predicts.
 
 How attacks map onto the real model: temperature/seed are real `SamplingSpec`
-changes and the sampling bug really hijacks the sampler; the forward-pass
-attacks (quant/fp8) apply their logit/activation perturbation on top of the real
-Qwen3 logits — the same model the synthetic backend uses, with a real base
-distribution. See `ivgym/backends/hf_gpu.py` for the full contract.
+changes and the sampling bug really hijacks the sampler; the forward-pass attacks
+(quant/fp8) apply their logit/activation perturbation on top of the real Qwen3
+logits. See `ivgym/backends/hf_gpu.py` for the full contract.
+
+## Black-box detectors: validating *that recomputation is necessary*
+
+All the defenses above are **white-box / recomputation** detectors: the verifier
+re-runs the reference model `M` and is handed `ref_logits`. `ivgym/io_detectors.py`
+adds the **black-box / input-output** analogue — an `IODetector` scores
+`(prompt, claimed_tokens)` **without recomputing `M`** (it may call a *cheap,
+different* proxy model, never `M`'s own forward pass). This ports the white-box vs
+black-box detector split from Clymer et al., *Lessons from building a model-organism
+testbed* (2025): a black-box predictor is used as a **validator of white-box-ness** —
+if outputs alone can't tell an attack from honest while recomputation nails it, the
+recomputation defense is providing genuine information beyond behaviour.
+
+`experiments/exp_io_detector_gpu.py` runs this on the real model. The cheap I/O
+detectors (`surface_stat`/`surface_rank` read a cheap proxy over M's real logits;
+`surface_tokens` uses no model at all) and the **`llm_judge`** — a zero-shot Claude
+judge over `(prompt, decoded continuation)`, which only runs on a real-text backend
+— all score the same sequences `token_difr` recomputes. The judge's key resolves from
+`ANTHROPIC_API_KEY`, the repo `.claude/`, or `~/.claude/anthropic_key.sh`.
+
+```bash
+.venv/bin/pip install anthropic                # needed only for the llm_judge
+# headline (~21 min on an H100; ~160 prompts judged by Claude):
+IVGYM_PROMPTS=20 IVGYM_TOKENS=128 IVGYM_BATCH=200 \
+    .venv/bin/python -m experiments.exp_io_detector_gpu
+# set IVGYM_JUDGE=0 to skip the API calls (cheap I/O detectors only)
+```
+
+Detectability = `max(AUC, 1-AUC)` (a black-box signal that *reverses* under an
+attack still separates it); compare every cell to the honest-null floor (a second
+independent honest draw from the same `M`). Real-model output (Qwen3-0.6B, 20×128
+tok, batch=200; full log in `docs/results/exp_io_detector_gpu_qwen3-0.6b.txt`):
+
+```
+          attack |  token_difr |   surface_stat   surface_rank surface_tokens      llm_judge
+   (honest null) |       0.523 |          0.530          0.650          1.000          0.989    <- floor
+      quant_4bit |       0.808 |          0.662          0.651          0.717          1.000
+          kv_fp8 |       0.629 |          0.675          0.768          0.530          0.552
+        temp_1.1 |       0.558 |          0.650          0.756          0.575          1.000
+         seed_43 |       1.000 |          0.784          0.737          0.757          0.511
+          bug_k2 |       0.670 |          0.823          0.657          0.556          0.786
+         bug_k32 |       0.941 |          0.739          0.730          0.603          1.000
+```
+
+- **Role 2 (headline).** **`seed_43` is RECOMPUTE-DOMINANT** — `token_difr` = 1.000
+  while the Claude judge sits at its honest-null floor (0.511, i.e. *below* the 0.989
+  floor → no signal). A wrong sampling seed redraws the *same* distribution, so the
+  continuation reads as a perfectly honest sample to any reader of the outputs, yet a
+  re-run flips the Gumbel winners. `quant_4bit` and `bug_k32` are RECOMPUTE-DOMINANT
+  too. That gap is a quantitative proof the deviation is invisible in the outputs.
+- **Honest caveat.** A *high* I/O-AUC (e.g. `temp_1.1`) is **not** a verifier win —
+  it means the attack is crude enough to catch from outputs alone (a statement about
+  the *attack*, not the verifier).
+- **Read per-sequence-constant detectors via excess over their own floor**, not the
+  absolute cell: `llm_judge` and `surface_tokens` emit one value per sequence broadcast
+  to its tokens, so a token-batch mean over only ~20 sequences inflates their null floor
+  toward 1.0 (a documented finite-pool artifact). The experiment's dominance synthesis
+  compares each detector against its own floor for exactly this reason.
+
+![Fig 3](docs/figures/fig3_io_pareto_gpu.png)
 
 ## Add your own attack / defense (no edits to the library)
 
@@ -281,27 +244,22 @@ class MyDefense(Defense):
 a pre-built instance, e.g. `register(MyAttack(name="my_attack_hot", temp=1.3))`.
 
 Then run the sweep — your strategies are scored against everything else, on the
-backend you choose, with no other changes:
+real model, with no other changes:
 
 ```bash
 # list everything that is registered (built-ins + your file)
 .venv/bin/python -m experiments.run --strategies examples/custom_strategies.py --list
 
-# full sweep including your strategies (synthetic backend, no GPU)
+# full sweep including your strategies (default backend: hf_gpu, Qwen/Qwen3-0.6B)
 .venv/bin/python -m experiments.run --strategies examples/custom_strategies.py
 
 # pick the matchups and the batch size
 .venv/bin/python -m experiments.run --strategies examples/custom_strategies.py \
     --attacks logit_spike quant_4bit --defenses token_difr cross_entropy topk_overlap
-
-# the SAME command on a real model on a GPU
-.venv/bin/python -m experiments.run --backend hf_gpu \
-    --strategies examples/custom_strategies.py
 ```
 
-`experiments/run.py --help` lists every flag (`--prompts`, `--tokens`,
-`--batch`, `--n-batches`, `--vocab`, `--backend`). The legacy `exp_sweep.py` /
-`exp_adversarial_temp.py` scripts still reproduce the fixed paper grids.
+`experiments/run.py --help` lists every flag (`--model`, `--prompts`, `--tokens`,
+`--batch`, `--n-batches`, `--backend`).
 
 ## Moving to real models
 
@@ -322,8 +280,9 @@ need no changes. See the module docstring for the full contract.
 - Real vLLM backend implementation + the temp-0 spot-check mode (Appendix D).
   (The HF GPU backend in `ivgym/backends/hf_gpu.py` now runs the harness against a
   real model end-to-end; vLLM remains for higher throughput.)
-- `LLMJudgeIODetector` runs only on a real-text backend (`hf_gpu`); it is wired and
-  key-resolving but not yet exercised in CI (the synthetic backend has no text).
+- `LLMJudgeIODetector` runs only on a real-text backend (`hf_gpu`). It is now
+  exercised end-to-end by `experiments/exp_io_detector_gpu.py` on real Qwen3-0.6B
+  continuations (key resolves from `ANTHROPIC_API_KEY` / repo `.claude/` /
+  `~/.claude/anthropic_key.sh`); it is still not run in CI (no GPU / no key there).
 - I/O detectors are not yet wired into `experiments/run.py` (a `--io-detectors` flag);
-  they run via the standalone `experiments/exp_io_detector.py`.
-```
+  they run via the standalone `experiments/exp_io_detector_gpu.py`.

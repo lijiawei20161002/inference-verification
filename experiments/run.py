@@ -5,9 +5,9 @@ This is the no-edit extension path: write a Python file that registers custom
 attacks/defenses (see `examples/custom_strategies.py`), point `--strategies` at
 it, and the harness scores them against everything else.
 
-Examples
+Examples (the backend is a real model on a GPU; needs CUDA + transformers)
 --------
-    # built-in strategies on the synthetic backend (no GPU)
+    # built-in strategies on the default model (Qwen/Qwen3-0.6B)
     .venv/bin/python -m experiments.run
 
     # add your own strategies from a file, run them against the built-ins
@@ -16,10 +16,6 @@ Examples
     # only your strategies, larger batch
     .venv/bin/python -m experiments.run --strategies examples/custom_strategies.py \
         --attacks logit_spike --defenses topk_overlap token_difr --batch 2000
-
-    # the SAME command on a real model on a GPU (needs CUDA + transformers)
-    .venv/bin/python -m experiments.run --backend hf_gpu \
-        --strategies examples/custom_strategies.py
 """
 from __future__ import annotations
 
@@ -60,17 +56,18 @@ def parse_args(argv=None):
     )
     ap.add_argument("--strategies", nargs="*", default=[],
                     help="Python files that register custom attacks/defenses.")
-    ap.add_argument("--backend", default="synthetic", choices=BACKENDS,
-                    help="Arena to run in (default: synthetic, no GPU).")
+    ap.add_argument("--backend", default="hf_gpu", choices=BACKENDS,
+                    help="Arena to run in (default: hf_gpu, a real model on a GPU).")
+    ap.add_argument("--model", default="Qwen/Qwen3-0.6B",
+                    help="HF model id for the hf_gpu backend.")
     ap.add_argument("--attacks", nargs="*", default=None,
                     help="Attack names to evaluate (default: all registered except 'honest').")
     ap.add_argument("--defenses", nargs="*", default=None,
                     help="Defense names to score with (default: all registered).")
-    ap.add_argument("--prompts", type=int, default=60)
-    ap.add_argument("--tokens", type=int, default=256)
-    ap.add_argument("--batch", type=int, default=1000)
+    ap.add_argument("--prompts", type=int, default=12)
+    ap.add_argument("--tokens", type=int, default=64)
+    ap.add_argument("--batch", type=int, default=200)
     ap.add_argument("--n-batches", type=int, default=400)
-    ap.add_argument("--vocab", type=int, default=512, help="Synthetic backend vocab size.")
     ap.add_argument("--list", action="store_true",
                     help="List registered attacks/defenses and exit.")
     return ap.parse_args(argv)
@@ -94,8 +91,8 @@ def main(argv=None):
     defs = [defenses.get(d) for d in defense_names]
     needs_act = any(d.needs_activation for d in defs)
 
-    backend = make_backend(args.backend, vocab=args.vocab) if args.backend == "synthetic" \
-        else make_backend(args.backend)
+    backend = make_backend(args.backend, model_name=args.model) \
+        if args.backend == "hf_gpu" else make_backend(args.backend)
     spec = SamplingSpec()
 
     honest_seqs = harness.generate_dataset(

@@ -5,11 +5,11 @@ verifier never sees the attack; it always recomputes under the reference spec.
 This is the extension point for "different versions of attack": subclass
 `Attack`, register it, and the whole harness picks it up.
 
-Modeling note (synthetic backend): real misconfigurations (quantization,
-fp8 KV cache) perturb the forward pass and therefore the *logits*. We model
-that as extra zero-mean logit noise of a configurable scale plus an optional
-systematic bias, which is enough to reproduce the qualitative DiFR results.
-On the vLLM backend these same attacks map to real config flags
+Modeling note: real misconfigurations (quantization, fp8 KV cache) perturb the
+forward pass and therefore the *logits*. The HF-GPU backend models that as extra
+zero-mean logit noise of a configurable scale plus an optional systematic bias,
+applied on top of a real model's logits -- enough to reproduce the qualitative
+DiFR results. On the vLLM backend these same attacks map to real config flags
 (`quantization=...`, `kv_cache_dtype=...`, temperature, seed) instead.
 """
 from __future__ import annotations

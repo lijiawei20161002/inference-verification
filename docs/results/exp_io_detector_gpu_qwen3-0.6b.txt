@@ -1,0 +1,48 @@
+loading Qwen/Qwen3-0.6B ...
+loaded in 7.0s | vocab=151936 hidden=1024 | 20 prompts x 128 tokens
+  honest pool scored (161.0s)
+  null floor scored (323.8s)
+    quant_4bit scored (482.7s)
+        kv_fp8 scored (653.9s)
+      temp_1.1 scored (805.1s)
+       seed_43 scored (951.3s)
+        bug_k2 scored (1098.0s)
+       bug_k32 scored (1247.9s)
+
+I/O (black-box) detectors vs Token-DiFR (recomputation)   [Qwen/Qwen3-0.6B, 20x128 tok, batch=200]
+Cells are symmetric DETECTABILITY = max(AUC,1-AUC); ~0.50 = indistinguishable to that detector
+(compare to the (honest null) floor row). An I/O detector -- including the LLM judge -- at ~0.5 while
+token_difr is high proves the attack is invisible in the outputs (recomputation adds real information).
+
+          attack |  token_difr |   surface_stat   surface_rank surface_tokens      llm_judge   note
+--------------------------------------------------------------------------------------------
+   (honest null) |       0.523 |          0.530          0.650          1.000          0.989   floor: honest vs reseeded honest
+      quant_4bit |       0.808 |          0.662          0.651          0.717          1.000   
+          kv_fp8 |       0.629 |          0.675          0.768          0.530          0.552   
+        temp_1.1 |       0.558 |          0.650          0.756          0.575          1.000   
+         seed_43 |       1.000 |          0.784          0.737          0.757          0.511   
+          bug_k2 |       0.670 |          0.823          0.657          0.556          0.786   
+         bug_k32 |       0.941 |          0.739          0.730          0.603          1.000   
+
+HONEST CAVEAT: a HIGH I/O-AUC (e.g. temp_1.1) is NOT a verifier win -- it means that
+attack is crude enough to catch from outputs alone (a statement about the attack,
+not the verifier). The interesting rows are the LOW I/O-AUC ones with high token_difr.
+
+Dominant detector family per attack  (excess over each detector's OWN honest-null floor; margin=0.08):
+         quant_4bit  td_excess=+0.285  io_excess=+0.132  -> RECOMPUTE-DOMINANT (recomputation adds info beyond outputs)
+             kv_fp8  td_excess=+0.107  io_excess=+0.145  -> BOTH              (output-visible -- weak safety evidence)
+           temp_1.1  td_excess=+0.035  io_excess=+0.121  -> I/O-DOMINANT       (cheap output detection suffices)
+            seed_43  td_excess=+0.477  io_excess=+0.254  -> RECOMPUTE-DOMINANT (recomputation adds info beyond outputs)
+             bug_k2  td_excess=+0.147  io_excess=+0.293  -> I/O-DOMINANT       (cheap output detection suffices)
+            bug_k32  td_excess=+0.418  io_excess=+0.209  -> RECOMPUTE-DOMINANT (recomputation adds info beyond outputs)
+
+  HEADLINE (Role 2 -- recomputation sees what outputs cannot, on a real model):
+    RECOMPUTE-DOMINANT = ['quant_4bit', 'seed_43', 'bug_k32']
+    For these the recomputation excess dwarfs every cheap I/O detector's AND the
+    LLM judge's -- a forward-pass/seed deviation that is (near-)invisible in the
+    real model's outputs. seed_43 is the extreme: wrong seed redraws the SAME
+    distribution, so a re-run flips Gumbel winners while the text looks honest.
+
+wrote Pareto figure: /home/ubuntu/inference-verification/docs/figures/fig3_io_pareto_gpu.png
+
+total 1247.9s on Qwen/Qwen3-0.6B

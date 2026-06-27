@@ -1,14 +1,13 @@
-"""Real-model GPU backend (HuggingFace transformers).
+"""Real-model GPU backend (HuggingFace transformers) -- the arena `ivgym` runs in.
 
-Runs the *same* attacks / defenses / harness as the synthetic backend, but the
-logits and activations come from a real LLM on a CUDA device (validated on an
-NVIDIA A100-80GB with Qwen/Qwen3-0.6B).
+Produces the logits and activations the attacks/defenses/harness operate on from
+a real LLM on a CUDA device (validated on an NVIDIA H100-80GB with
+Qwen/Qwen3-0.6B).
 
 Mapping to the Backend protocol
 -------------------------------
-Synthetic `_true_logits(prompt, pos)` depended only on (prompt, pos). A real
-model's logits at a position depend on the *claimed token prefix*, so we cannot
-recompute them from (prompt, pos) alone. Instead we follow the contract in
+A real model's logits at a position depend on the *claimed token prefix*, so we
+cannot recompute them from (prompt, pos) alone. Instead we follow the contract in
 `vllm_adapter.py`:
 
   generate():  autoregressive rollout under the provider/attack config (real
@@ -25,17 +24,16 @@ numbers, so they survive later overwrites).
 
 How attacks map onto a real model
 ----------------------------------
-* honest / quant_4bit / kv_fp8 : the forward-pass perturbations the synthetic
-  backend models as extra logit / activation noise (`Attack.perturb_logits`,
+* honest / quant_4bit / kv_fp8 : the forward-pass perturbations (`Attack.perturb_logits`,
   `activation_extra_sigma`) are applied on top of the *real* Qwen3 logits and
-  activations. The base distribution is now a real LLM's; the attack signal is
-  the same one the paper studies.
+  activations -- a real LLM's base distribution with the attack signal the paper
+  studies layered on.
 * temp_1.1 / seed_43 : real `SamplingSpec` changes via `attack.provider_spec`.
-* bug_k* : `attack.sample_override` hijacks the sampler, unchanged.
+* bug_k* : `attack.sample_override` hijacks the sampler.
 
-Both provider and verifier carry small independent benign noise, mirroring the
-synthetic design (the verifier is itself a correct-but-noisy deployment) and the
-paper's premise that honest recomputation is non-deterministic.
+Both provider and verifier carry small independent benign noise (the verifier is
+itself a correct-but-noisy deployment), matching the paper's premise that honest
+recomputation is non-deterministic.
 """
 from __future__ import annotations
 
@@ -48,11 +46,14 @@ from ..sampling import (
     gumbel_max_sample,
     gumbel_noise,
     position_seed,
+    projection,
     stable_hash,
 )
-from .synthetic import _projection
 
-# A small bank of diverse prompts; prompt_id indexes into it.
+# A bank of diverse prompts; prompt_id indexes into it (wrapping). It is kept
+# large enough that experiments needing two DISJOINT honest pools -- e.g. the
+# I/O detector's honest vs reseeded-honest null floor (exp_io_detector_gpu uses
+# prompts [0,N) and [N,2N)) -- can draw non-overlapping text for a reasonable N.
 DEFAULT_PROMPTS = [
     "The capital of France is",
     "In a shocking turn of events, scientists discovered that",
@@ -70,6 +71,33 @@ DEFAULT_PROMPTS = [
     "She opened the ancient book and read aloud:",
     "Climate change is primarily driven by",
     "The recipe calls for two cups of flour and",
+    "The mitochondria is best described as",
+    "import numpy as np\n\ndef softmax(x):\n    ",
+    "My favourite memory from childhood is",
+    "The fall of the Berlin Wall in 1989 marked",
+    "A polite email declining a meeting might begin:",
+    "The chemical formula for table salt is",
+    "In machine learning, overfitting refers to",
+    "The plot of Hamlet can be summarised as",
+    "To change a flat tyre, first you should",
+    "The largest planet in the solar system is",
+    "A limerick about a curious cat:\n",
+    "The French Revolution began because",
+    "SELECT name FROM users WHERE",
+    "The benefits of regular exercise include",
+    "Translate 'good morning' into Spanish:",
+    "The theory of evolution by natural selection states",
+    "A good opening line for a mystery novel is",
+    "The Pythagorean theorem says that",
+    "When baking bread, the role of yeast is to",
+    "The economic concept of supply and demand explains",
+    "Dear diary, today was the kind of day where",
+    "The main cause of the 2008 financial crisis was",
+    "How does a transistor work? In short,",
+    "A motivational quote to start the week:",
+    "The water cycle consists of the following stages:",
+    "In chess, a common opening for white is",
+    "The northern lights are caused by",
 ]
 
 
@@ -177,7 +205,7 @@ class HFGPUBackend:
     ) -> Sequence:
         torch = self._torch
         pspec = attack.provider_spec(spec)
-        proj = _projection(proj_seed, proj_dim, self.hidden_dim) if record_activations else None
+        proj = projection(proj_seed, proj_dim, self.hidden_dim) if record_activations else None
         seq = Sequence(prompt_id=prompt_id, config_name=attack.name)
 
         prompt_ids = self._prompt_ids(prompt_id)

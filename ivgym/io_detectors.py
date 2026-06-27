@@ -158,8 +158,8 @@ class SurfaceStatIODetector(IODetector):
     perplexity (NLL) under a small, cheap proxy LM -- the analogue of
     `cross_entropy`, but reading a *cheap proxy* instead of recomputing M. This
     is the cheap end of the verifier-FLOPs axis ("cheap model polices expensive
-    model"). On the synthetic backend the proxy is a deliberately low-fidelity
-    estimate of the reference logits (`SyntheticBackend.proxy_logits`)."""
+    model"). The HF-GPU backend models the proxy as a noisier, lower-fidelity
+    read of the reference logits (`HFGPUBackend.proxy_logits`)."""
 
     name: str = "surface_stat"
     needs_proxy: bool = True
@@ -174,9 +174,8 @@ class SurfaceStatIODetector(IODetector):
 class TokenSurfaceIODetector(IODetector):
     """The zero-cost extreme: pure token-id statistics, NO model call at all.
     Scores a token by whether it repeats the previous one (a crude degeneracy /
-    sampling-bug signal). On the synthetic backend (where tokens carry no language
-    structure) this is expected to sit near chance -- that is itself an honest
-    data point on the Pareto: zero FLOPs buys almost no detection here."""
+    sampling-bug signal). Expected to sit near chance on most attacks -- that is
+    itself an honest data point on the Pareto: zero FLOPs buys little detection."""
 
     name: str = "surface_tokens"
     needs_proxy: bool = False
@@ -267,12 +266,12 @@ class LLMJudgeIODetector(IODetector):
 
     Expected to be *weak* -- a judge cannot tell 4-bit-quant text from fp16 text --
     and that weakness is exactly what the white-box-ness validator (Role 2) wants
-    to demonstrate. Needs a real-text backend (`hf_gpu`): on the synthetic backend
-    there is no text, so `score_sequence` raises and the experiment skips it.
+    to demonstrate. Needs a real-text backend (`hf_gpu`): if a backend exposes no
+    prompt text, `score_sequence` raises so the experiment can skip it.
 
     Uses the project's Anthropic access: the API key is resolved from
-    `ANTHROPIC_API_KEY` or the repo's `.claude/anthropic_key.sh` helper (see
-    `.set_key.sh`). Defaults to the latest capable Claude model.
+    `ANTHROPIC_API_KEY`, the repo's `.claude/anthropic_key.sh` helper, or
+    `~/.claude/anthropic_key.sh`. Defaults to the latest capable Claude model.
     """
 
     name: str = "llm_judge"
@@ -286,13 +285,20 @@ class LLMJudgeIODetector(IODetector):
         key = os.environ.get("ANTHROPIC_API_KEY")
         if key:
             return key
-        helper = Path(__file__).resolve().parents[1] / ".claude" / "anthropic_key.sh"
-        if helper.exists():
-            try:
-                return subprocess.run(["sh", str(helper)], capture_output=True,
-                                      text=True, timeout=10).stdout.strip() or None
-            except Exception:
-                return None
+        # Resolve via an apiKeyHelper script. Check the repo-local `.claude/`
+        # first (project override), then the standard Claude Code location
+        # (`~/.claude/anthropic_key.sh`) so the judge works without copying the
+        # key into the repo.
+        for helper in (Path(__file__).resolve().parents[1] / ".claude" / "anthropic_key.sh",
+                       Path.home() / ".claude" / "anthropic_key.sh"):
+            if helper.exists():
+                try:
+                    out = subprocess.run(["sh", str(helper)], capture_output=True,
+                                         text=True, timeout=10).stdout.strip()
+                    if out:
+                        return out
+                except Exception:
+                    continue
         return None
 
     def _judge(self):
@@ -325,8 +331,8 @@ class LLMJudgeIODetector(IODetector):
     def score_sequence(self, ctx: IOContext) -> np.ndarray:
         if ctx.prompt_text is None:
             raise RuntimeError(
-                "LLMJudgeIODetector needs a text backend (hf_gpu); the synthetic "
-                "backend has no prompt text.")
+                "LLMJudgeIODetector needs a text backend (hf_gpu); this backend "
+                "exposed no prompt text.")
         # `prompt_text` carries the decoded continuation appended by io_verify when
         # the backend supports decode(); see harness.io_verify.
         prompt, _, cont = ctx.prompt_text.partition("\x00")
