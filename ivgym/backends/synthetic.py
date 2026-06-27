@@ -24,7 +24,7 @@ from ..sampling import (
 class SyntheticBackend:
     def __init__(self, vocab: int = 512, hidden_dim: int = 256, peak: float = 2.5,
                  model_seed: int = 0, verifier_sigma: float = 0.02,
-                 act_benign_sigma: float = 0.05):
+                 act_benign_sigma: float = 0.05, proxy_sigma: float = 0.6):
         self.vocab = vocab
         self.hidden_dim = hidden_dim
         self.peak = peak
@@ -32,6 +32,11 @@ class SyntheticBackend:
         # The verifier is itself a "correct-but-noisy" deployment.
         self.verifier_sigma = verifier_sigma
         self.act_benign_sigma = act_benign_sigma
+        # A cheap proxy LM is a *much* noisier estimate of the true logits than
+        # the verifier's own recomputation (proxy_sigma >> verifier_sigma): it is
+        # a smaller, cheaper model, partially -- not perfectly -- correlated with
+        # the reference. Used only by I/O detectors (the cost/accuracy Pareto).
+        self.proxy_sigma = proxy_sigma
 
     # --- trusted reference computations (verifier side) ---
     def _true_logits(self, prompt_id: int, position: int) -> np.ndarray:
@@ -43,6 +48,24 @@ class SyntheticBackend:
         true = self._true_logits(prompt_id, position)
         nrng = np.random.default_rng((self.model_seed, prompt_id, position, 7))
         return true + nrng.normal(0.0, self.verifier_sigma, self.vocab)
+
+    # --- cheap proxy + raw I/O (black-box detectors; NOT a recompute of M) ---
+    def proxy_logits(self, prompt_id: int, position: int) -> np.ndarray:
+        """Logits from a *cheap, low-fidelity* proxy model -- a noisier estimate
+        of the true logits than the verifier's own recomputation. This is a
+        different (cheaper) model, never M's forward pass, so I/O detectors that
+        read it stay black-box."""
+        true = self._true_logits(prompt_id, position)
+        prng = np.random.default_rng((self.model_seed, prompt_id, position, 555))
+        return true + prng.normal(0.0, self.proxy_sigma, self.vocab)
+
+    def prompt_text(self, prompt_id: int) -> str | None:
+        """Synthetic backend has no real text; return None so text-only detectors
+        (the LLM judge) cleanly skip rather than score a meaningless placeholder."""
+        return None
+
+    def decode(self, token_ids: list[int]) -> str | None:
+        return None
 
     def _true_activation(self, prompt_id: int, position: int) -> np.ndarray:
         rng = np.random.default_rng((self.model_seed, prompt_id, position, 99))

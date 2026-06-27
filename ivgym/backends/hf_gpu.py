@@ -125,6 +125,23 @@ class HFGPUBackend:
     def reference_activation(self, prompt_id: int, position: int) -> np.ndarray:
         return self._ref_cache[prompt_id]["act"][position]
 
+    # --- cheap proxy + raw I/O (black-box detectors; NOT a recompute of M) ---
+    def proxy_logits(self, prompt_id: int, position: int) -> np.ndarray:
+        """Stand-in for a cheap proxy LM. A genuine deployment would call a small
+        separate model; to avoid loading a second network we model the proxy as a
+        noisier read of the cached reference logits (a weaker, cheaper estimator).
+        Note: this reuses the ref cache only as a *base distribution* -- it is not
+        offered to recomputation defenses and adds proxy noise on top."""
+        base = self._ref_cache[prompt_id]["logits"][position]
+        prng = np.random.default_rng((self.model_seed, prompt_id, position, 555))
+        return base + prng.normal(0.0, 0.6, base.shape)
+
+    def prompt_text(self, prompt_id: int) -> str | None:
+        return self.prompts[prompt_id % len(self.prompts)]
+
+    def decode(self, token_ids: list[int]) -> str | None:
+        return self.tokenizer.decode(token_ids, skip_special_tokens=True)
+
     def _populate_ref_cache(self, prompt_id, prompt_ids, claimed, n_tokens):
         """One prefill pass over [prompt + claimed], under the reference model."""
         torch = self._torch

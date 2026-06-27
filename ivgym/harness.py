@@ -6,8 +6,9 @@ from dataclasses import dataclass, field
 import numpy as np
 
 from .attacks import Attack
-from .core import SamplingSpec, Sequence, VerifyContext
+from .core import IOContext, SamplingSpec, Sequence, VerifyContext
 from .defenses import Defense
+from .io_detectors import IODetector
 from .metrics import roc_auc, tpr_at_fpr
 from .sampling import gumbel_noise, position_seed
 
@@ -59,6 +60,51 @@ def verify(backend, sequences: list[Sequence], spec: SamplingSpec,
                 out[d.name].append(d.score(ctx))
 
     return TokenScores(cfg, {k: np.asarray(v, float) for k, v in out.items()})
+
+
+def io_context(backend, seq: Sequence, spec: SamplingSpec,
+               need_proxy: bool, need_text: bool) -> IOContext:
+    """Build the black-box `IOContext` for one provider sequence.
+
+    Crucially this NEVER calls `backend.reference_logits` / `reference_activation`
+    -- that would be recomputing M, which is exactly what an I/O detector must
+    not do. It may call `backend.proxy_logits` (a *different, cheap* model) and
+    `backend.prompt_text` / `backend.decode` (raw I/O, no forward pass)."""
+    toks = [s.claimed_token for s in seq.steps]
+    proxy = None
+    if need_proxy:
+        proxy = np.stack([backend.proxy_logits(seq.prompt_id, s.position) for s in seq.steps])
+    text = None
+    if need_text:
+        prompt = backend.prompt_text(seq.prompt_id) if hasattr(backend, "prompt_text") else None
+        if prompt is not None:
+            # Pack prompt + decoded continuation as "prompt\x00continuation" so a
+            # text detector can recover both without widening the dataclass.
+            cont = backend.decode(toks) if hasattr(backend, "decode") else ""
+            text = f"{prompt}\x00{cont or ''}"
+    return IOContext(prompt_id=seq.prompt_id, claimed_tokens=toks, sampling=spec,
+                     prompt_text=text, proxy_logits=proxy)
+
+
+def io_verify(backend, sequences: list[Sequence], spec: SamplingSpec,
+              io_detectors: list[IODetector]) -> TokenScores:
+    """Black-box analogue of `verify`: score each sequence with each I/O detector
+    *without* recomputing M. Each detector returns a per-token score array; they
+    are concatenated so the result flows through the SAME winsorize / batch_means
+    / evaluate pipeline as `Defense` scores (an `IODetector` is interchangeable
+    with a `Defense` from `evaluate`'s point of view -- both expose `.name`)."""
+    need_proxy = any(d.needs_proxy for d in io_detectors)
+    need_text = any(d.needs_text for d in io_detectors)
+    out = {d.name: [] for d in io_detectors}
+    cfg = sequences[0].config_name if sequences else "?"
+
+    for seq in sequences:
+        ctx = io_context(backend, seq, spec, need_proxy, need_text)
+        for d in io_detectors:
+            out[d.name].append(np.asarray(d.score_sequence(ctx), float))
+
+    return TokenScores(cfg, {k: (np.concatenate(v) if v else np.array([]))
+                             for k, v in out.items()})
 
 
 def winsorize(scores: np.ndarray, honest_train: np.ndarray, pct: float) -> np.ndarray:

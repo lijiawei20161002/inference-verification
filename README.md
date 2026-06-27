@@ -63,6 +63,9 @@ ivgym/
   core.py                SamplingSpec, Sequence/TokenStep, VerifyContext
   attacks.py             Attack base + registry (honest, quant, temp, seed, bug, adv-temp)
   defenses.py            Defense base + registry (token_difr, cross_entropy, activation_difr)
+                         -- white-box: handed ref_logits (verifier re-ran model M)
+  io_detectors.py        IODetector base + registry (surface_stat/rank/tokens, learned, llm_judge)
+                         -- black-box: score (prompt, claimed_tokens) WITHOUT recomputing M
   metrics.py             ROC AUC + TPR@FPR in pure numpy
   harness.py             generate_dataset / verify / winsorize / batch_means / evaluate
   backends/
@@ -76,6 +79,7 @@ experiments/
   exp_sweep.py              attack × defense AUC grid (Table 2 / Fig. 1 shape)
   exp_safe_set.py           indistinguishable SAFE-set substitution (seed-synced)
   exp_seed_free.py          indistinguishable compute cheat (seed-free verifier)
+  exp_io_detector.py        black-box I/O detectors vs recomputation (white-box-ness validator)
   figures.py                render docs/figures/*.png from the two sweeps
   exp_gpu.py                exp_sweep on a real model on a GPU
 examples/
@@ -117,6 +121,67 @@ which need real models):
 - **Activation-DiFR** saturates on forward-pass deviations (quant/fp8) with very
   few tokens but is blind to sampling-only changes (temp/seed) — it never sees
   the sampler.
+
+## Black-box detectors: validating *that recomputation is necessary*
+
+All the defenses above are **white-box / recomputation** detectors: the verifier
+re-runs the reference model `M` and is handed `ref_logits`. `ivgym/io_detectors.py`
+adds the **black-box / input-output** analogue — an `IODetector` scores
+`(prompt, claimed_tokens)` **without recomputing `M`** (it may call a *cheap,
+different* proxy model, never `M`'s own forward pass). This ports the white-box vs
+black-box detector split from Clymer et al., *Lessons from building a model-organism
+testbed* (2025): a black-box predictor is used as a **validator of white-box-ness** —
+if outputs alone can't tell an attack from honest while recomputation nails it, the
+recomputation defense is providing genuine information beyond behaviour.
+
+```bash
+.venv/bin/python -m experiments.exp_io_detector   # no GPU; writes docs/figures/fig3_io_pareto.png
+```
+
+Detectability = `max(AUC, 1-AUC)` (a black-box signal that *reverses* under an
+attack still separates it); compare every cell to the honest-null floor (a second
+independent honest draw from the same `M`). Synthetic, 100×256 tokens, batch=200:
+
+```
+            attack |  token_difr |  surface_stat  surface_rank surface_tokens   regime
+     (honest null) |       0.550 |         0.516         0.541         0.577    floor
+        quant_4bit |       0.960 |         0.524         0.668         0.523    RECOMPUTE-DOMINANT
+            kv_fp8 |       0.790 |         0.515         0.603         0.510    RECOMPUTE-DOMINANT
+           seed_43 |       1.000 |         0.580         0.517         0.505    RECOMPUTE-DOMINANT
+  quant_spoof_q0.2 |       0.785 |         0.500         0.595         0.501    RECOMPUTE-DOMINANT
+          temp_1.1 |       0.687 |         0.815         0.844         0.523    I/O-DOMINANT
+  safe_set_eps0.05 |       0.558 |         0.584         0.558         0.506    NEITHER (at floor)
+```
+
+- **Role 2 (headline).** `seed_43` (wrong sampling seed — redraws the *same*
+  distribution) and the constructed `quant_spoof` (quantize + retune temperature to
+  output-match) are **RECOMPUTE-DOMINANT**: token_difr is high while every cheap I/O
+  detector sits at its honest-null floor (`quant_spoof`'s proxy-NLL is exactly 0.500).
+  That gap is a quantitative proof the deviation is invisible in the outputs.
+- **Honest caveat.** A *high* I/O-AUC (e.g. `temp_1.1`) is **not** a verifier win —
+  it means the attack is crude enough to catch from outputs alone (a statement about
+  the *attack*, not the verifier).
+- **Complementarity (beyond the original plan).** SAFE-set substitution is built to
+  evade token_difr (it deviates only inside token_difr's near-tie blind spot). As its
+  covert budget `epsilon` grows, a cheap proxy-NLL *outpaces* recomputation — the I/O
+  detector dominates exactly the attack engineered against recomputation. Neither
+  family dominates everywhere; they are complementary.
+
+  ```
+   epsilon |  token_difr | surface_stat (proxy-NLL)
+      0.05 |       0.539 |        0.574   <- proxy-NLL > token_difr
+      0.20 |       0.623 |        0.731   <- proxy-NLL > token_difr
+      0.50 |       0.720 |        0.922   <- proxy-NLL > token_difr
+  ```
+
+- **Held-out-attack generalization.** A `LearnedSeqIODetector` (numpy logistic on
+  output-only features) trained on `quant_4bit` only stays ≈ chance on held-out
+  attacks and on `seed_43` (≈0.59) — an output-invisible deviation no black-box
+  detector catches regardless of training. That is the information recomputation adds.
+
+The `LLMJudgeIODetector` (zero-shot Claude judge over prompt+continuation) is gated
+behind a real-text backend (`hf_gpu`); on the synthetic backend there is no text, so
+it is skipped. ![Fig 3](docs/figures/fig3_io_pareto.png)
 
 ## Run on a GPU (real model)
 
@@ -257,4 +322,8 @@ need no changes. See the module docstring for the full contract.
 - Real vLLM backend implementation + the temp-0 spot-check mode (Appendix D).
   (The HF GPU backend in `ivgym/backends/hf_gpu.py` now runs the harness against a
   real model end-to-end; vLLM remains for higher throughput.)
+- `LLMJudgeIODetector` runs only on a real-text backend (`hf_gpu`); it is wired and
+  key-resolving but not yet exercised in CI (the synthetic backend has no text).
+- I/O detectors are not yet wired into `experiments/run.py` (a `--io-detectors` flag);
+  they run via the standalone `experiments/exp_io_detector.py`.
 ```

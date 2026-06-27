@@ -50,3 +50,31 @@ class VerifyContext:
     sampling: SamplingSpec
     fingerprint: np.ndarray | None = None      # provider's activation fingerprint
     ref_fingerprint: np.ndarray | None = None  # verifier's recomputed fingerprint
+
+
+@dataclass
+class IOContext:
+    """Everything an input-output (black-box) detector may see for one whole
+    `Sequence`. The contrast with `VerifyContext` is the point of the abstraction:
+
+      * `VerifyContext` is *per-token* and is handed `ref_logits` -- the verifier
+        re-ran the reference model M's forward pass (the white-box / recomputation
+        defenses).
+      * `IOContext` is *per-sequence* and carries **no** `ref_logits` and **no**
+        `ref_fingerprint`. An I/O detector decides "is this a faithful sample from
+        M under spec phi?" from the prompt and the claimed tokens alone, *without*
+        recomputing M. That "no recompute of M" boundary is the whole reason this
+        is a separate context.
+
+    `proxy_logits` is the one allowed escape hatch and does NOT break the boundary:
+    it is the output of a *different, cheap* model (a small proxy LM), never M's
+    own forward pass. It is the cheap end of the cost/accuracy Pareto ("a cheap
+    model polices the expensive model"). Detectors that want it set
+    `needs_proxy = True`; the harness fills it by calling `backend.proxy_logits`.
+    """
+
+    prompt_id: int
+    claimed_tokens: list[int]
+    sampling: SamplingSpec
+    prompt_text: str | None = None             # raw prompt (text backends only)
+    proxy_logits: np.ndarray | None = None     # [T, V] CHEAP-proxy logits, not M's

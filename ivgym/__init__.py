@@ -18,10 +18,10 @@ Quick start:
         harness.generate_dataset(backend, attacks.get("honest"), spec, 50, 256),
         spec, list(defenses.all_defenses().values()))
 """
-from . import attacks, defenses, harness, metrics, sampling  # noqa: F401
-from .core import SamplingSpec, Sequence, TokenStep, VerifyContext  # noqa: F401
+from . import attacks, defenses, harness, io_detectors, metrics, sampling  # noqa: F401
+from .core import IOContext, SamplingSpec, Sequence, TokenStep, VerifyContext  # noqa: F401
 
 __all__ = [
-    "attacks", "defenses", "harness", "metrics", "sampling",
-    "SamplingSpec", "Sequence", "TokenStep", "VerifyContext",
+    "attacks", "defenses", "harness", "io_detectors", "metrics", "sampling",
+    "SamplingSpec", "Sequence", "TokenStep", "VerifyContext", "IOContext",
 ]

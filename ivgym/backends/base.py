@@ -38,3 +38,21 @@ class Backend(Protocol):
     ) -> Sequence:
         """Run provider-side generation under `attack`, returning claimed tokens."""
         ...
+
+    # --- optional: support for input-output (black-box) detectors -----------
+    # These let an `IODetector` (ivgym.io_detectors) score from outputs alone,
+    # WITHOUT recomputing M. `proxy_logits` returns a *cheap, different* model's
+    # logits (never M's forward pass); `prompt_text` / `decode` expose raw I/O.
+    # A backend that omits them simply cannot run proxy-/text-based detectors.
+
+    def proxy_logits(self, prompt_id: int, position: int) -> np.ndarray:
+        """Logits from a cheap proxy LM (the cost/accuracy Pareto's cheap end)."""
+        ...
+
+    def prompt_text(self, prompt_id: int) -> str | None:
+        """Raw prompt text (text backends only; None when unavailable)."""
+        ...
+
+    def decode(self, token_ids: list[int]) -> str | None:
+        """Decode claimed token ids back to text (text backends only)."""
+        ...
