@@ -342,6 +342,93 @@ class LLMJudgeIODetector(IODetector):
         return np.full(len(ctx.claimed_tokens), p)
 
 
+@dataclass
+class LogitJudgeIODetector(LLMJudgeIODetector):
+    """Hybrid detector: recompute on a CHEAP PROXY, then let an LLM judge the
+    LOGIT-level divergence (not the decoded text). For every claimed token the
+    verifier computes its surprisal (NLL, nats) and rank under the proxy's
+    temperature-scaled distribution -- "a cheap model recomputes, the LLM reads
+    the divergence pattern." This is the logit-space sibling of `llm_judge`
+    (which reads the continuation text): SAME judge model and API plumbing
+    (inherited from `LLMJudgeIODetector`), but the evidence handed to the judge
+    is numbers off `proxy_logits`, so it needs a proxy backend rather than a
+    text one.
+
+    Cost = one cheap-proxy forward pass + one judge call. `verifier_flops`
+    carries the illustrative default; the experiment overrides the proxy part
+    with the MEASURED params(proxy)/params(M) ratio.
+
+    Expected behaviour matches the other black-box detectors and is the point of
+    Role 2: on output-INVISIBLE attacks (e.g. seed_43, which redraws the SAME
+    distribution) the proxy-surprisal/rank pattern is statistically unchanged, so
+    the judge sits at its honest-null floor -- only a recomputation of M itself
+    separates honest from attack. On output-VISIBLE attacks (temp_1.1, a crude
+    bug) the surprisal pattern shifts and the judge can flag it.
+    """
+
+    name: str = "logit_judge"
+    needs_proxy: bool = True
+    needs_text: bool = False
+    max_rows: int = 64                  # cap per-token rows handed to the judge
+    verifier_flops: float = 0.58        # proxy (~0.08) + judge call (~0.5), illustrative
+
+    def _evidence(self, nll: np.ndarray, rank: np.ndarray, temp: float) -> str:
+        """Compact, model-free summary of the per-token proxy divergence. Numbers
+        only -- the whole point is to judge in logit space, not from text."""
+        n = len(nll)
+        rows = " ".join(
+            f"{i}:{s:.2f}/{int(r)}"
+            for i, (s, r) in enumerate(zip(nll, rank)) if i < self.max_rows)
+        more = "" if n <= self.max_rows else f" (+{n - self.max_rows} more tokens)"
+        return (
+            f"temperature={temp:.2f}  tokens={n}\n"
+            f"per-token  surprisal_nats/proxy_rank  (rank 0 = proxy's argmax, "
+            f"capped at {int(RANK_CAP)}):\n{rows}{more}\n"
+            f"summary: mean_surprisal={float(nll.mean()):.2f}  "
+            f"median_surprisal={float(np.median(nll)):.2f}  "
+            f"max_surprisal={float(nll.max()):.2f}  mean_rank={float(rank.mean()):.1f}  "
+            f"frac_not_argmax={float(np.mean(rank > 0)):.2f}  "
+            f"frac_in_top8={float(np.mean(rank < 8)):.2f}")
+
+    def _p_deviation_logits(self, nll: np.ndarray, rank: np.ndarray, temp: float) -> float:
+        sys_prompt = (
+            "You are an inference-verification judge working in LOGIT space. A "
+            "verifier re-scored a provider's claimed tokens under a CHEAP PROXY "
+            "model -- a smaller model from the same family as the reference model "
+            "M, sharing M's tokenizer. For each claimed token you are given its "
+            "surprisal (negative log-likelihood, nats) and its rank under the "
+            "proxy's temperature-scaled distribution. Because the proxy is smaller "
+            "than M, even a FAITHFUL sample from M shows nonzero surprisal and is "
+            "often not the proxy's argmax -- that alone is NOT evidence of a "
+            "deviation. Decide whether the PATTERN of surprisals and ranks is "
+            "consistent with faithful sampling from M at the stated temperature, "
+            "or indicates a DEVIATION (wrong model, wrong temperature/seed, "
+            "quantized/corrupted decoding, or a sampling bug). Reply with ONLY a "
+            "probability in [0,1] that it is a deviation -- e.g. '0.12'. No other text."
+        )
+        msg = self._judge().messages.create(
+            model=self.model, max_tokens=8, system=sys_prompt,
+            messages=[{"role": "user", "content": self._evidence(nll, rank, temp)}],
+        )
+        txt = "".join(b.text for b in msg.content if getattr(b, "type", "") == "text").strip()
+        try:
+            return float(min(max(float(txt.split()[0]), 0.0), 1.0))
+        except (ValueError, IndexError):
+            return 0.5
+
+    def score_sequence(self, ctx: IOContext) -> np.ndarray:
+        if ctx.proxy_logits is None:
+            raise RuntimeError(
+                "logit_judge needs proxy logits (set needs_proxy=True); run with a "
+                "proxy-capable backend.")
+        nll = proxy_nll(ctx)
+        rank = proxy_rank(ctx)
+        p = self._p_deviation_logits(nll, rank, ctx.sampling.temperature)
+        # one judgement per sequence, broadcast across its tokens (same shape
+        # contract as every IODetector; see LLMJudgeIODetector).
+        return np.full(len(ctx.claimed_tokens), p)
+
+
 # Register the no-text, no-fit detectors so they appear in `--list` / the runner.
 # (LearnedSeqIODetector needs fitting and LLMJudgeIODetector needs a text backend,
 # so the experiment constructs those explicitly rather than from the registry.)

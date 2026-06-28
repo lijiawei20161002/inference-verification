@@ -12,6 +12,8 @@ The black-box detectors:
   * **surface_tokens** uses pure token-id statistics, no model at all.
   * the **`llm_judge`** -- a zero-shot Claude judge over (prompt, decoded
     continuation) -- which only runs on a real-text backend like this one.
+  * the **`logit_judge`** -- recompute on the cheap proxy, then a Claude judge
+    over the per-token surprisal/rank divergence (logit space, not text).
 
 The headline (Role 2): where an attack is output-*indistinguishable* (a wrong
 sampling seed; quantization tuned to output-match), every black-box detector --
@@ -48,7 +50,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from ivgym import attacks, defenses, harness, io_detectors
 from ivgym.backends.hf_gpu import HFGPUBackend, DEFAULT_PROMPTS
 from ivgym.core import SamplingSpec
-from ivgym.io_detectors import LLMJudgeIODetector
+from ivgym.io_detectors import LLMJudgeIODetector, LogitJudgeIODetector
 
 MODEL = os.environ.get("IVGYM_MODEL", "Qwen/Qwen3-0.6B")
 # Option B: a REAL cheap proxy model for the black-box detectors. When set, the
@@ -94,21 +96,38 @@ def _detect(auc: float) -> float:
     return max(auc, 1.0 - auc)
 
 
+def _judge_available(det, label):
+    """True if an Anthropic-backed judge `det` can actually run (API key + sdk)."""
+    if det._api_key() is None:
+        print(f"  ({label}: no ANTHROPIC_API_KEY / key helper found -- skipping)",
+              flush=True)
+        return False
+    try:
+        import anthropic  # noqa: F401
+    except ImportError:
+        print(f"  ({label}: `pip install anthropic` to enable -- skipping)", flush=True)
+        return False
+    return True
+
+
 def _maybe_judge():
     """Build the llm_judge if requested and an API key resolves; else None."""
     if not RUN_JUDGE:
         return None
     judge = LLMJudgeIODetector(model=JUDGE_MODEL)
-    if judge._api_key() is None:
-        print("  (llm_judge: no ANTHROPIC_API_KEY / key helper found -- skipping)",
-              flush=True)
+    return judge if _judge_available(judge, "llm_judge") else None
+
+
+def _maybe_logit_judge():
+    """Build the logit_judge (recompute-on-proxy + LLM judges the logit-level
+    divergence) if requested and an API key resolves; else None. Unlike llm_judge
+    it needs no text backend -- its evidence is per-token surprisal/rank off the
+    cheap proxy -- but it does need proxy logits, which every HF-GPU backend
+    provides (real proxy when IVGYM_PROXY_MODEL is set, else the noised fallback)."""
+    if not RUN_JUDGE:
         return None
-    try:
-        import anthropic  # noqa: F401
-    except ImportError:
-        print("  (llm_judge: `pip install anthropic` to enable -- skipping)", flush=True)
-        return None
-    return judge
+    judge = LogitJudgeIODetector(model=JUDGE_MODEL)
+    return judge if _judge_available(judge, "logit_judge") else None
 
 
 def run():
@@ -136,8 +155,16 @@ def run():
     spec = SamplingSpec()
     td = defenses.get("token_difr")
     judge = _maybe_judge()
-    io_dets = [io_detectors.get(n) for n in IO_NAMES] + ([judge] if judge else [])
-    io_cols = IO_NAMES + (["llm_judge"] if judge else [])
+    logit_judge = _maybe_logit_judge()
+    io_dets = ([io_detectors.get(n) for n in IO_NAMES]
+               + ([judge] if judge else [])
+               + ([logit_judge] if logit_judge else []))
+    io_cols = (IO_NAMES + (["llm_judge"] if judge else [])
+               + (["logit_judge"] if logit_judge else []))
+    if logit_judge:
+        # Pareto cost = cheap-proxy forward pass + the judge call. The proxy part
+        # tracks surface_stat's x (the MEASURED ratio when a real proxy is loaded).
+        FLOPS["logit_judge"] = FLOPS["surface_stat"] + 0.5
 
     def score_pool(seqs):
         """Detectability arrays for one already-generated sequence pool: token_difr
@@ -202,9 +229,9 @@ def main():
           "it means that\nattack is crude enough to catch from outputs alone (a "
           "statement about the attack,\nnot the verifier). The interesting rows are "
           "the LOW I/O-AUC ones with high token_difr.")
-    if "llm_judge" in io_cols or "surface_tokens" in io_cols:
-        print("\nNOTE: per-SEQUENCE-constant detectors (llm_judge, surface_tokens) emit one "
-              "value per\nsequence broadcast to its tokens, so with few sequences their "
+    if any(c in io_cols for c in ("llm_judge", "logit_judge", "surface_tokens")):
+        print("\nNOTE: per-SEQUENCE-constant detectors (llm_judge, logit_judge, surface_tokens) "
+              "emit one value per\nsequence broadcast to its tokens, so with few sequences their "
               "token-batch null FLOOR\ninflates well above 0.5 (a known finite-pool artifact). "
               "Read them via the dominance\nblock below -- excess over each detector's OWN "
               "floor -- not via the absolute AUC cell.")
