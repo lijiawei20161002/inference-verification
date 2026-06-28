@@ -2,3 +2,7 @@
 upstream/
 __pycache__/
 *.pyc
+
+# Local secrets / key helpers — never commit
+.set_key.sh
+.claude/

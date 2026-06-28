@@ -33,6 +33,7 @@ from __future__ import annotations
 
 import os
 import subprocess
+import time
 from dataclasses import dataclass, field
 from pathlib import Path
 
@@ -307,6 +308,39 @@ class LLMJudgeIODetector(IODetector):
             self._client = anthropic.Anthropic(api_key=self._api_key())
         return self._client
 
+    def _judge_create(self, **kwargs):
+        """One judge call, with exponential backoff on TRANSIENT API errors.
+
+        A single 529/overload or connection blip from the API would otherwise
+        abort the whole multi-pool run (~1h of GPU work). These errors are
+        retryable and unrelated to the judgement, so we retry with backoff
+        rather than lose the run. Non-transient errors (auth, bad request)
+        propagate immediately.
+        """
+        import anthropic
+        transient = (
+            anthropic.APIStatusError,      # covers OverloadedError (529) + other 5xx
+            anthropic.APIConnectionError,
+            anthropic.RateLimitError,
+            anthropic.APITimeoutError,
+        )
+        delays = (2, 4, 8, 16, 32, 60, 60, 60)  # ~5min of retries before giving up
+        for attempt, delay in enumerate(delays):
+            try:
+                return self._judge().messages.create(**kwargs)
+            except transient as e:
+                status = getattr(e, "status_code", None)
+                # 4xx other than 429 are NOT transient -- fail fast on a real bug.
+                if isinstance(e, anthropic.APIStatusError) and status is not None \
+                        and 400 <= status < 500 and status != 429:
+                    raise
+                print(f"    [judge] transient API error ({type(e).__name__}"
+                      f"{f' {status}' if status else ''}); retry "
+                      f"{attempt + 1}/{len(delays)} in {delay}s", flush=True)
+                time.sleep(delay)
+        # Final attempt: let any exception propagate so a persistent outage is loud.
+        return self._judge().messages.create(**kwargs)
+
     def _p_deviation(self, prompt_text: str, continuation: str, temperature: float) -> float:
         sys_prompt = (
             "You are an inference-verification judge. You are given a PROMPT and a "
@@ -318,7 +352,7 @@ class LLMJudgeIODetector(IODetector):
             "deviation -- e.g. '0.12'. No other text."
         )
         user = f"PROMPT:\n{prompt_text}\n\nCONTINUATION:\n{continuation[: self.max_chars]}"
-        msg = self._judge().messages.create(
+        msg = self._judge_create(
             model=self.model, max_tokens=8, system=sys_prompt,
             messages=[{"role": "user", "content": user}],
         )
@@ -406,7 +440,7 @@ class LogitJudgeIODetector(LLMJudgeIODetector):
             "quantized/corrupted decoding, or a sampling bug). Reply with ONLY a "
             "probability in [0,1] that it is a deviation -- e.g. '0.12'. No other text."
         )
-        msg = self._judge().messages.create(
+        msg = self._judge_create(
             model=self.model, max_tokens=8, system=sys_prompt,
             messages=[{"role": "user", "content": self._evidence(nll, rank, temp)}],
         )
