@@ -51,6 +51,11 @@ from ivgym.core import SamplingSpec
 from ivgym.io_detectors import LLMJudgeIODetector
 
 MODEL = os.environ.get("IVGYM_MODEL", "Qwen/Qwen3-0.6B")
+# Option B: a REAL cheap proxy model for the black-box detectors. When set, the
+# backend loads it as a second network and `proxy_logits` is its genuine forward
+# pass (not a noised read of M). Use a same-family proxy so the tokenizer/vocab
+# match M, e.g. IVGYM_MODEL=Qwen/Qwen3-8B IVGYM_PROXY_MODEL=Qwen/Qwen3-0.6B.
+PROXY_MODEL = os.environ.get("IVGYM_PROXY_MODEL") or None
 N_PROMPTS = int(os.environ.get("IVGYM_PROMPTS", 12))
 N_TOKENS = int(os.environ.get("IVGYM_TOKENS", 64))
 BATCH = int(os.environ.get("IVGYM_BATCH", 100))
@@ -112,11 +117,21 @@ def run():
               "honest and null pools will share some prompt text.", flush=True)
 
     t0 = time.time()
-    print(f"loading {MODEL} ...", flush=True)
-    backend = HFGPUBackend(model_name=MODEL)
+    print(f"loading {MODEL}"
+          + (f"  + proxy {PROXY_MODEL}" if PROXY_MODEL else "") + " ...", flush=True)
+    backend = HFGPUBackend(model_name=MODEL, proxy_model_name=PROXY_MODEL)
     print(f"loaded in {time.time()-t0:.1f}s | vocab={backend.vocab} "
           f"hidden={backend.hidden_dim} | {N_PROMPTS} prompts x {N_TOKENS} tokens",
           flush=True)
+    if PROXY_MODEL:
+        # Put the cheap-proxy detectors on the Pareto x-axis at the MEASURED cost
+        # ratio (params(proxy)/params(M)), not the illustrative 0.08 default.
+        ratio = backend.proxy_n_params / backend.n_params
+        FLOPS["surface_stat"] = ratio
+        FLOPS["surface_rank"] = ratio
+        print(f"  REAL proxy: {backend.proxy_n_params/1e9:.2f}B params vs M "
+              f"{backend.n_params/1e9:.2f}B  ->  proxy cost ratio = {ratio:.3f} "
+              f"({1/ratio:.1f}x cheaper than recompute)", flush=True)
 
     spec = SamplingSpec()
     td = defenses.get("token_difr")

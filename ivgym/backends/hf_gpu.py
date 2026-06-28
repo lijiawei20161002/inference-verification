@@ -114,6 +114,8 @@ class HFGPUBackend:
         verifier_sigma: float = 0.02,
         act_benign_sigma: float = 0.05,
         max_prompt_tokens: int = 32,
+        proxy_model_name: str | None = None,
+        proxy_sigma: float = 0.6,
     ):
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -125,6 +127,7 @@ class HFGPUBackend:
         self.act_benign_sigma = act_benign_sigma
         self.max_prompt_tokens = max_prompt_tokens
         self.prompts = list(prompts) if prompts else list(DEFAULT_PROMPTS)
+        self.proxy_sigma = proxy_sigma
 
         torch_dtype = getattr(torch, dtype)
         self.tokenizer = AutoTokenizer.from_pretrained(model_name)
@@ -137,8 +140,34 @@ class HFGPUBackend:
         )
         self.vocab = int(self.model.config.vocab_size)
         self.hidden_dim = int(self.model.config.hidden_size)
+        self.n_params = sum(p.numel() for p in self.model.parameters())
         # prompt_id -> {"logits": [n_tokens, V] float32, "act": [n_tokens, H] float32}
         self._ref_cache: dict[int, dict] = {}
+
+        # --- optional REAL cheap proxy model (Option B) -------------------
+        # When set, `proxy_logits` returns a genuine separate-model forward pass
+        # instead of a noised read of M's cached logits. The proxy MUST share M's
+        # tokenizer/vocab so claimed token ids index its logits directly -- true
+        # for a same-family pair (e.g. M=Qwen3-8B, proxy=Qwen3-0.6B).
+        self.proxy_model = None
+        self.proxy_n_params = None
+        self._proxy_cache: dict[int, np.ndarray] = {}
+        if proxy_model_name:
+            self.proxy_model = (
+                AutoModelForCausalLM.from_pretrained(
+                    proxy_model_name, dtype=torch_dtype, attn_implementation="eager"
+                )
+                .to(device)
+                .eval()
+            )
+            proxy_vocab = int(self.proxy_model.config.vocab_size)
+            if proxy_vocab != self.vocab:
+                raise ValueError(
+                    f"proxy vocab ({proxy_vocab}) != reference vocab ({self.vocab}); "
+                    f"a black-box proxy detector reads M's claimed token ids against "
+                    f"the proxy's logits, so they must share a tokenizer. Use a "
+                    f"same-family proxy (e.g. Qwen3-0.6B for Qwen3-8B).")
+            self.proxy_n_params = sum(p.numel() for p in self.proxy_model.parameters())
 
     # ------------------------------------------------------------------ utils
     def _prompt_ids(self, prompt_id: int):
@@ -155,14 +184,24 @@ class HFGPUBackend:
 
     # --- cheap proxy + raw I/O (black-box detectors; NOT a recompute of M) ---
     def proxy_logits(self, prompt_id: int, position: int) -> np.ndarray:
-        """Stand-in for a cheap proxy LM. A genuine deployment would call a small
-        separate model; to avoid loading a second network we model the proxy as a
-        noisier read of the cached reference logits (a weaker, cheaper estimator).
-        Note: this reuses the ref cache only as a *base distribution* -- it is not
-        offered to recomputation defenses and adds proxy noise on top."""
+        """Cheap-proxy LM logits for the black-box detectors -- NEVER a recompute
+        of M.
+
+        If a real proxy model is configured (`proxy_model_name`, Option B), this
+        returns that small separate model's genuine forward-pass logits over
+        [prompt + claimed_tokens] -- a true "cheap model polices the expensive
+        model" read, with its own distribution that differs from M's wherever the
+        two models actually disagree.
+
+        Otherwise it falls back to the legacy stand-in: a noised read of M's
+        cached reference logits (a weaker, cheaper estimator). The fallback reuses
+        the ref cache only as a *base distribution* -- it is not offered to
+        recomputation defenses and adds proxy noise on top."""
+        if self.proxy_model is not None:
+            return self._proxy_cache[prompt_id][position]
         base = self._ref_cache[prompt_id]["logits"][position]
         prng = np.random.default_rng((self.model_seed, prompt_id, position, 555))
-        return base + prng.normal(0.0, 0.6, base.shape)
+        return base + prng.normal(0.0, self.proxy_sigma, base.shape)
 
     def prompt_text(self, prompt_id: int) -> str | None:
         return self.prompts[prompt_id % len(self.prompts)]
@@ -191,6 +230,21 @@ class HFGPUBackend:
             "logits": logits.astype(np.float32),
             "act": acts.astype(np.float32),
         }
+
+    def _populate_proxy_cache(self, prompt_id, prompt_ids, claimed, n_tokens):
+        """One prefill pass over [prompt + claimed] under the REAL cheap proxy
+        model -- the black-box detector's view of the sequence. No activations,
+        no benign verifier noise: the proxy is a genuinely different (smaller)
+        model, so the distribution gap to M IS the signal."""
+        torch = self._torch
+        claimed_t = torch.tensor([claimed], device=self.device, dtype=prompt_ids.dtype)
+        full = torch.cat([prompt_ids, claimed_t], dim=1)
+        L = prompt_ids.shape[1]
+        with torch.no_grad():
+            out = self.proxy_model(full)
+        idx = slice(L - 1, L - 1 + n_tokens)
+        logits = out.logits[0, idx].float().cpu().numpy()
+        self._proxy_cache[prompt_id] = logits.astype(np.float32)
 
     # ------------------------------------------------------ provider generation
     def generate(
@@ -261,4 +315,6 @@ class HFGPUBackend:
                 hidden_last = out.hidden_states[-1][0, -1] if record_activations else None
 
         self._populate_ref_cache(prompt_id, prompt_ids, claimed, n_tokens)
+        if self.proxy_model is not None:
+            self._populate_proxy_cache(prompt_id, prompt_ids, claimed, n_tokens)
         return seq
