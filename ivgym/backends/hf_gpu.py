@@ -37,6 +37,9 @@ recomputation is non-deterministic.
 """
 from __future__ import annotations
 
+import time
+from contextlib import contextmanager
+
 import numpy as np
 
 from ..attacks import Attack
@@ -222,6 +225,17 @@ class HFGPUBackend:
         # prompt_id -> {"logits": [n_tokens, V] float32, "act": [n_tokens, H] float32}
         self._ref_cache: dict[int, dict] = {}
 
+        # --- MEASURED verifier cost (real wall-clock, not a param-count proxy) ---
+        # Each detector's cost is the GPU-synchronised forward pass that produces its
+        # evidence over one [prompt+claimed] sequence: the full-M reference prefill
+        # (token_difr, the recompute) and the cheap-proxy prefill (surface_stat/rank).
+        # `verifier cost` figures read mean seconds = seconds[k] / max(calls[k], 1).
+        # Text-only detectors (surface_tokens) do no forward pass; their cost is the
+        # decode timed in `decode()`. perf_counter is wall-clock; CUDA is async, so we
+        # synchronise around the region or the number measures only kernel-launch time.
+        self.timed_seconds: dict[str, float] = {"reference": 0.0, "proxy": 0.0, "decode": 0.0}
+        self.timed_calls: dict[str, int] = {"reference": 0, "proxy": 0, "decode": 0}
+
         # --- optional REAL cheap proxy model (Option B) -------------------
         # When set, `proxy_logits` returns a genuine separate-model forward pass
         # instead of a noised read of M's cached logits. The proxy MUST share M's
@@ -248,6 +262,24 @@ class HFGPUBackend:
             self.proxy_n_params = sum(p.numel() for p in self.proxy_model.parameters())
 
     # ------------------------------------------------------------------ utils
+    @contextmanager
+    def _timed(self, kind: str):
+        """Accumulate GPU-synchronised wall-clock for one timed region into
+        `self.timed_seconds[kind]`. Synchronising before AND after is what makes the
+        number the real device time rather than the async kernel-launch latency."""
+        torch = self._torch
+        on_cuda = "cuda" in str(self.device)
+        if on_cuda:
+            torch.cuda.synchronize()
+        t0 = time.perf_counter()
+        try:
+            yield
+        finally:
+            if on_cuda:
+                torch.cuda.synchronize()
+            self.timed_seconds[kind] += time.perf_counter() - t0
+            self.timed_calls[kind] += 1
+
     def _prompt_ids(self, prompt_id: int):
         text = self.prompts[prompt_id % len(self.prompts)]
         ids = self.tokenizer(text, return_tensors="pt").input_ids
@@ -285,7 +317,10 @@ class HFGPUBackend:
         return self.prompts[prompt_id % len(self.prompts)]
 
     def decode(self, token_ids: list[int]) -> str | None:
-        return self.tokenizer.decode(token_ids, skip_special_tokens=True)
+        # The only "compute" a text-only detector (surface_tokens) spends per
+        # sequence -- timed so it lands on the verifier-cost axis as a real number.
+        with self._timed("decode"):
+            return self.tokenizer.decode(token_ids, skip_special_tokens=True)
 
     def _populate_ref_cache(self, prompt_id, prompt_ids, claimed, n_tokens):
         """One prefill pass over [prompt + claimed], under the reference model."""
@@ -293,7 +328,7 @@ class HFGPUBackend:
         claimed_t = torch.tensor([claimed], device=self.device, dtype=prompt_ids.dtype)
         full = torch.cat([prompt_ids, claimed_t], dim=1)
         L = prompt_ids.shape[1]
-        with torch.no_grad():
+        with torch.no_grad(), self._timed("reference"):
             out = self.model(full, output_hidden_states=True)
         # logits at input index L-1+pos predict generated token `pos`; the
         # final-layer hidden state at that same index produced those logits.
@@ -318,7 +353,7 @@ class HFGPUBackend:
         claimed_t = torch.tensor([claimed], device=self.device, dtype=prompt_ids.dtype)
         full = torch.cat([prompt_ids, claimed_t], dim=1)
         L = prompt_ids.shape[1]
-        with torch.no_grad():
+        with torch.no_grad(), self._timed("proxy"):
             out = self.proxy_model(full)
         idx = slice(L - 1, L - 1 + n_tokens)
         logits = out.logits[0, idx].float().cpu().numpy()

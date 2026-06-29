@@ -69,13 +69,9 @@ JUDGE_MODEL = os.environ.get("IVGYM_JUDGE_MODEL", "claude-sonnet-4-6")
 CORE_ATTACKS = ("quant_4bit", "kv_fp8", "temp_1.1", "seed_43", "bug_k2", "bug_k32")
 # Cheap, no-fit I/O detectors that run on any backend.
 IO_NAMES = ["surface_stat", "surface_rank", "surface_tokens"]
-# Relative verifier cost for the Pareto x-axis (1.0 = a full recompute of M).
-FLOPS = {
-    "token_difr": 1.0,              # re-runs the reference forward pass
-    "surface_stat": io_detectors.get("surface_stat").verifier_flops,    # cheap proxy LM
-    "surface_rank": io_detectors.get("surface_rank").verifier_flops,
-    "surface_tokens": io_detectors.get("surface_tokens").verifier_flops,  # no model
-}
+# The Pareto x-axis is the verifier's MEASURED wall-clock cost (see `measured_costs`),
+# not the detectors' declared `verifier_flops` -- those static ratios are no longer
+# read here.
 
 
 @dataclass
@@ -143,14 +139,12 @@ def run():
           f"hidden={backend.hidden_dim} | {N_PROMPTS} prompts x {N_TOKENS} tokens",
           flush=True)
     if PROXY_MODEL:
-        # Put the cheap-proxy detectors on the Pareto x-axis at the MEASURED cost
-        # ratio (params(proxy)/params(M)), not the illustrative 0.08 default.
+        # Param ratio, reported as a cross-check on the MEASURED proxy/recompute time
+        # ratio printed at the end (the figure x-axis itself is measured seconds now).
         ratio = backend.proxy_n_params / backend.n_params
-        FLOPS["surface_stat"] = ratio
-        FLOPS["surface_rank"] = ratio
         print(f"  REAL proxy: {backend.proxy_n_params/1e9:.2f}B params vs M "
-              f"{backend.n_params/1e9:.2f}B  ->  proxy cost ratio = {ratio:.3f} "
-              f"({1/ratio:.1f}x cheaper than recompute)", flush=True)
+              f"{backend.n_params/1e9:.2f}B  ->  proxy/M param ratio = {ratio:.3f} "
+              f"({1/ratio:.1f}x fewer params)", flush=True)
 
     spec = SamplingSpec()
     td = defenses.get("token_difr")
@@ -161,10 +155,6 @@ def run():
                + ([logit_judge] if logit_judge else []))
     io_cols = (IO_NAMES + (["llm_judge"] if judge else [])
                + (["logit_judge"] if logit_judge else []))
-    if logit_judge:
-        # Pareto cost = cheap-proxy forward pass + the judge call. The proxy part
-        # tracks surface_stat's x (the MEASURED ratio when a real proxy is loaded).
-        FLOPS["logit_judge"] = FLOPS["surface_stat"] + 0.5
 
     def score_pool(seqs):
         """Detectability arrays for one already-generated sequence pool: token_difr
@@ -206,11 +196,59 @@ def run():
                         io=eval_auc(honest_io, a_io, io_dets)))
         print(f"  {name:>12} scored ({time.time()-t0:.1f}s)", flush=True)
 
-    return rows, io_cols, time.time() - t0
+    return rows, io_cols, time.time() - t0, measured_costs(backend), compute_flops(backend, backend.max_prompt_tokens, N_TOKENS)
+
+
+def measured_costs(backend) -> dict[str, float]:
+    """Real, run-specific verifier cost per detector: mean GPU-synchronised
+    wall-clock SECONDS to produce that detector's evidence over one [prompt+claimed]
+    sequence. token_difr = the full-M reference prefill (the recompute); surface_stat
+    /surface_rank = the cheap-proxy prefill; surface_tokens = the decode (no forward).
+    These replace the old param-count ratio on the Pareto x-axis with measured time."""
+    sec, n = backend.timed_seconds, backend.timed_calls
+    mean = {k: sec[k] / max(n[k], 1) for k in sec}
+    # No real proxy loaded -> proxy_logits is a noised cache read (no forward pass),
+    # so the cheap-proxy detector's measured cost collapses to its decode/text work.
+    proxy = mean["proxy"] if n["proxy"] else mean["decode"]
+    return {
+        "token_difr": mean["reference"],
+        "surface_stat": proxy,
+        "surface_rank": proxy,
+        "surface_tokens": mean["decode"],
+    }
+
+
+def compute_flops(backend, n_prompt_tokens: int, n_cont_tokens: int) -> dict[str, float]:
+    """FLOPs per sequence for each verifier, using the standard 2*N_non_embed*T approx.
+
+    N_non_embed excludes embedding lookup tables (pure index reads, not matmuls).
+    T = n_prompt_tokens + n_cont_tokens (the full prefill length).
+    surface_tokens does no neural forward pass; assigned a nominal 1e6 FLOPs so it
+    renders as the leftmost point on the log-scale x-axis.
+    """
+    T = n_prompt_tokens + n_cont_tokens
+    vocab = backend.vocab
+    hidden = backend.hidden_dim
+    main_non_embed = max(backend.n_params - vocab * hidden, 0)
+
+    if backend.proxy_model is not None:
+        proxy_hidden = int(backend.proxy_model.config.hidden_size)
+        proxy_non_embed = max(backend.proxy_n_params - vocab * proxy_hidden, 0)
+    else:
+        # No real proxy: proxy detectors reuse M's cached logits (no second forward
+        # pass), so proxy FLOPs collapse to zero.
+        proxy_non_embed = 0
+
+    return {
+        "token_difr":    2 * main_non_embed  * T,
+        "surface_stat":  2 * proxy_non_embed * T,
+        "surface_rank":  2 * proxy_non_embed * T,
+        "surface_tokens": 1e6,    # no model forward pass; nominal floor for log scale
+    }
 
 
 def main():
-    rows, io_cols, elapsed = run()
+    rows, io_cols, elapsed, cost, flops = run()
 
     print(f"\nI/O (black-box) detectors vs Token-DiFR (recomputation)   "
           f"[{MODEL}, {N_PROMPTS}x{N_TOKENS} tok, batch={BATCH}]")
@@ -268,10 +306,35 @@ def main():
           "    real model's outputs. seed_43 is the extreme: wrong seed redraws the SAME\n"
           "    distribution, so a re-run flips Gumbel winners while the text looks honest.")
 
+    # ---- measured verifier cost (real wall-clock) ----
+    print("\nMEASURED verifier cost  (mean GPU-synchronised seconds per [prompt+claimed] "
+          "sequence):")
+    for n in ("surface_tokens", "surface_stat", "token_difr"):
+        print(f"   {n:>14}  {cost[n]*1e3:9.3f} ms/seq")
+    if cost["token_difr"] > 0:
+        print(f"   -> surface_stat is {cost['token_difr']/max(cost['surface_stat'],1e-12):.1f}x "
+              f"cheaper than a full recompute (token_difr); surface_tokens "
+              f"{cost['token_difr']/max(cost['surface_tokens'],1e-12):.0f}x cheaper.")
+
+    # ---- FLOPs per sequence (2·N_non_embed·T approximation) ----
+    print(f"\nVERIFIER FLOPs / sequence  (2·N_non_embed·T, T = prompt + {N_TOKENS} tokens):")
+    for n in ("surface_tokens", "surface_stat", "token_difr"):
+        f = flops[n]
+        if f < 1e9:
+            label = f"{f/1e6:.1f} MFLOPs  (nominal; no model forward pass)"
+        elif f < 1e12:
+            label = f"{f/1e9:.1f} GFLOPs"
+        else:
+            label = f"{f/1e12:.3f} TFLOPs"
+        print(f"   {n:>14}  {label}")
+    if flops["token_difr"] > 0 and flops["surface_stat"] > 0:
+        print(f"   -> surface_stat is {flops['token_difr']/flops['surface_stat']:.1f}x "
+              f"fewer FLOPs than a full recompute (token_difr).")
+
     # ---- Role 1 Pareto figure ----
     try:
         out = Path(__file__).resolve().parents[1] / "docs" / "figures" / "fig3_io_pareto_gpu.png"
-        render_pareto(rows, out)
+        render_pareto(rows, out, cost, flops)
         print(f"\nwrote Pareto figure: {out}")
     except Exception as e:  # matplotlib optional; the tables are the result
         print(f"\n(skipped Pareto figure: {e})")
@@ -279,10 +342,14 @@ def main():
     print(f"\ntotal {elapsed:.1f}s on {MODEL}")
 
 
-def render_pareto(rows, path: Path):
-    """AUC vs verifier FLOPs, one line per attack.
-    x-points: surface_tokens (~0 FLOPs) -> surface_stat (cheap proxy) -> token_difr
-    (full recompute)."""
+def render_pareto(rows, path: Path, cost: dict[str, float],
+                  flops: dict[str, float] | None = None):
+    """Detectability vs verifier cost, one line per attack.
+
+    x-axis: FLOPs/sequence (if `flops` provided) or measured GPU seconds.
+    x-points: surface_tokens -> surface_stat (cheap-proxy prefill) ->
+    token_difr (full-M recompute).
+    """
     import matplotlib
     matplotlib.use("Agg")
     import matplotlib.pyplot as plt
@@ -296,9 +363,11 @@ def render_pareto(rows, path: Path):
     }
     by_name = {r.attack: r for r in rows}
 
-    fig, ax = plt.subplots(figsize=(7.5, 5.2))
     xs_names = ["surface_tokens", "surface_stat", "token_difr"]
-    xs = [FLOPS[n] for n in xs_names]
+    xs_data = flops if flops is not None else cost
+    xs = [xs_data[n] for n in xs_names]
+
+    fig, ax = plt.subplots(figsize=(7.5, 5.2))
 
     def line(r, color, marker, label):
         ys = [r.io["surface_tokens"], r.io["surface_stat"], r.token_difr]
@@ -311,7 +380,19 @@ def render_pareto(rows, path: Path):
     ax.axhline(0.5, ls=":", color="0.5", lw=1.2, label="chance (AUC = 0.5)")
     ax.set_xscale("log")
     ax.set_ylim(0.4, 1.03)
-    ax.set_xlabel("verifier cost   (relative FLOPs;  1.0 = full recompute of M)  [log]")
+
+    if flops is not None:
+        # annotate each x-tick with its GFLOPs value
+        ax.set_xticks(xs)
+        gf = [f"{x/1e9:.3g} GFLOPs" for x in xs]
+        gf[0] = f"{xs[0]/1e6:.0f} MFLOPs\n(nominal)"   # surface_tokens ≈ 0
+        ax.set_xticklabels(gf, fontsize=8)
+        ax.set_xlabel("verifier cost   (FLOPs / sequence, 2·N·T approx,\n"
+                      "N = non-embedding params;  token_difr = full recompute of M)  [log]")
+    else:
+        ax.set_xlabel("verifier cost   (measured GPU seconds per sequence;  "
+                      "token_difr = full recompute of M)  [log]")
+
     ax.set_ylabel("detectability   (max(AUC, 1-AUC))")
     ax.set_title("Fig 3 — cost/accuracy Pareto: cheap I/O detector vs full recomputation\n"
                  "output-visible attacks are caught cheaply; output-invisible ones need "
