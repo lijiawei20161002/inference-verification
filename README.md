@@ -79,6 +79,9 @@ experiments/
   run.py                    pluggable CLI: --strategies <file> --attacks/--defenses (no edits)
   exp_gpu.py                attack × defense AUC grid on a real model (Table 2 / Fig. 1 shape)
   exp_io_detector_gpu.py    black-box I/O detectors vs recomputation, incl. the LLM judge
+  exp_family_correlation.py within-family proxy↔M agreement = the exact spec-decoding accept rate (1−TV)
+  exp_cross_family_accept.py cross-family accept rate (shared Qwen tokenizer): high within family, falls with family distance
+  exp_detectability_vs_kl.py proxy detectability is bounded by KL(M‖proxy) — the accept-rate budget
 examples/
   custom_strategies.py      template: a custom attack + a custom defense
   safe_set_strategies.py    seed-aware SAFE-set substitution attack

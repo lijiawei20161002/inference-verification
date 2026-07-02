@@ -1,0 +1,50 @@
+loading M = Qwen/Qwen3-4B ...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+  M loaded (24.1s) vocab=151936 params=4.02B
+[transformers] The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+  sampled + scored 1024 honest tokens under M (49.5s)
+            Qwen3-1.7B [ same family]: 1.72B  top1=0.749 accept=0.767 KL=0.421  (12.2s)
+            Qwen3-0.6B [ same family]: 0.60B  top1=0.702 accept=0.675 KL=0.664  (1.7s)
+          Qwen2.5-1.5B [   cross gen]: 1.54B  top1=0.723 accept=0.687 KL=0.563  (10.0s)
+          Qwen2.5-0.5B [   cross gen]: 0.49B  top1=0.691 accept=0.654 KL=0.687  (1.3s)
+    Qwen2.5-Coder-1.5B [cross domain]: 1.54B  top1=0.700 accept=0.673 KL=0.612  (10.7s)
+       DS-R1-Qwen-1.5B [  cross post]: 1.78B  top1=0.644 accept=0.625 KL=1.030  (14.8s)
+
+CROSS-FAMILY conditional agreement  (reference M = Qwen/Qwen3-4B, 4.02B; 1024 honest tokens; shared Qwen tokenizer)
+Every proxy shares M's EXACT token ids, so accept_rate/top1/KL are token-aligned
+across families. accept_rate = 1-TV(M,proxy) = the exact expected speculative-
+decoding acceptance rate (vLLM/SGLang rejection sampler). 'null' = shuffled position.
+
+               proxy         group   params |   top1   top8  spear  accept     KL  surp_r | null:  top1   acc
+-------------------------------------------------------------------------------------------------------------
+          Qwen3-1.7B   same family    1.72B |  0.749  0.539  0.635   0.767  0.421   0.868 |       0.019 0.019
+          Qwen3-0.6B   same family    0.60B |  0.702  0.469  0.553   0.675  0.664   0.796 |       0.019 0.019
+        Qwen2.5-1.5B     cross gen    1.54B |  0.723  0.498  0.569   0.687  0.563   0.846 |       0.019 0.018
+        Qwen2.5-0.5B     cross gen    0.49B |  0.691  0.469  0.542   0.654  0.687   0.813 |       0.020 0.018
+  Qwen2.5-Coder-1.5B  cross domain    1.54B |  0.700  0.478  0.563   0.673  0.612   0.818 |       0.016 0.019
+     DS-R1-Qwen-1.5B    cross post    1.78B |  0.644  0.392  0.496   0.625  1.030   0.757 |       0.017 0.017
+
+MATCHED-SIZE (isolates FAMILY from SIZE -- same size, same tokenizer, overlapping
+pretraining data; only the model family/training differs):
+  ~1.5-1.7B tier:
+              Qwen3-1.7B [same family]  accept=0.767  top1=0.749  KL=0.421
+            Qwen2.5-1.5B [   cross gen]  accept=0.687 (-0.080)  top1=0.723 (-0.026)  KL=0.563
+      Qwen2.5-Coder-1.5B [cross domain]  accept=0.673 (-0.093)  top1=0.700 (-0.049)  KL=0.612
+         DS-R1-Qwen-1.5B [  cross post]  accept=0.625 (-0.141)  top1=0.644 (-0.105)  KL=1.030
+  ~0.5-0.6B tier:
+              Qwen3-0.6B [same family]  accept=0.675  top1=0.702  KL=0.664
+            Qwen2.5-0.5B [   cross gen]  accept=0.654 (-0.021)  top1=0.691 (-0.011)  KL=0.687
+
+READING IT:
+  * If the same-family proxy has higher accept_rate/top1 than a cross-family proxy
+    of the SAME SIZE, the agreement is FAMILY-specific -- exactly the speculative-
+    decoding intuition ('accept rate high within a family, collapses across families').
+  * The cross-domain/cross-post proxies are Qwen BASES (they share M's pretraining
+    data) yet agree less -> the signal is CONDITIONAL-distribution agreement, NOT
+    generic fluency or shared-corpus perplexity.
+  * All proxies still sit ABOVE the shuffled-position null (they share a language),
+    but the accept_rate is graded by family distance -- that grading is the point.
+
+wrote figure: /home/ubuntu/inference-verification/docs/figures/fig_cross_family_accept.png
+
+total 100.3s

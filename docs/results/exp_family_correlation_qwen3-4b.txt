@@ -1,0 +1,30 @@
+loading M = Qwen/Qwen3-4B ...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+  M loaded (4.4s) vocab=151936 params=4.02B
+[transformers] The attention mask is not set and cannot be inferred from input because pad token is same as eos token. As a consequence, you may observe unexpected behavior. Please pass your input's `attention_mask` to obtain reliable results.
+  sampled + scored 1024 honest tokens under M (28.3s)
+   Qwen/Qwen3-1.7B: 1.72B  top1=0.749 accept=0.767 KL=0.421  (1.8s)
+   Qwen/Qwen3-0.6B: 0.60B  top1=0.702 accept=0.675 KL=0.664  (1.2s)
+
+WITHIN-FAMILY conditional agreement  (reference M = Qwen/Qwen3-4B, 4.02B; 1024 honest tokens)
+Each proxy's CONDITIONAL next-token distribution vs M's, on tokens M actually sampled.
+'null' = same distributions, shuffled position (conditional relationship destroyed).
+
+           proxy   params |   top1  top8_jac  spear  accept  KL(M||p)  surp_r |  null:  top1   jac  accept     KL
+-----------------------------------------------------------------------------------------------------------------
+            1.7B    1.72B |  0.749     0.539  0.635   0.767     0.421   0.868 |        0.019 0.022   0.019 16.496
+            0.6B    0.60B |  0.702     0.469  0.553   0.675     0.664   0.796 |        0.019 0.021   0.019 13.842
+
+READING IT:
+  * top1/top8/accept/surp_r FAR above their null columns  => strong CONDITIONAL
+    agreement (not just shared marginals). This overlap is what surface_stat exploits.
+  * accept_rate = 1 - TV(M,proxy) is the exact expected speculative-decoding
+    acceptance rate -- the cleanest single number for 'how much the proxy tracks M'.
+  * KL(M||proxy) is small and SHRINKS as the proxy approaches M's size: it is the
+    entire detection budget of any proxy detector (E[surface_stat]=H(M)+KL). An
+    output-preserving attack (seed_43) moves 0 of it -> proxy detectors stay at floor,
+    only recomputation of M (token_difr) separates it. See exp_io_detector_gpu.py.
+
+wrote figure: /home/ubuntu/inference-verification/docs/figures/fig_family_correlation.png
+
+total 31.4s

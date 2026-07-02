@@ -36,7 +36,11 @@ position" from "both models just share unigram statistics." Every metric collaps
 toward chance here. (A cross-FAMILY model would be the other natural control, but a
 different family has a different tokenizer/vocab, so these token-aligned distribution
 metrics are undefined across families; the shuffled-context null is the within-vocab
-stand-in for "no conditional relationship.")
+stand-in for "no conditional relationship.") The cross-FAMILY control IS now measured
+directly in `experiments/exp_cross_family_accept.py`, which exploits the fact that
+Qwen3 / Qwen2.5 / Qwen2.5-Coder / DeepSeek-R1-Distill-Qwen share Qwen's EXACT token
+ids -- so accept-rate/top1/KL stay token-aligned across those families and show the
+accept rate falling monotonically with family distance (see docs/SPEC_DECODING_AND_PROXY_DETECTION.md).
 
 Run (validated on a single H100-80GB):
     /root/.venv/bin/python -m experiments.exp_family_correlation

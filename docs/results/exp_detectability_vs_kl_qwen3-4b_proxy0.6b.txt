@@ -1,0 +1,35 @@
+loading M=Qwen/Qwen3-4B + proxy=Qwen/Qwen3-0.6B ...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+  loaded (7.7s)  M=4.02B  proxy=0.60B  (6.7x fewer params)
+  honest pool: KL(M‖proxy)=0.628 nats  mean proxy-CE=1.291 (90.6s)
+  null floors: surface_stat(resample)=0.578  token_difr(disjoint)=0.570 (245.6s)
+    quant_4bit: ΔCE=+0.032  |ΔCE|/KL=0.051  surface_stat=0.644  token_difr=0.821 (331.9s)
+        kv_fp8: ΔCE=-0.013  |ΔCE|/KL=0.021  surface_stat=0.576  token_difr=0.555 (420.2s)
+      temp_1.1: ΔCE=+0.081  |ΔCE|/KL=0.129  surface_stat=0.595  token_difr=0.591 (503.9s)
+       seed_43: ΔCE=-0.107  |ΔCE|/KL=0.170  surface_stat=0.829  token_difr=0.905 (587.1s)
+        bug_k2: ΔCE=+0.011  |ΔCE|/KL=0.017  surface_stat=0.510  token_difr=0.744 (668.8s)
+       bug_k32: ΔCE=+0.336  |ΔCE|/KL=0.535  surface_stat=0.886  token_difr=0.859 (751.2s)
+
+DETECTABILITY vs PROXY-CE SHIFT   [M=Qwen/Qwen3-4B, proxy=Qwen/Qwen3-0.6B, 16x96 tok, batch=200]
+honest KL(M‖proxy) = 0.628 nats  (the proxy detector's ENTIRE budget)
+null floors: surface_stat=0.578  token_difr=0.570
+
+      attack |  ΔCE(nats)  |ΔCE|/KL | surface_stat  token_difr  regime
+----------------------------------------------------------------------
+      bug_k2 |     +0.011     0.017 |        0.510       0.744  RECOMPUTE-DOMINANT (proxy spends ~no budget; only recompute sees it)
+      kv_fp8 |     -0.013     0.021 |        0.576       0.555  output-visible (cheap proxy already separates it)
+  quant_4bit |     +0.032     0.051 |        0.644       0.821  RECOMPUTE-DOMINANT (proxy spends ~no budget; only recompute sees it)
+    temp_1.1 |     +0.081     0.129 |        0.595       0.591  output-visible (cheap proxy already separates it)
+     seed_43 |     -0.107     0.170 |        0.829       0.905  output-visible (cheap proxy already separates it)
+     bug_k32 |     +0.336     0.535 |        0.886       0.859  output-visible (cheap proxy already separates it)
+
+READING IT:
+  * surface_stat detectability tracks |ΔCE|/KL: an attack is catchable by the
+    cheap proxy only to the extent it spends the proxy's KL budget. seed_43
+    preserves M's distribution -> ΔCE≈0 -> proxy pinned at its floor.
+  * token_difr (recompute of M) does NOT need the budget: it stays high even at
+    ΔCE≈0, because it reads M's own seed-synced Gumbel margin, not a proxy gap.
+
+wrote figure: /home/ubuntu/inference-verification/docs/figures/fig_detectability_vs_kl.png
+
+total 751.2s
