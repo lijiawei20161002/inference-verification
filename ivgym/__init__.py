@@ -21,9 +21,11 @@ Quick start (needs a CUDA host with torch + transformers):
         spec, list(defenses.all_defenses().values()))
 """
 from . import attacks, defenses, harness, io_detectors, metrics, sampling  # noqa: F401
+from . import spec_decode  # noqa: F401
 from .core import IOContext, SamplingSpec, Sequence, TokenStep, VerifyContext  # noqa: F401
 
 __all__ = [
     "attacks", "defenses", "harness", "io_detectors", "metrics", "sampling",
+    "spec_decode",
     "SamplingSpec", "Sequence", "TokenStep", "VerifyContext", "IOContext",
 ]

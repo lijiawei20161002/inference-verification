@@ -1,0 +1,32 @@
+traces=120  positions/trace=200  vocab=64  agreement=0.8
+honest fingerprint: mean_entropy=2.642  accept_rate=0.808
+
+(honest-vs-honest floor, should be ~0.5)
+  mean_entropy AUC=0.519   accept_rate AUC=0.493
+
+(1) quantization-strength sweep
+   sigma  Δentropy  Δaccept |  entropy_fp  accept_fp  spotcheck
+  -------------------------------------------------------------
+     0.1     0.001   -0.008 |       0.490      0.553      1.000
+    0.25    -0.017   -0.023 |       0.486      0.581      1.000
+     0.5    -0.057   -0.067 |       0.693      0.816      1.000
+     1.0    -0.224   -0.192 |       1.000      1.000      1.000
+
+(2) temperature-retune evasion (sigma=1.0): tune T to match honest entropy
+  tuned T=1.100 (residual entropy gap 0.0293)
+           variant |  entropy_fp  accept_fp  spotcheck
+     quant (plain) |       1.000      1.000      1.000
+    adv_quant_temp |       0.588      0.998      1.000
+
+Reading it:
+  * entropy_fp catches strong quant but decays to the floor as sigma
+    shrinks (invisible for small, realistic quant), and adv_quant_temp
+    collapses it (~1.0 -> ~0.6) -- the generic fingerprint is gameable,
+    exactly like DiFR cross-entropy vs adv_quant_temp.
+  * accept_rate_fp (SD-specific, anchored on the trusted draft q) SURVIVES
+    the temperature retune (~1.0): matching entropy does not restore
+    TV(p-hat, q), so the draft still sees the corruption. This is the one
+    no-recompute lever the SD trace adds over generic black-box stats.
+  * ...but it still needs a one-time offline honest reference, only fires
+    once quant moves TV past honest run-to-run variance, and does NOT
+    dominate target_spotcheck (~1.0 throughout), which recomputes.
