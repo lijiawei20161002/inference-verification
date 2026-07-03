@@ -61,8 +61,8 @@ class VLLMBackend:
         raise NotImplementedError
 
     # --- speculative-decoding trace verification (ivgym.spec_decode) ---------
-    # If the server exposes the opt-in speculative-decoding trace (the vLLM PR in
-    # docs/SPEC_DECODE_TRACE_VERIFICATION.md -- per-position target/draft logprobs,
+    # If the server exposes the opt-in speculative-decoding trace (per-position
+    # target/draft logprobs,
     # the accept coin, the decision, and the recovered/bonus tokens), surface it
     # here as an `ivgym.spec_decode.SpecDecodeTrace`. The client-side
     # `TraceVerifier` then checks it WITHOUT trusting this provider; the
