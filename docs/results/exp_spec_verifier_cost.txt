@@ -1,0 +1,42 @@
+====================================================================================
+SpeculativeVerifier on GPU: cost saving vs detection performance
+====================================================================================
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/398 [00:00<?, ?it/s]Loading weights: 100%|██████████| 398/398 [00:00<00:00, 8298.33it/s]
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 7864.21it/s]
+loaded (7.0s)   M=Qwen/Qwen3-4B (4.02B)   proxy=Qwen/Qwen3-0.6B (0.60B)   M/proxy = 6.7x params
+config: 24 prompts x 128 tokens, batch=150
+
+generating honest reference set ...
+honest anchor: accept_rate = 1 - TV(p,q) = 0.692  (mean over served tokens)
+
+DETECTION PERFORMANCE  (honest vs attack, batched AUC / TPR@1%FPR)
+            config |  spec_accept (SpecVerifier) |  proxy_nll (token-only) |  token_difr (recompute)
+  ------------------------------------------------------------------------------------------------
+     (honest null) |      0.230 (TPR  0.00)     |    0.517 (TPR 0.02) |    0.580 (TPR 0.11)
+      quant_strong |      0.495 (TPR  0.02)     |    0.607 (TPR 0.04) |    0.996 (TPR 0.95)
+        quant_4bit |      0.528 (TPR  0.02)     |    0.536 (TPR 0.03) |    0.865 (TPR 0.32)
+    adv_quant_temp |      0.418 (TPR  0.01)     |    0.374 (TPR 0.00) |    0.812 (TPR 0.19)
+           seed_43 |      0.608 (TPR  0.03)     |    0.323 (TPR 0.00) |    0.975 (TPR 0.59)
+
+ProxySpecVerifier end-to-end (the class, per-sequence verdicts):
+  calibrated threshold z>1.511 (target FPR 0.10); held-out honest FPR = 0.20 (mean over 16 cal/null splits, N=24 honest seqs)
+        quant_strong: flagged  18.2% of served sequences
+          quant_4bit: flagged  18.2% of served sequences
+      adv_quant_temp: flagged  18.2% of served sequences
+             seed_43: flagged  18.2% of served sequences
+
+====================================================================================
+COST  (measured GPU wall-clock, one prefill over [prompt+claimed] per seq)
+====================================================================================
+                    verifier |  ms / seq | GFLOP / tok | $ / 1M tok
+  --------------------------------------------------------------------
+    token_difr (recompute M) |      24.4 |         8.0 |      0.132
+       spec_accept (proxy q) |      19.3 |         1.2 |      0.105
+  --------------------------------------------------------------------
+  cost saving (recompute / proxy):    1.3x wall-clock   |     6.7x FLOPs
+  (GPU priced at $2.50/hr; seq_len~160 tok; perf_counter GPU-synchronised)
+
+figure -> docs/figures/fig_spec_verifier_cost.png
+
+total 955.0s

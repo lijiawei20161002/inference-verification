@@ -224,6 +224,14 @@ class HFGPUBackend:
         self.n_params = sum(p.numel() for p in self.model.parameters())
         # prompt_id -> {"logits": [n_tokens, V] float32, "act": [n_tokens, H] float32}
         self._ref_cache: dict[int, dict] = {}
+        # prompt_id -> [n_tokens, V] float32: the distribution the provider actually
+        # SERVED UNDER, i.e. M's logits with the attack's forward-pass perturbation
+        # applied (identity for an honest provider). This is what a logprob-returning
+        # inference API hands the client for free -- NOT a client-side recompute of M.
+        # The client-side speculative verifier (ivgym.spec_decode.ProxySpecVerifier)
+        # reads it as `p` and pairs it with its own cheap proxy `q`; see
+        # `served_logits` and `experiments/exp_spec_verifier_cost.py`.
+        self._served_cache: dict[int, np.ndarray] = {}
 
         # --- MEASURED verifier cost (real wall-clock, not a param-count proxy) ---
         # Each detector's cost is the GPU-synchronised forward pass that produces its
@@ -291,6 +299,16 @@ class HFGPUBackend:
 
     def reference_activation(self, prompt_id: int, position: int) -> np.ndarray:
         return self._ref_cache[prompt_id]["act"][position]
+
+    def served_logits(self, prompt_id: int, position: int) -> np.ndarray:
+        """The logits the provider SERVED UNDER at this position (M's logits with
+        the attack's forward-pass perturbation applied; identity when honest).
+
+        This is the `p` the client-side speculative verifier scores against its own
+        proxy `q`. It stands in for a logprob-returning API's output -- the provider
+        computed it anyway to serve the request, so reading it costs the client
+        NOTHING (unlike `reference_logits`, which is the verifier re-running M)."""
+        return self._served_cache[prompt_id][position]
 
     # --- cheap proxy + raw I/O (black-box detectors; NOT a recompute of M) ---
     def proxy_logits(self, prompt_id: int, position: int) -> np.ndarray:
@@ -377,6 +395,7 @@ class HFGPUBackend:
 
         prompt_ids = self._prompt_ids(prompt_id)
         claimed: list[int] = []
+        served: list[np.ndarray] = []   # per-position served logits p (what the API returns)
 
         with torch.no_grad():
             out = self.model(prompt_ids, use_cache=True, output_hidden_states=record_activations)
@@ -390,6 +409,7 @@ class HFGPUBackend:
                     (self.model_seed, prompt_id, pos, 11, stable_hash(attack.name))
                 )
                 logits = attack.perturb_logits(base, prng)
+                served.append(logits.astype(np.float32))
 
                 gseed = position_seed(pspec.seed, prompt_id, pos)
                 g = gumbel_noise(self.vocab, gseed)
@@ -427,6 +447,7 @@ class HFGPUBackend:
                 logits_last = out.logits[0, -1]
                 hidden_last = out.hidden_states[-1][0, -1] if record_activations else None
 
+        self._served_cache[prompt_id] = np.stack(served) if served else np.empty((0, self.vocab), np.float32)
         self._populate_ref_cache(prompt_id, prompt_ids, claimed, n_tokens)
         if self.proxy_model is not None:
             self._populate_proxy_cache(prompt_id, prompt_ids, claimed, n_tokens)

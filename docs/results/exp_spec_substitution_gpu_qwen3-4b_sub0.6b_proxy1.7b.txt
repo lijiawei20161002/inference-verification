@@ -1,0 +1,33 @@
+====================================================================================
+Speculative verification catches MODEL SUBSTITUTION (real models, GPU)
+====================================================================================
+loaded (11.7s)
+  claimed model  M = Qwen/Qwen3-4B (4.02B)   -- what the provider is PAID to serve
+  substitute     S = Qwen/Qwen3-0.6B (0.60B)  -- what the cheat ACTUALLY serves (6.7x cheaper)
+  client proxy   q = Qwen/Qwen3-1.7B (1.72B)  -- the trusted draft; verifier runs ONLY this
+config: 40 prompts x 96 tokens, batch=128, temp=1.0
+
+serving honest sequences (provider runs M) ...
+serving cheat sequences (provider secretly runs S) ...
+client verifier: proxy prefill over served sequences (the ONLY forward pass it runs) ...
+
+honest anchor:  accept_rate = 1 - TV(M-served, proxy)  = 0.776
+under cheat:    accept_rate = 1 - TV(S-served, proxy)  = 0.700  (shift +0.076 in TV)
+
+DETECTION PERFORMANCE  (spec_accept = 1 - TV(served p, proxy q); substitute lowers it)
+  honest-null floor      (token-batched, avg 16 seeds) : AUC 0.535  (TPR 0.03)
+  spec_accept  honest vs substitute, token-batched (b=128)  : AUC 0.998  (TPR 0.95)
+  spec_accept  per-SEQUENCE verdict (N=40 seqs each)    : AUC 0.819
+    honest seq mean-accept 0.776+-0.069   substitute 0.700+-0.048
+
+====================================================================================
+COST  (measured GPU wall-clock, one prefill over [prompt+served] per seq)
+====================================================================================
+                      verifier |  ms / seq | GFLOP / tok | $ / 1M tok
+  ----------------------------------------------------------------------
+   token_difr (recompute M 4B) |      23.8 |         8.0 |      0.172
+    spec_accept (proxy q 1.7B) |      17.6 |         3.4 |      0.127
+  ----------------------------------------------------------------------
+  cost saving (recompute / proxy):  1.4x wall-clock   |   2.3x FLOPs
+
+total 174.6s

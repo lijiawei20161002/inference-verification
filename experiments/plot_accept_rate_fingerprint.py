@@ -1,8 +1,8 @@
 """Figures for the acceptance-rate fingerprint (docs/figures/fig_accept_rate_*.png).
 
-Illustrates the one no-recompute lever the speculative-decoding trace adds over
-generic black-box statistics: the realized acceptance rate = 1 - TV(p-hat, q),
-anchored on the trusted cheap draft q.
+Illustrates the one no-recompute lever the client-side proxy adds over generic
+black-box statistics: the realized acceptance rate = 1 - TV(p-hat, q), anchored on
+the trusted cheap proxy q the client runs itself (ivgym.spec_decode).
 
 Three panels:
   A. Mechanism -- per-trace acceptance-rate distributions shift left as the target
@@ -54,28 +54,28 @@ def build(cheat, seed0, n=N):
     for t in range(n):
         rng = np.random.default_rng(1_000_003 * seed0 + t)
         pos = sd.synthetic_positions(rng, N_POS, vocab=VOCAB, agreement=AGREE)
-        out.append(sd.generate_trace(rng, cheat, pos, spec))
+        out.append(sd.generate_sample(rng, cheat, pos, spec))
     return out
 
 
-def accepts(traces):
-    return np.array([sd.trace_features(t)["accept_rate"] for t in traces])
+def accepts(samples):
+    return np.array([sd.sequence_features(s)["accept_rate"] for s in samples])
 
 
-def entropies(traces):
-    return np.array([sd.trace_features(t)["mean_entropy"] for t in traces])
+def entropies(samples):
+    return np.array([sd.sequence_features(s)["mean_entropy"] for s in samples])
 
 
 def feat_auc(fp, feature, honest_null, cheat):
-    h = np.array([fp.score(t)[feature] for t in honest_null])
-    c = np.array([fp.score(t)[feature] for t in cheat])
+    h = np.array([fp.score(s)[feature] for s in honest_null])
+    c = np.array([fp.score(s)[feature] for s in cheat])
     return roc_auc(h, c)
 
 
 def spot_auc(honest_null, cheat):
-    spot = sd.get_check("target_spotcheck")
-    h = np.array([spot.score(t, sd.make_oracle(t)) for t in honest_null])
-    c = np.array([spot.score(t, sd.make_oracle(t)) for t in cheat])
+    """Detection AUC of the full-recompute baseline the cheap proxy approximates."""
+    h = np.array([sd.recompute_divergence(s) for s in honest_null])
+    c = np.array([sd.recompute_divergence(s) for s in cheat])
     return roc_auc(h, c)
 
 
@@ -94,7 +94,7 @@ def main():
     print("building traces ...", flush=True)
     honest_fit = build(sd.get_cheat("honest"), 1)
     honest_null = build(sd.get_cheat("honest"), 2)
-    fp = sd.ReferenceFingerprint().fit(honest_fit)
+    fp = sd.ProxyReference().fit(honest_fit)
     h_acc, h_ent = accepts(honest_null), entropies(honest_null)
     h_acc_m, h_acc_s = h_acc.mean(), h_acc.std()
     h_ent_m, h_ent_s = h_ent.mean(), h_ent.std()
@@ -128,7 +128,7 @@ def main():
         spot.append(spot_auc(honest_null, tr))
     axB.axhline(0.5, color=INK2, lw=1, ls=(0, (4, 4)), alpha=0.7)
     axB.text(sigmas[0], 0.515, "chance", color=INK2, fontsize=8)
-    series = [("target_spotcheck (recompute)", spot, BLUE, "o"),
+    series = [("full recompute (baseline)", spot, BLUE, "o"),
               ("accept-rate fingerprint", acc_auc, AQUA, "s"),
               ("entropy fingerprint", ent_auc, YELLOW, "^")]
     for name, ys, col, mk in series:

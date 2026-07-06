@@ -1,56 +1,61 @@
-"""Speculative-decoding **trace verification** (client-side, no-recompute first line).
+"""Client-side speculative verification: a cheap proxy that approximates recompute.
 
 Motivation
 ----------
-vLLM runs on the *provider* side -- the party we may not fully trust. So it is
-the wrong place to put a verifier: a cheating provider would simply run a hollow
-one. The useful thing vLLM *can* do is expose an **auditable trace** of its
-speculative-decoding step, so an *independent client* can check the trace after
-the fact. This module implements that client-side check, plus a faithful
-simulator of the trace vLLM would emit so the whole thing is testable without a
-GPU or vLLM.
+The strong inference verifier (``defenses.token_difr``) recomputes the *reference
+model* ``M`` for every claimed token -- correct, but as expensive as re-running
+inference. This module implements the **cheap** regime: the client holds its own
+small **proxy** model ``q`` (a genuinely different, smaller model that shares
+``M``'s tokenizer -- e.g. Qwen3-0.6B for Qwen3-4B) and uses the
+**speculative-decoding acceptance rate** as a cheap approximation of full
+recomputation.
 
-The trace (what the vLLM PR exposes)
-------------------------------------
-For each drafted position vLLM's rejection sampler already computes everything we
-need (`vllm/v1/sample/rejection_sampler.py`): the target distribution `p`, the
-draft distribution `q`, the drafted token `x ~ q`, a uniform "coin" `u ~ U(0,1)`,
-the accept decision, and -- on rejection -- the recovered token drawn from the
-residual `max(p-q, 0)`; on a fully-accepted draft chain, a bonus token from `p`.
-`DraftStep` / `BonusStep` / `SpecDecodeTrace` are exactly that record.
+Crucially this is **entirely client-side**: nothing here trusts a provider
+self-report, and nothing asks the provider (vLLM) to emit a trace or a
+commitment. The client runs the proxy itself. That is the whole point -- the
+provider is the untrusted party, so a verifier that depends on the provider's
+cooperation is one it can stub out.
 
-The accept rule mirrors vLLM's kernel verbatim::
+The acceptance-rate signal (the theory)
+---------------------------------------
+Speculative decoding accepts a token ``x ~ q`` with probability
+``min(1, p(x)/q(x))``. Averaging over ``x ~ q`` gives the expected acceptance
+rate::
 
-    accept  <=>  target_prob(x) >= u * draft_prob(x)     # i.e. u <= p(x)/q(x)
+    E_{x~q}[ min(1, p(x)/q(x)) ]  =  Σ_x min(p(x), q(x))  =  1 − TV(p, q)
 
-which realizes standard speculative sampling `min(1, p/q)` and, with the residual
-recovery, makes the marginal output **identical to the target distribution**
-(Leviathan/Chen). See docs/SPEC_DECODE_TRACE_VERIFICATION.md.
+so the realized acceptance rate is a **direct measurement of ``1 − TV(p, q)``**
+-- the agreement between the served target distribution ``p`` and the client's
+proxy ``q``. Because the client owns ``q`` it is a **trusted anchor**: when a
+provider serves a corrupted target (quantized / fp8 / fewer-layer weights,
+``p* → p̂``), the acceptance rate moves from ``1 − TV(p*, q)`` to
+``1 − TV(p̂, q)`` and the client sees the shift **without recomputing ``M``**,
+by comparing to a one-time offline honest reference for this ``(M, proxy, spec)``
+(``ProxyReference``). See ``docs/ACCEPTANCE_RATE_FINGERPRINT.md`` and
+``docs/SPEC_DECODING_AND_PROXY_DETECTION.md``.
 
-What a client can verify from the trace alone (the trust model)
---------------------------------------------------------------
-The provider reports `(p, q, x, u, accept, output)`; we trust none of it. What we
-*can* check cheaply (no forward pass) is **internal consistency**:
+What the cheap proxy can and cannot see
+---------------------------------------
+The acceptance-rate signal is the **best of the no-recompute options, not a
+silver bullet** (same recompute-dominant boundary the DiFR detectors hit):
 
-* the reported accept/reject decisions follow the reported `p,q,u` (deterministic);
-* rejected tokens land in the residual's support (deterministic);
-* the coins really are Uniform(0,1) (statistical);
-* the *observed* accept rate matches the rate the reported `p,q` imply -- a
-  self-consistency test that needs no coins at all (statistical);
-* recovered tokens are distributed as the residual, not as the draft (statistical);
-* reported logprobs are normalized (deterministic).
+* it needs a one-time trusted honest reference (a single offline ``M`` run);
+* it only fires once the corruption moves ``TV(p, q)`` past honest run-to-run
+  variance -- **small quantization is invisible** to it; and
+* it does not dominate the full recompute (``recompute_divergence`` /
+  ``token_difr``), which stays at AUC ~ 1.0.
 
-These catch every *sampler-level* cheat -- over-accepting to skip the target
-check, skipping the residual correction, fudging coins to justify decisions.
-They do **not** catch a provider that runs only the cheap draft model and
-**relabels its distribution as the target** (`draft_as_target`): that trace is
-perfectly self-consistent. Catching *that* requires recomputing a subset of
-target logits -- the `target_spotcheck` check, which is the (expensive)
-recompute line and ties back to DiFR's "recomputation is necessary" result.
+What it buys is a **shrink in how often the exact recompute must fire**, and a
+draft-anchored axis that survives the temperature-retune evasion an entropy /
+cross-entropy fingerprint does not (matching entropy does not restore
+``TV(p̂, q)``).
 
-Everything here is pure numpy and backend-agnostic: `synthetic_positions`
-fabricates correlated (p, q) pairs so the gym runs on CPU; a real backend would
-instead supply target/draft logprobs from actual models.
+Everything here is pure numpy and backend-agnostic. ``synthetic_positions``
+fabricates correlated ``(p, q)`` pairs so the whole verifier runs on CPU for
+tests; a real backend feeds actual ``M`` / proxy logprob rows instead (see
+``ivgym/backends/hf_gpu.py`` -- ``reference_logits`` supplies ``p`` for the
+one-time reference, ``proxy_logits`` supplies ``q`` -- and
+``experiments/exp_proxy_spec_verify.py`` for the real-proxy run).
 """
 from __future__ import annotations
 
@@ -77,101 +82,92 @@ def _log_softmax(logits: np.ndarray) -> np.ndarray:
     return z - np.log(np.exp(z).sum())
 
 
-def residual(p: np.ndarray, q: np.ndarray) -> np.ndarray:
-    """Normalized recovery distribution max(p-q, 0) / Z (vLLM's residual)."""
-    r = np.clip(p - q, 0.0, None)
-    z = r.sum()
-    if z <= _EPS:                       # p == q everywhere -> nothing to recover
-        return p.copy()
-    return r / z
+def tv(p: np.ndarray, q: np.ndarray) -> float:
+    """Total-variation distance ½·Σ|p−q| between two distributions."""
+    return float(0.5 * np.abs(p - q).sum())
+
+
+def accept_rate(p: np.ndarray, q: np.ndarray) -> float:
+    """Expected speculative-decoding acceptance rate of proxy ``q`` against
+    target ``p``:  ``E_{x~q}[min(1, p/q)] = Σ min(p, q) = 1 − TV(p, q)``."""
+    return float(np.minimum(p, q).sum())
+
+
+def per_token_accept_prob(p: np.ndarray, q: np.ndarray, x: int) -> float:
+    """Speculative-decoding accept probability for a *specific* served token
+    ``x``:  ``min(1, p(x)/q(x))``."""
+    return float(min(1.0, p[x] / max(q[x], _EPS)))
 
 
 # ---------------------------------------------------------------------------
-# Trace schema -- the record the vLLM PR would emit, per drafted position.
-# ---------------------------------------------------------------------------
-@dataclass
-class DraftStep:
-    """One drafted position: the accept/reject decision on token `draft_token`.
-
-    Logprobs (not probs) are stored because that is what vLLM exposes and what an
-    auditor wants to see; the verifier exponentiates as needed.
-    """
-
-    request_id: int
-    chain_pos: int
-    target_logprobs: np.ndarray   # reported log p, shape [V]
-    draft_logprobs: np.ndarray    # reported log q, shape [V]
-    draft_token: int              # x ~ q, the token the draft proposed
-    coin: float                   # u ~ U(0,1) used for the accept test
-    accepted: bool
-    output_token: int             # emitted token (= draft_token if accepted else recovered)
-
-
-@dataclass
-class BonusStep:
-    """A bonus token sampled directly from the target `p` after a fully-accepted
-    draft chain (no draft token involved)."""
-
-    request_id: int
-    chain_pos: int
-    target_logprobs: np.ndarray
-    output_token: int
-
-
-@dataclass
-class SpecDecodeTrace:
-    provider_name: str
-    spec: SamplingSpec
-    steps: list[DraftStep] = field(default_factory=list)
-    bonus: list[BonusStep] = field(default_factory=list)
-    # Hidden ground truth used only by the recompute spot-check oracle (a real
-    # verifier recomputes these; here they stand in for the trusted forward pass).
-    # Kept parallel to `steps` and `bonus` respectively so the oracle aligns with
-    # the reported target logprobs exactly -- NOT part of the wire trace.
-    _truth_steps: list[np.ndarray] = field(default_factory=list)
-    _truth_bonus: list[np.ndarray] = field(default_factory=list)
-
-
-# ---------------------------------------------------------------------------
-# Synthetic position generator (CPU stand-in for real target/draft models)
+# Position: the true target/proxy distributions at one position.
 # ---------------------------------------------------------------------------
 @dataclass
 class Position:
-    """The true target/draft distributions at one position (what the models say)."""
+    """One position's distributions, as the client sees them.
 
-    target_logprobs: np.ndarray
-    draft_logprobs: np.ndarray
+    ``target_logprobs`` is log ``p`` -- the distribution the provider **served
+    under** (equal to the true model for an honest provider, or a corrupted
+    ``p̂`` for a quantized one). ``proxy_logprobs`` is log ``q`` -- the client's
+    own cheap proxy, always trustworthy because the client runs it.
+    """
+
+    target_logprobs: np.ndarray   # log p (served distribution), shape [V]
+    proxy_logprobs: np.ndarray    # log q (client proxy),        shape [V]
 
 
 def synthetic_positions(rng: np.random.Generator, n: int, vocab: int = 64,
                         agreement: float = 0.85, sharpness: float = 2.0) -> list[Position]:
-    """Fabricate `n` correlated (target, draft) distribution pairs.
+    """Fabricate ``n`` correlated (target, proxy) distribution pairs on CPU.
 
-    `agreement` in [0,1] blends the draft toward the target (higher -> higher
-    acceptance rate, as in a within-family draft); `sharpness` scales the target
-    logits (peakier distributions). Pure numpy -- the real backend supplies these
-    from actual model forward passes instead.
-    """
+    ``agreement`` in [0,1] blends the proxy toward the target (higher -> higher
+    acceptance rate, as for a within-family proxy); ``sharpness`` scales the
+    target logits. Pure numpy -- a real backend supplies these from actual model
+    forward passes instead (``target = M``, ``proxy = the cheap model``)."""
     out = []
     for _ in range(n):
         t = rng.standard_normal(vocab) * sharpness
         t_lp = _log_softmax(t)
-        # Draft = target logits nudged by independent noise, mixed by agreement.
         noise = rng.standard_normal(vocab) * sharpness
         d = agreement * t + (1.0 - agreement) * noise
         d_lp = _log_softmax(d)
-        out.append(Position(t_lp, d_lp))
+        out.append(Position(target_logprobs=t_lp, proxy_logprobs=d_lp))
     return out
 
 
 # ---------------------------------------------------------------------------
-# Cheat registry -- provider deviations, analogous to ivgym.attacks
+# The client-side sample: served tokens + the (p, q) rows the client scored,
+# plus the hidden true target used ONLY by the recompute baseline oracle.
+# ---------------------------------------------------------------------------
+@dataclass
+class ProxySample:
+    """One served sequence as the client verifier processes it.
+
+    ``positions`` carries, per emitted token, the served target ``p`` and the
+    client proxy ``q``. ``served_tokens`` are the tokens the provider actually
+    emitted (drawn from the served target ``p``). ``_truth`` is the *true*
+    (uncorrupted) target logprobs per position -- NOT observable to the cheap
+    client; it stands in for the trusted forward pass that the recompute
+    baseline (``recompute_divergence``) would run on a sampled subset.
+    """
+
+    provider_name: str
+    spec: SamplingSpec
+    positions: list[Position] = field(default_factory=list)
+    served_tokens: list[int] = field(default_factory=list)
+    _truth: list[np.ndarray] = field(default_factory=list)
+
+
+# ---------------------------------------------------------------------------
+# Provider deviations (client-side view): how the served target was produced.
+# Only forward-pass / output deviations remain -- the sampler-procedure cheats
+# of the old provider-trace design assumed the provider emitted a trace to break.
 # ---------------------------------------------------------------------------
 _CHEATS: dict[str, "CheatStrategy"] = {}
 
 
 def register_cheat(c):
-    """Register a cheat (instance or subclass, like ivgym.attacks.register)."""
+    """Register a cheat (instance or subclass, like ``ivgym.attacks.register``)."""
     if isinstance(c, type):
         inst = c()
         inst.name = c.name
@@ -191,595 +187,128 @@ def all_cheats() -> dict[str, "CheatStrategy"]:
 
 @dataclass
 class CheatStrategy:
-    """A provider's speculative-decoding step, honest by default.
-
-    `step` fully determines the *reported* record for one drafted position given
-    the TRUE distributions `p_true`/`q_true` and the drafted token `x`. Cheats
-    override it to save compute while trying to keep the trace plausible. The
-    honest implementation is exactly vLLM's rejection sampler.
+    """A provider, honest by default. ``served_target_logprobs`` returns the
+    distribution the provider actually served under, given the *true* target
+    ``p*``. An honest provider serves ``p*`` itself; a forward-pass cheat serves
+    a corrupted ``p̂``. The served token is then sampled from that distribution.
     """
 
     name: str = "honest"
 
-    # Reported distributions default to the truth (an honest provider reports
-    # what it computed). A "relabel" cheat overrides these.
-    def report_target_logprobs(self, p_true_lp, q_true_lp):
+    def served_target_logprobs(self, rng, p_true_lp):
         return p_true_lp
-
-    def report_draft_logprobs(self, p_true_lp, q_true_lp):
-        return q_true_lp
-
-    def step(self, rng, p_true_lp, q_true_lp, x, request_id, chain_pos):
-        p_lp = self.report_target_logprobs(p_true_lp, q_true_lp)
-        q_lp = self.report_draft_logprobs(p_true_lp, q_true_lp)
-        p, q = np.exp(p_lp), np.exp(q_lp)
-        u = float(rng.random())
-        accepted = p[x] >= u * q[x]                     # vLLM's rule
-        if accepted:
-            out = x
-        else:
-            out = int(rng.choice(len(p), p=residual(p, q)))
-        return DraftStep(request_id, chain_pos, p_lp, q_lp, x, u, bool(accepted), out)
-
-    # Bonus token after a fully-accepted chain: honest = sample from target p.
-    def bonus(self, rng, p_true_lp, q_true_lp, request_id, chain_pos):
-        p_lp = self.report_target_logprobs(p_true_lp, q_true_lp)
-        p = np.exp(p_lp)
-        out = int(rng.choice(len(p), p=p))
-        return BonusStep(request_id, chain_pos, p_lp, out)
-
-
-@dataclass
-class OverAcceptNaive(CheatStrategy):
-    """Accept a fraction of would-be rejects to skip residual work -- but leaves
-    the honest coin in the trace, so the decision no longer follows p,q,u.
-    Caught by `decision_consistency`."""
-
-    name: str = "over_accept_naive"
-    extra_accept: float = 0.5     # of rejects, this fraction is flipped to accept
-
-    def step(self, rng, p_true_lp, q_true_lp, x, request_id, chain_pos):
-        s = super().step(rng, p_true_lp, q_true_lp, x, request_id, chain_pos)
-        if not s.accepted and rng.random() < self.extra_accept:
-            s.accepted = True
-            s.output_token = x            # keep the cheap draft token
-        return s
-
-
-@dataclass
-class OverAcceptCoinFudge(CheatStrategy):
-    """Same over-acceptance, but *recomputes the coin* so each decision is
-    self-consistent with p,q,u. Defeats `decision_consistency` -- but the coins
-    are no longer Uniform(0,1) and the observed accept rate exceeds what p,q
-    imply, so `coin_uniformity` and `accept_rate_consistency` catch it."""
-
-    name: str = "over_accept_coinfudge"
-    extra_accept: float = 0.5
-
-    def step(self, rng, p_true_lp, q_true_lp, x, request_id, chain_pos):
-        p_lp, q_lp = p_true_lp, q_true_lp
-        p, q = np.exp(p_lp), np.exp(q_lp)
-        ratio = min(1.0, p[x] / max(q[x], _EPS))         # honest accept prob
-        if rng.random() < ratio:
-            u = float(rng.uniform(0.0, ratio))           # any coin below ratio accepts
-            return DraftStep(request_id, chain_pos, p_lp, q_lp, x, u, True, x)
-        # would-be reject: flip some to accept with a justifying (small) coin
-        if rng.random() < self.extra_accept:
-            u = float(rng.uniform(0.0, ratio + _EPS))    # coin that "accepts" x
-            return DraftStep(request_id, chain_pos, p_lp, q_lp, x, u, True, x)
-        u = float(rng.uniform(ratio, 1.0))               # honest-looking reject coin
-        out = int(rng.choice(len(p), p=residual(p, q)))
-        return DraftStep(request_id, chain_pos, p_lp, q_lp, x, u, False, out)
-
-
-@dataclass
-class SkipResidual(CheatStrategy):
-    """On rejection, resample from the *draft* q (or its argmax) instead of the
-    residual -- cheaper, but the output distribution is no longer the target's.
-    Caught by `residual_support` (draft-favored tokens have zero residual mass)
-    and `recovered_distribution`."""
-
-    name: str = "skip_residual"
-
-    def step(self, rng, p_true_lp, q_true_lp, x, request_id, chain_pos):
-        p_lp, q_lp = p_true_lp, q_true_lp
-        p, q = np.exp(p_lp), np.exp(q_lp)
-        u = float(rng.random())
-        accepted = p[x] >= u * q[x]
-        if accepted:
-            out = x
-        else:
-            out = int(rng.choice(len(q), p=q))           # WRONG: from draft, not residual
-        return DraftStep(request_id, chain_pos, p_lp, q_lp, x, u, bool(accepted), out)
-
-
-@dataclass
-class DraftAsTarget(CheatStrategy):
-    """Run ONLY the cheap draft model and report its distribution as BOTH the
-    draft and the target. Then p==q, so everything accepts (min(1,p/q)=1) and the
-    trace is perfectly self-consistent -- every no-recompute check passes. Only
-    `target_spotcheck` (which recomputes true target logprobs) catches it. This
-    is the fundamental limit of trace self-consistency, and the reason
-    recomputation exists."""
-
-    name: str = "draft_as_target"
-
-    def report_target_logprobs(self, p_true_lp, q_true_lp):
-        return q_true_lp                                 # lie: report draft as target
 
 
 @dataclass
 class QuantTarget(CheatStrategy):
-    """A *forward-pass* deviation, the SD analogue of `quant_4bit` / `kv_fp8`: the
-    provider runs a **quantized target model**, so the true target logits are
-    perturbed. It then does textbook rejection sampling on those perturbed logits
-    and reports them. The trace is therefore perfectly self-consistent -- the
-    corruption is in `p` itself, not in the procedure. Like `draft_as_target`, no
-    self-consistency check can see it; only `target_spotcheck` (recompute the
-    *unquantized* target) catches it. This is the forward-pass/recompute boundary,
-    identical to the DiFR result."""
+    """Forward-pass deviation (the SD analogue of ``quant_4bit`` / ``kv_fp8``):
+    the provider serves under a **quantized target**, so the true target logits
+    are perturbed to ``p̂``. It samples honestly from ``p̂`` -- the corruption is
+    in the distribution, not the procedure -- so nothing about the served tokens
+    is internally inconsistent. Only the draft-anchored acceptance rate (moved by
+    ``TV(p̂, q) ≠ TV(p*, q)``) or a full recompute of ``p*`` can see it."""
 
     name: str = "quant_target"
     sigma: float = 0.5        # quantization logit-error scale
-    temp: float = 1.0         # temperature retune on the (quantized) target (see AdvQuantTemp)
+    temp: float = 1.0         # temperature retune on the quantized target
 
-    def _corrupt(self, rng, p_true_lp):
-        """The quantized (and optionally temperature-retuned) reported target."""
-        return _log_softmax((p_true_lp + rng.normal(0.0, self.sigma, p_true_lp.shape))
-                            / max(self.temp, 1e-6))
-
-    def step(self, rng, p_true_lp, q_true_lp, x, request_id, chain_pos):
-        # Quantized target: corrupt the target logits, then sample honestly on them.
-        p_lp = self._corrupt(rng, p_true_lp)
-        q_lp = q_true_lp
-        p, q = np.exp(p_lp), np.exp(q_lp)
-        u = float(rng.random())
-        accepted = p[x] >= u * q[x]
-        out = x if accepted else int(rng.choice(len(p), p=residual(p, q)))
-        return DraftStep(request_id, chain_pos, p_lp, q_lp, x, u, bool(accepted), out)
-
-    def bonus(self, rng, p_true_lp, q_true_lp, request_id, chain_pos):
-        p_lp = self._corrupt(rng, p_true_lp)
-        out = int(rng.choice(len(p_lp), p=np.exp(p_lp)))
-        return BonusStep(request_id, chain_pos, p_lp, out)
+    def served_target_logprobs(self, rng, p_true_lp):
+        noisy = p_true_lp + rng.normal(0.0, self.sigma, p_true_lp.shape)
+        return _log_softmax(noisy / max(self.temp, 1e-6))
 
 
 @dataclass
 class AdvQuantTemp(QuantTarget):
-    """Quantize the target, then **retune the temperature** so the reported
-    distribution's entropy/surprisal matches the honest reference again -- the SD
-    analogue of the repo's `adv_quant_temp`. Its purpose is to defeat *offline
-    reference-fingerprint* detectors (entropy / cross-entropy), which are the main
-    no-recompute alternative to self-consistency. See
-    `experiments/exp_spec_decode_fingerprint.py`: the entropy fingerprint is
-    neutralized, testing whether the *acceptance-rate* fingerprint (unique to SD,
-    anchored on the trusted draft) survives. Still caught by `target_spotcheck`."""
+    """Quantize the target, then **retune temperature** so the served
+    distribution's entropy matches the honest reference again. This defeats the
+    generic *entropy / cross-entropy* fingerprint (a no-recompute baseline) but
+    NOT the draft-anchored acceptance rate: retuning temperature does not restore
+    ``TV(p̂, q)``, which the trusted proxy still measures. See
+    ``experiments/exp_proxy_spec_verify.py``."""
 
     name: str = "adv_quant_temp"
     sigma: float = 0.5
     temp: float = 0.85        # tuned at runtime to match honest entropy
 
 
-@dataclass
-class SamplingBugCheat(CheatStrategy):
-    """A *sampler* deviation, the SD analogue of `bug_k2` / `bug_k32`: with prob
-    `rate` the sampler ignores the accept machinery and emits a uniform token from
-    the top-`k` of the draft, while still reporting the honest `p,q,u` and accept
-    bit. That corrupts the emitted token relative to the reported decision, so
-    `decision_consistency` (accepted-but-output!=drafted) and the residual checks
-    catch it WITHOUT recomputation -- because the deviation is in the procedure,
-    not in the logits."""
-
-    name: str = "sampling_bug"
-    rate: float = 0.05
-    k: int = 8
-
-    def step(self, rng, p_true_lp, q_true_lp, x, request_id, chain_pos):
-        s = super().step(rng, p_true_lp, q_true_lp, x, request_id, chain_pos)
-        if rng.random() < self.rate:
-            q = np.exp(q_true_lp)
-            topk = np.argsort(q)[::-1][:self.k]
-            s.output_token = int(rng.choice(topk))       # hijack the emitted token
-        return s
-
-
 # Register the built-ins.
-for _c in [CheatStrategy(), OverAcceptNaive(), OverAcceptCoinFudge(),
-           SkipResidual(), DraftAsTarget(), QuantTarget(), SamplingBugCheat(),
-           AdvQuantTemp()]:
+for _c in [CheatStrategy(), QuantTarget(), AdvQuantTemp()]:
     register_cheat(_c)
 
 
 # ---------------------------------------------------------------------------
-# Trace generation
+# Sample generation
 # ---------------------------------------------------------------------------
-def generate_trace(rng: np.random.Generator, cheat: CheatStrategy,
-                   positions: list[Position], spec: SamplingSpec | None = None,
-                   draft_len: int = 4) -> SpecDecodeTrace:
-    """Run one provider (honest or cheating) over `positions`, grouped into
-    draft chains of length `draft_len`, producing the trace it would report.
-
-    Faithful to vLLM's chain semantics: a chain stops at the first reject (with a
-    recovered token); a fully-accepted chain appends a bonus token from target.
+def generate_sample(rng: np.random.Generator, cheat: CheatStrategy,
+                    positions: list[Position],
+                    spec: SamplingSpec | None = None) -> ProxySample:
+    """Run one provider (honest or cheating) over ``positions``: at each position
+    it serves under ``cheat.served_target_logprobs`` and emits a token sampled
+    from that served distribution. Returns the ``ProxySample`` the client scores.
     """
     spec = spec or SamplingSpec()
-    tr = SpecDecodeTrace(provider_name=cheat.name, spec=spec)
-    i = 0
-    req = 0
-    n = len(positions)
-    while i < n:
-        chain = positions[i:i + draft_len]
-        for cp, pos in enumerate(chain):
-            q = np.exp(pos.draft_logprobs)
-            x = int(rng.choice(len(q), p=q))             # draft proposes x ~ q
-            s = cheat.step(rng, pos.target_logprobs, pos.draft_logprobs, x, req, cp)
-            tr.steps.append(s)
-            tr._truth_steps.append(pos.target_logprobs)  # oracle ground truth
-            if not s.accepted:
-                break
-        else:
-            # whole chain accepted -> bonus token from the position after it, which
-            # is then consumed (the next chain drafts *after* the bonus position).
-            if i + draft_len < n:
-                bpos = positions[i + draft_len]
-                b = cheat.bonus(rng, bpos.target_logprobs, bpos.draft_logprobs,
-                                req, len(chain))
-                tr.bonus.append(b)
-                tr._truth_bonus.append(bpos.target_logprobs)
-            i += 1                                        # skip the consumed bonus position
-        i += draft_len
-        req += 1
-    return tr
+    sample = ProxySample(provider_name=cheat.name, spec=spec)
+    for pos in positions:
+        p_true_lp = pos.target_logprobs
+        served_lp = cheat.served_target_logprobs(rng, p_true_lp)
+        served_p = np.exp(served_lp)
+        served_p = served_p / served_p.sum()          # guard tiny renorm drift
+        x = int(rng.choice(len(served_p), p=served_p))
+        sample.positions.append(Position(target_logprobs=served_lp,
+                                         proxy_logprobs=pos.proxy_logprobs))
+        sample.served_tokens.append(x)
+        sample._truth.append(p_true_lp)
+    return sample
 
 
-# ---------------------------------------------------------------------------
-# Checks -- each maps a trace to a scalar anomaly score (higher = more suspect).
-# ---------------------------------------------------------------------------
-_CHECKS: dict[str, "Check"] = {}
-
-
-def register_check(c):
-    if isinstance(c, type):
-        inst = c()
-        inst.name = c.name
-        c_inst = inst
-    else:
-        c_inst = c
-    _CHECKS[c_inst.name] = c_inst
-    return c
-
-
-def get_check(name: str) -> "Check":
-    return _CHECKS[name]
-
-
-def all_checks() -> dict[str, "Check"]:
-    return dict(_CHECKS)
-
-
-class Check:
-    name: str = "base"
-    needs_oracle: bool = False        # requires recomputing true target logprobs?
-
-    def score(self, trace: SpecDecodeTrace, oracle=None) -> float:
-        """Higher = more anomalous. `oracle(i) -> true target logprobs` for the
-        i-th (steps + bonus) position, provided only to `needs_oracle` checks."""
-        raise NotImplementedError
-
-
-@register_check
-class DecisionConsistency(Check):
-    """Fraction of steps whose reported mechanics contradict the accept rule:
-    the accept bit must equal `p[x] >= u*q[x]`, AND an accepted step must emit the
-    drafted token itself (`output == draft_token`). Any nonzero value is hard
-    proof of a contradictory trace -- this is what a sampler that hijacks the
-    emitted token trips."""
-
-    name = "decision_consistency"
-
-    def score(self, trace, oracle=None):
-        if not trace.steps:
-            return 0.0
-        bad = 0
-        for s in trace.steps:
-            p = np.exp(s.target_logprobs)
-            q = np.exp(s.draft_logprobs)
-            expect = bool(p[s.draft_token] >= s.coin * q[s.draft_token])
-            wrong_bit = expect != bool(s.accepted)
-            wrong_out = s.accepted and (s.output_token != s.draft_token)
-            bad += (wrong_bit or wrong_out)
-        return bad / len(trace.steps)
-
-
-@register_check
-class ResidualSupport(Check):
-    """Fraction of *rejected* steps whose recovered token has zero residual mass
-    max(p-q,0)==0 -- impossible under honest recovery. Hard evidence."""
-
-    name = "residual_support"
-
-    def score(self, trace, oracle=None):
-        rej = [s for s in trace.steps if not s.accepted]
-        if not rej:
-            return 0.0
-        bad = 0
-        for s in rej:
-            p = np.exp(s.target_logprobs)
-            q = np.exp(s.draft_logprobs)
-            r = np.clip(p - q, 0.0, None)
-            bad += (r[s.output_token] <= _EPS)
-        return bad / len(rej)
-
-
-@register_check
-class CoinUniformity(Check):
-    """Kolmogorov-Smirnov distance of the reported coins to Uniform(0,1). Honest
-    coins are U(0,1); a provider that fudges coins to justify over-acceptance
-    skews them, raising the KS statistic."""
-
-    name = "coin_uniformity"
-
-    def score(self, trace, oracle=None):
-        u = np.sort(np.array([s.coin for s in trace.steps], float))
-        n = len(u)
-        if n == 0:
-            return 0.0
-        # KS vs the U(0,1) CDF F(x)=x.
-        i = np.arange(1, n + 1)
-        d_plus = np.max(i / n - u)
-        d_minus = np.max(u - (i - 1) / n)
-        return float(max(d_plus, d_minus))
-
-
-@register_check
-class AcceptRateConsistency(Check):
-    """Self-consistency z-test needing NO coins: the observed number of accepts
-    must match sum_x min(1, p[x]/q[x]) implied by the reported p,q. A provider
-    that over-accepts to save compute inflates the observed rate above what its
-    own reported distributions justify."""
-
-    name = "accept_rate_consistency"
-
-    def score(self, trace, oracle=None):
-        if not trace.steps:
-            return 0.0
-        acc_prob = np.empty(len(trace.steps))
-        obs = np.empty(len(trace.steps))
-        for j, s in enumerate(trace.steps):
-            p = np.exp(s.target_logprobs)
-            q = np.exp(s.draft_logprobs)
-            acc_prob[j] = min(1.0, p[s.draft_token] / max(q[s.draft_token], _EPS))
-            obs[j] = float(s.accepted)
-        expected = acc_prob.sum()
-        var = np.sum(acc_prob * (1.0 - acc_prob))
-        if var <= _EPS:
-            return 0.0
-        return float(abs(obs.sum() - expected) / np.sqrt(var))
-
-
-@register_check
-class RecoveredDistribution(Check):
-    """Log-likelihood-ratio that recovered tokens came from the draft q rather
-    than the residual: mean over rejects of log q[y] - log residual[y]. Honest
-    recovery (y ~ residual) sits low; `skip_residual` (y ~ q) sits high."""
-
-    name = "recovered_distribution"
-
-    def score(self, trace, oracle=None):
-        rej = [s for s in trace.steps if not s.accepted]
-        if not rej:
-            return -np.inf              # no rejections -> no evidence, never flags
-        vals = []
-        for s in rej:
-            p = np.exp(s.target_logprobs)
-            q = np.exp(s.draft_logprobs)
-            r = residual(p, q)
-            y = s.output_token
-            vals.append(np.log(q[y] + _EPS) - np.log(r[y] + _EPS))
-        return float(np.mean(vals))
-
-
-@register_check
-class LogprobNormalization(Check):
-    """Max |logsumexp(reported logprobs)| over the trace -- catches malformed /
-    unnormalized reported distributions."""
-
-    name = "logprob_normalization"
-
-    def score(self, trace, oracle=None):
-        worst = 0.0
-        for s in trace.steps:
-            for lp in (s.target_logprobs, s.draft_logprobs):
-                worst = max(worst, abs(float(np.log(np.exp(lp).sum()))))
-        for b in trace.bonus:
-            worst = max(worst, abs(float(np.log(np.exp(b.target_logprobs).sum()))))
-        return worst
-
-
-@register_check
-class TargetSpotcheck(Check):
-    """The recompute line: for a sampled fraction of positions, recompute the TRUE
-    target logprobs and compare to the reported ones (total-variation distance).
-    This is the ONLY check that catches `draft_as_target`, whose trace is
-    otherwise perfectly self-consistent. Expensive -- it runs the target model on
-    the sampled positions."""
-
-    name = "target_spotcheck"
-    needs_oracle = True
-
-    def __init__(self, fraction: float = 0.1, seed: int = 0):
-        self.fraction = fraction
-        self.seed = seed
-
-    def score(self, trace, oracle=None):
-        if oracle is None:
-            return 0.0
-        reported = [s.target_logprobs for s in trace.steps] + \
-                   [b.target_logprobs for b in trace.bonus]
-        n = len(reported)
-        if n == 0:
-            return 0.0
-        rng = np.random.default_rng(self.seed)
-        k = max(1, int(round(self.fraction * n)))
-        idx = rng.choice(n, size=k, replace=False)
-        tvs = []
-        for i in idx:
-            p_true = np.exp(oracle(int(i)))
-            p_rep = np.exp(reported[i])
-            tvs.append(0.5 * np.abs(p_true - p_rep).sum())      # total variation
-        return float(np.max(tvs))
-
-
-def make_oracle(trace: SpecDecodeTrace):
-    """A trusted recompute oracle for `TargetSpotcheck`: returns the TRUE target
-    logprobs for the i-th (steps ++ bonus) position. A real client recomputes
-    these with the reference target model; here they are the stored ground truth.
-
-    Ordering matches `TargetSpotcheck`'s `reported` list: all step positions (in
-    step order) then all bonus positions (in bonus order)."""
-    truth = trace._truth_steps + trace._truth_bonus
-    return lambda i: truth[i]
-
-
-# ---------------------------------------------------------------------------
-# The client-side verifier: calibrate thresholds on honest traces, then flag.
-# ---------------------------------------------------------------------------
-@dataclass
-class CheckVerdict:
-    check: str
-    score: float
-    threshold: float
-    flagged: bool
-
-
-@dataclass
-class TraceVerdict:
-    provider_name: str
-    flagged: bool
-    checks: list[CheckVerdict]
-
-    def summary(self) -> str:
-        head = f"provider={self.provider_name!r}  ->  " + \
-               ("FLAGGED (trace inconsistent with speculative decoding)"
-                if self.flagged else "consistent")
-        rows = "\n".join(
-            f"    {'FLAG' if c.flagged else ' ok '}  {c.check:<24} "
-            f"score={c.score:.4g}  thr={c.threshold:.4g}"
-            for c in self.checks)
-        return head + "\n" + rows
-
-
-class TraceVerifier:
-    """Independent client-side verifier for speculative-decoding traces.
-
-    Deterministic checks (decision/residual/logprob-normalization) flag on ANY
-    violation (threshold 0). Statistical checks (coin/accept-rate/recovered) get a
-    threshold from an honest calibration set at a target false-positive rate. Give
-    it `use_oracle=True` to also run the recompute spot-check.
+def positions_from_rows(target_logprobs: np.ndarray,
+                        proxy_logprobs: np.ndarray) -> list[Position]:
+    """Build ``Position`` rows from two aligned ``[T, V]`` logprob arrays -- the
+    adapter a real backend uses: ``target`` = ``M``'s (or the served) rows,
+    ``proxy`` = the cheap model's rows over the same ``[prompt + claimed]``
+    sequence (``ivgym.backends.hf_gpu`` ``reference_logits`` / ``proxy_logits``).
     """
-
-    _DETERMINISTIC = {"decision_consistency", "residual_support",
-                      "logprob_normalization"}
-
-    def __init__(self, checks: list[Check] | None = None, use_oracle: bool = False):
-        chosen = checks if checks is not None else list(all_checks().values())
-        if not use_oracle:
-            chosen = [c for c in chosen if not c.needs_oracle]
-        self.checks = chosen
-        self.use_oracle = use_oracle
-        self.thresholds: dict[str, float] = {}
-
-    def calibrate(self, honest_traces: list[SpecDecodeTrace], fpr: float = 0.01,
-                  det_tol: float = 1e-9, bonferroni: bool = True) -> "TraceVerifier":
-        """Set each check's flag threshold from an honest calibration set.
-
-        Deterministic checks flag on any violation (threshold `det_tol`, and honest
-        traces score 0). Statistical checks use the honest `(1 - per_fpr)` quantile.
-        Because a trace is flagged if *any* check trips, the per-check budget is
-        Bonferroni-split across the statistical checks so the *overall* honest
-        false-positive rate stays near `fpr` (deterministic checks cost ~0 FPR)."""
-        stat = [c for c in self.checks if c.name not in self._DETERMINISTIC]
-        per_fpr = fpr / max(len(stat), 1) if bonferroni else fpr
-        for c in self.checks:
-            if c.name in self._DETERMINISTIC:
-                self.thresholds[c.name] = det_tol
-                continue
-            scores = np.array([c.score(t, make_oracle(t) if c.needs_oracle else None)
-                               for t in honest_traces], float)
-            scores = scores[np.isfinite(scores)]         # drop "no evidence" sentinels
-            # (1 - per_fpr) honest quantile; if no finite honest scores, never flag.
-            self.thresholds[c.name] = float(np.quantile(scores, 1.0 - per_fpr)) \
-                if len(scores) else np.inf
-        return self
-
-    def verify(self, trace: SpecDecodeTrace) -> TraceVerdict:
-        verdicts = []
-        for c in self.checks:
-            oracle = make_oracle(trace) if c.needs_oracle else None
-            s = c.score(trace, oracle)
-            thr = self.thresholds.get(c.name, 0.0)
-            verdicts.append(CheckVerdict(c.name, s, thr, s > thr))
-        return TraceVerdict(trace.provider_name, any(v.flagged for v in verdicts),
-                            verdicts)
+    return [Position(target_logprobs=t, proxy_logprobs=q)
+            for t, q in zip(target_logprobs, proxy_logprobs)]
 
 
 # ---------------------------------------------------------------------------
-# Offline reference fingerprint -- the one no-recompute algorithm BEYOND self-
-# consistency that can (partly) see forward-pass cheats like quantization.
+# No-recompute features of a served sample (the cheap client-side statistics).
 # ---------------------------------------------------------------------------
-# Self-consistency is blind to quantization because the trace is a faithful sample
-# from the corrupted p-hat and carries zero bits about the true p*. The ONLY way
-# to see a wrong p-hat without recomputing p* per request is to bring in an
-# EXTERNAL anchor about the honest target -- here, a *one-time, offline* honest
-# characterization ("fingerprint") computed once on a trusted run and then reused
-# for every verification (no per-request forward pass). The verifier compares
-# aggregate statistics of the reported trace to that fingerprint.
-#
-# Two feature families:
-#   * entropy       -- mean entropy of the reported target dist. Generic (this is
-#                      the DiFR cross-entropy signal's cousin) and DEFEATABLE by
-#                      temperature retuning (`adv_quant_temp`).
-#   * accept_rate   -- realized acceptance rate = 1 - TV(p-hat, q). SD-specific: it
-#                      is anchored on the (trusted, cheap) draft q, so a quantizer
-#                      that shifts TV(p*,q) -> TV(p-hat,q) moves it. The experiment
-#                      measures whether it survives temperature retuning that kills
-#                      the entropy feature.
-#
-# LIMITATIONS (why this is not a free lunch): the fingerprint must be built on a
-# TRUSTED honest run (a one-time recompute, amortized), it only catches quant
-# large enough to move a feature past honest run-to-run variance, and every
-# feature is in principle gameable by an attacker who also matches that feature
-# (accept-rate can be matched by tuning the draft or the corruption). It shrinks
-# how often the exact `target_spotcheck` must fire; it does not replace it.
+def sequence_features(sample: ProxySample) -> dict[str, float]:
+    """Aggregate statistics of one served sample, all computed from the served
+    target ``p`` and the client proxy ``q`` (no recompute of the true ``M``):
 
-
-def trace_features(trace: SpecDecodeTrace) -> dict[str, float]:
-    """Aggregate, no-recompute statistics of one trace (features for the
-    fingerprint). All are computed from the REPORTED trace only."""
-    ent = []
-    for s in trace.steps:
-        p = np.exp(s.target_logprobs)
+    * ``accept_rate``    mean over positions of ``1 − TV(p, q)`` -- the
+                         SD-specific, draft-anchored signal;
+    * ``mean_entropy``   mean entropy of the served target (the generic
+                         entropy-fingerprint baseline, gameable by temp retune);
+    * ``mean_surprisal`` mean proxy surprisal ``−log q(x)`` of the served tokens
+                         (the ``surface_stat`` / cross-entropy cousin).
+    """
+    acc, ent, sur = [], [], []
+    for pos, x in zip(sample.positions, sample.served_tokens):
+        p = np.exp(pos.target_logprobs)
+        q = np.exp(pos.proxy_logprobs)
+        acc.append(accept_rate(p, q))
         ent.append(float(-np.sum(p * np.log(p + _EPS))))
-    for b in trace.bonus:
-        p = np.exp(b.target_logprobs)
-        ent.append(float(-np.sum(p * np.log(p + _EPS))))
-    acc = np.mean([s.accepted for s in trace.steps]) if trace.steps else 0.0
-    # self-surprisal of emitted tokens under the reported target
-    sur = [float(-s.target_logprobs[s.output_token]) for s in trace.steps]
+        sur.append(float(-pos.proxy_logprobs[x]))
     return {
-        "accept_rate": float(acc),
+        "accept_rate": float(np.mean(acc)) if acc else 0.0,
         "mean_entropy": float(np.mean(ent)) if ent else 0.0,
         "mean_surprisal": float(np.mean(sur)) if sur else 0.0,
     }
 
 
-class ReferenceFingerprint:
-    """Detect forward-pass corruption (e.g. quantization) WITHOUT per-request
-    recompute, by comparing a trace's aggregate features to a one-time honest
-    fingerprint. `fit` characterizes honest traces (mean/std per feature); `score`
-    returns a per-feature standardized distance |z| (higher = more anomalous) and
-    an aggregate. Not a `Check` (it needs an external reference, not just the
-    trace), which is precisely the point: it requires an anchor to the true target.
+class ProxyReference:
+    """The one-time offline honest anchor. ``fit`` characterizes honest served
+    samples (per-feature mean/std -- a single trusted ``M`` run, amortized over
+    every later verification). ``score`` returns a per-feature standardized
+    distance ``|value − mean| / std`` (higher = more anomalous) plus an
+    aggregate. Detection is a threshold on that distance.
+
+    It requires this external anchor by design: the acceptance rate of a served
+    sample is meaningful only relative to what honest ``(M, proxy)`` produces.
     """
 
     def __init__(self, features: tuple[str, ...] = ("accept_rate", "mean_entropy",
@@ -788,16 +317,88 @@ class ReferenceFingerprint:
         self.mean: dict[str, float] = {}
         self.std: dict[str, float] = {}
 
-    def fit(self, honest_traces: list[SpecDecodeTrace]) -> "ReferenceFingerprint":
-        rows = [trace_features(t) for t in honest_traces]
+    def fit(self, honest_samples: list[ProxySample]) -> "ProxyReference":
+        rows = [sequence_features(s) for s in honest_samples]
         for f in self.features:
             vals = np.array([r[f] for r in rows], float)
             self.mean[f] = float(vals.mean())
             self.std[f] = float(vals.std() + _EPS)
         return self
 
-    def score(self, trace: SpecDecodeTrace) -> dict[str, float]:
-        feats = trace_features(trace)
+    def score(self, sample: ProxySample) -> dict[str, float]:
+        feats = sequence_features(sample)
         out = {f: abs(feats[f] - self.mean[f]) / self.std[f] for f in self.features}
         out["aggregate"] = float(max(out.values())) if out else 0.0
         return out
+
+
+# ---------------------------------------------------------------------------
+# The expensive baseline the cheap proxy approximates: recompute the true M.
+# ---------------------------------------------------------------------------
+def recompute_divergence(sample: ProxySample) -> float:
+    """The full-recompute reference line (the DiFR ``token_difr`` analogue): the
+    max total-variation distance between the served target ``p`` and the **true**
+    target ``p*`` recomputed from ``M``, over the served positions. Honest ->
+    ~0; any forward-pass corruption (quant/fp8) -> >0. This is what the cheap
+    proxy accept-rate approximates and what it is measured against; a deployed
+    verifier runs it only on a sampled subset. In the CPU harness the truth is
+    stored on the sample (``_truth``); a real client recomputes it with ``M``."""
+    if not sample.positions:
+        return 0.0
+    worst = 0.0
+    for pos, p_true_lp in zip(sample.positions, sample._truth):
+        worst = max(worst, tv(np.exp(pos.target_logprobs), np.exp(p_true_lp)))
+    return float(worst)
+
+
+# ---------------------------------------------------------------------------
+# The client-side verifier: calibrate a threshold on honest samples, then flag.
+# ---------------------------------------------------------------------------
+@dataclass
+class ProxyVerdict:
+    provider_name: str
+    feature: str
+    score: float
+    threshold: float
+    flagged: bool
+
+    def summary(self) -> str:
+        head = (f"provider={self.provider_name!r}  ->  "
+                + ("FLAGGED (served distribution diverges from honest "
+                   f"{self.feature})" if self.flagged else "consistent"))
+        return (head + f"\n    {'FLAG' if self.flagged else ' ok '}  "
+                f"{self.feature:<14} z={self.score:.4g}  thr={self.threshold:.4g}")
+
+
+class ProxySpecVerifier:
+    """Client-side acceptance-rate verifier. Runs only the cheap proxy: it scores
+    a served sample's ``feature`` (default ``accept_rate``) against the offline
+    ``ProxyReference`` and flags when the standardized distance exceeds a
+    threshold calibrated to a target honest false-positive rate.
+
+    ``feature="accept_rate"`` is the draft-anchored signal that survives the
+    temperature-retune evasion; ``"mean_entropy"`` reproduces the generic
+    fingerprint that does not.
+    """
+
+    def __init__(self, feature: str = "accept_rate"):
+        self.feature = feature
+        self.reference: ProxyReference | None = None
+        self.threshold: float = np.inf
+
+    def calibrate(self, honest_samples: list[ProxySample], fpr: float = 0.01
+                  ) -> "ProxySpecVerifier":
+        """Fit the reference on the honest set and set the flag threshold to its
+        ``(1 − fpr)`` standardized-distance quantile."""
+        self.reference = ProxyReference(features=(self.feature,)).fit(honest_samples)
+        zs = np.array([self.reference.score(s)[self.feature] for s in honest_samples])
+        zs = zs[np.isfinite(zs)]
+        self.threshold = float(np.quantile(zs, 1.0 - fpr)) if len(zs) else np.inf
+        return self
+
+    def verify(self, sample: ProxySample) -> ProxyVerdict:
+        if self.reference is None:
+            raise RuntimeError("ProxySpecVerifier must be .calibrate(...) before verify")
+        z = self.reference.score(sample)[self.feature]
+        return ProxyVerdict(sample.provider_name, self.feature, z, self.threshold,
+                            z > self.threshold)

@@ -60,15 +60,10 @@ class VLLMBackend:
                  record_activations=False, proj_seed=123, proj_dim=32) -> Sequence:
         raise NotImplementedError
 
-    # --- speculative-decoding trace verification (ivgym.spec_decode) ---------
-    # If the server exposes the opt-in speculative-decoding trace (per-position
-    # target/draft logprobs,
-    # the accept coin, the decision, and the recovered/bonus tokens), surface it
-    # here as an `ivgym.spec_decode.SpecDecodeTrace`. The client-side
-    # `TraceVerifier` then checks it WITHOUT trusting this provider; the
-    # `target_spotcheck` check calls back into `reference_logits` to recompute a
-    # sampled subset of true target logprobs.
-    def spec_decode_trace(self, prompt_id: int):
-        """Return the provider-reported ivgym.spec_decode.SpecDecodeTrace, or
-        None if the server was not run with trace emission enabled."""
+    # --- optional: cheap proxy for client-side proxy verification ------------
+    # `proxy_logits` returns a small, DIFFERENT model's logits over the same
+    # [prompt + claimed] sequence (never M's forward pass). The client-side
+    # acceptance-rate verifier (ivgym.spec_decode) uses it to approximate a full
+    # recompute; the HF-GPU backend implements it with a real second model.
+    def proxy_logits(self, prompt_id: int, position: int) -> np.ndarray:
         raise NotImplementedError

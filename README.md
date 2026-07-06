@@ -70,8 +70,8 @@ ivgym/
   io_detectors.py        IODetector base + registry (surface_stat/rank/tokens, learned, llm_judge)
                          -- black-box: score (prompt, claimed_tokens) WITHOUT recomputing M
   metrics.py             ROC AUC + TPR@FPR in pure numpy
-  spec_decode.py         speculative-decoding TRACE verification: vLLM-exact accept
-                         rule, provider simulator, cheat + check registries, TraceVerifier
+  spec_decode.py         client-side proxy verification: speculative accept rate
+                         1−TV(p,q), ProxyReference anchor, ProxySpecVerifier (no vLLM changes)
   harness.py             generate_dataset / verify / winsorize / batch_means / evaluate
   backends/
     base.py              Backend protocol
@@ -84,14 +84,13 @@ experiments/
   exp_family_correlation.py within-family proxy↔M agreement = the exact spec-decoding accept rate (1−TV)
   exp_cross_family_accept.py cross-family accept rate (shared Qwen tokenizer): high within family, falls with family distance
   exp_detectability_vs_kl.py proxy detectability is bounded by KL(M‖proxy) — the accept-rate budget
-  exp_spec_decode_trace.py  CPU: speculative-decoding cheat × trace-check detection AUC (no GPU)
-  exp_spec_decode_fingerprint.py CPU: can quantization be caught w/o recompute? (offline fingerprint)
+  exp_proxy_spec_verify.py  CPU + optional real proxy (GPU): cheap accept-rate vs full-recompute AUC
 examples/
   custom_strategies.py      template: a custom attack + a custom defense
   safe_set_strategies.py    seed-aware SAFE-set substitution attack
   seed_free_strategies.py   quant + temp-retune + fingerprint-spoof attack
 tests/test_smoke.py         backend-agnostic unit tests (sampling, projection, metrics, registry)
-tests/test_spec_decode.py   speculative-decoding trace verification (accept rule, checks, cheats)
+tests/test_proxy_spec.py    client-side proxy verifier (accept-rate identity, reference, evasion)
 ```
 
 ## Run it
@@ -205,66 +204,66 @@ tok, batch=200; full log in `docs/results/exp_io_detector_gpu_qwen3-0.6b.txt`):
 
 ![Fig 3](docs/figures/fig3_io_pareto_gpu.png)
 
-## Speculative-decoding trace verification (verify the *provider's* SD trace)
+## Client-side proxy verification (a cheap approximation of recomputation)
 
-The detectors above recompute `M` (white-box) or a proxy (black-box). A third,
-cheaper regime applies specifically to **speculative decoding**: don't verify
-*inside* vLLM (the provider is the untrusted party — a verifier there is one it
-can stub out), but have vLLM **expose an auditable trace** of its rejection
-sampler and verify that trace **on the client**. `ivgym/spec_decode.py` implements
-the client verifier plus a faithful, vLLM-exact simulator of the provider trace,
-so it runs end-to-end on **CPU** (no GPU, no vLLM).
+The white-box `token_difr` detector recomputes `M` for every claimed token —
+correct, but as expensive as re-running inference. A cheaper regime borrows the
+mechanism of **speculative decoding**, but runs it **entirely on the client, with
+no changes to vLLM and no provider-reported trace** (the provider is the untrusted
+party — a verifier that depends on its cooperation is one it can stub out). The
+client holds its own small **proxy** model `q` (a genuinely different, smaller
+model sharing `M`'s tokenizer — e.g. Qwen3-0.6B for Qwen3-4B) and uses the
+speculative-decoding **acceptance rate** as the signal. `ivgym/spec_decode.py`
+implements it in pure numpy, so it runs end-to-end on **CPU**, and consumes a real
+proxy's logits from `ivgym/backends/hf_gpu.py` on a GPU.
 
-The trace is what vLLM's `rejection_sampler.py` already computes per drafted
-position — target/draft logprobs `p,q`, the drafted token `x`, the accept coin
-`u`, the decision, and the recovered/bonus tokens — with the accept rule taken
-verbatim from the kernel: `accepted = draft_prob > 0 and target_prob/draft_prob
->= uniform_prob`. The client trusts none of it and checks **internal
-consistency**:
+The identity that makes it work:
 
-| check | catches (a compute-saving cheat) | needs recompute? |
-|---|---|---|
-| `decision_consistency` | accept/reject not implied by reported `p,q,u` | no |
-| `residual_support`     | recovered token with zero residual mass | no |
-| `coin_uniformity`      | coins fudged to justify over-acceptance | no |
-| `accept_rate_consistency` | observed accepts ≠ `Σ min(1,p/q)` (needs no coins) | no |
-| `recovered_distribution` | recovered tokens drawn from draft `q`, not the residual | no |
-| `target_spotcheck`     | reported `p` ≠ true `p` (**relabelling the draft as target**) | **yes** |
+```
+accept_rate = E_{x~q}[ min(1, p(x)/q(x)) ] = Σ_x min(p(x), q(x)) = 1 − TV(p, q)
+```
+
+so the realized acceptance rate is a direct read of `1 − TV(p, q)` — the agreement
+between the served target `p` and the proxy `q`. Because the client owns `q`, it is
+a **trusted anchor**: when a provider serves a corrupted target (quantized / fp8 /
+fewer-layer weights, `p* → p̂`), the acceptance rate shifts from `1 − TV(p*, q)` to
+`1 − TV(p̂, q)`, and the client sees the shift **without recomputing `M`** — by
+comparing to a one-time offline honest reference (`ProxyReference`). The pieces:
+
+| piece | role |
+|---|---|
+| `accept_rate(p,q)` / `per_token_accept_prob` | the `1 − TV(p,q)` signal, from proxy + served tokens |
+| `ProxyReference` | one-time offline honest anchor (mean/std of `accept_rate`, `mean_entropy`, `mean_surprisal`) |
+| `ProxySpecVerifier` | calibrates a threshold on honest samples, flags a served sample |
+| `recompute_divergence` | the full-`M` baseline the cheap proxy **approximates** (AUC ~ 1.0) |
 
 ```bash
-python -m experiments.exp_spec_decode_trace     # CPU cheat × check detection-AUC grid
-python tests/test_spec_decode.py                # dependency-free tests
+python -m experiments.exp_proxy_spec_verify     # CPU sweep (+ real proxy if IVGYM_M/IVGYM_PROXY set)
+python tests/test_proxy_spec.py                 # dependency-free tests
 ```
 
-Detection AUC (honest vs cheat), 80 traces × 200 positions:
+CPU synthetic sweep (120 samples × 200 positions) — detection AUC, honest vs cheat:
 
 ```
-                cheat |  decision  residual   coin  accept_rate  recovered  spotcheck
-    over_accept_naive |     1.00      —        —        1.00        —          —      sampler
-over_accept_coinfudge |      —        —      0.83       1.00        —          —      sampler
-        skip_residual |      —      1.00       —          —        1.00        —      sampler
-         sampling_bug |     1.00     0.82      —          —        0.81        —      sampler  (~bug_k*)
-         quant_target |      —        —        —          —          —        1.00    fwd-pass (~quant_4bit)
-      draft_as_target |      —        —        —          —          —        1.00    fwd-pass
+   sigma |  accept_fp  entropy_fp  recompute
+     0.1 |      0.63       0.51       1.00
+    0.25 |      0.98       0.52       1.00
+     0.5 |      1.00       0.64       1.00
+     1.0 |      1.00       1.00       1.00     adv_quant_temp: accept_fp 1.00, entropy_fp 0.48
 ```
 
-The split is exactly **procedure vs. forward pass** — the same axis DiFR splits
-on. Every **sampler/procedure** cheat (over-accept, coin-fudge, skip-residual, and
-the SD analogue of `bug_k*`) breaks a trace-internal invariant, so a
-**no-recompute** check catches it — that is the value the trace adds, since for
-ordinary decoding these needed recomputation. But **forward-pass** cheats
-(`quant_target` — the SD analogue of `quant_4bit`/`kv_fp8` — and `draft_as_target`)
-corrupt the target **logits themselves**; the provider then runs textbook
-rejection sampling on the corrupted `p` and reports it, so the trace is perfectly
-self-consistent and every no-recompute check is at chance. Detecting a wrong `p`
-is "is reported `p` the true target's `p`?", which only `target_spotcheck`
-(recompute) answers (AUC 1.0). **So quantization/fp8 are not catchable without
-recomputation** — the same recompute-dominant boundary the DiFR detectors hit.
-Trace verification is the cheap first line that makes sampler cheating free to
-detect and shrinks how often the spot-check must run, not a replacement. Full
-write-up and the **vLLM PR proposal** (opt-in trace emission, grounded in
-`rejection_sampler.py`):
-**[docs/SPEC_DECODE_TRACE_VERIFICATION.md](docs/SPEC_DECODE_TRACE_VERIFICATION.md)**.
+The draft-anchored **acceptance rate** separates a quantized target and, unlike a
+generic **entropy** fingerprint, **survives the temperature-retune evasion**
+(`adv_quant_temp` tunes `T` to match honest entropy — matching entropy does not
+restore `TV(p̂, q)`). But both fingerprints decay to chance for **small** quant, and
+the full recompute (`recompute_divergence` / `token_difr`) stays at ~1.0 throughout.
+**So quantization/fp8 are not fully catchable without recomputation** — the same
+recompute-dominant boundary the DiFR detectors hit. The cheap proxy **shrinks how
+often the exact recompute must fire**, it does not replace it. The proxy↔`M`
+agreement that bounds this signal is measured on real Qwen3 models in
+`experiments/exp_family_correlation.py`; the theory is in
+**[docs/ACCEPTANCE_RATE_FINGERPRINT.md](docs/ACCEPTANCE_RATE_FINGERPRINT.md)** and
+**[docs/SPEC_DECODING_AND_PROXY_DETECTION.md](docs/SPEC_DECODING_AND_PROXY_DETECTION.md)**.
 
 ## Add your own attack / defense (no edits to the library)
 
