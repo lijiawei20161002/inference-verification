@@ -64,8 +64,8 @@ def test_accept_rate_identity():
     """accept_rate(p, q) == 1 − TV(p, q) == Σ min(p, q)."""
     rng = np.random.default_rng(0)
     for _ in range(50):
-        p = sd._softmax(rng.standard_normal(32) * 2)
-        q = sd._softmax(rng.standard_normal(32) * 2)
+        p = sd.softmax(rng.standard_normal(32) * 2)
+        q = sd.softmax(rng.standard_normal(32) * 2)
         a = sd.accept_rate(p, q)
         assert abs(a - (1.0 - sd.tv(p, q))) < 1e-9
         assert abs(a - np.minimum(p, q).sum()) < 1e-9
@@ -182,8 +182,8 @@ def test_positions_from_rows_roundtrip():
     """The real-backend adapter builds Position rows from [T,V] arrays."""
     rng = np.random.default_rng(0)
     T, V = 5, 16
-    p = np.stack([sd._log_softmax(rng.standard_normal(V)) for _ in range(T)])
-    q = np.stack([sd._log_softmax(rng.standard_normal(V)) for _ in range(T)])
+    p = np.stack([sd.log_softmax(rng.standard_normal(V)) for _ in range(T)])
+    q = np.stack([sd.log_softmax(rng.standard_normal(V)) for _ in range(T)])
     pos = sd.positions_from_rows(p, q)
     assert len(pos) == T
     assert np.allclose(pos[0].target_logprobs, p[0])

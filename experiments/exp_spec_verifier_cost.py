@@ -33,12 +33,18 @@ What we report, side by side
                  full-M prefill) + the analytic FLOP ratio (= param ratio) + a
                  $/1M-verified-tokens figure at a configurable GPU price.
 
-Reading the result: the SpeculativeVerifier costs ``params(q)/params(M)`` of the
-recompute (a large saving) and tracks the forward-pass cheats (quant / fp8) while
-SURVIVING the temperature-retune evasion (adv_quant_temp) that blinds a plain
-surprisal fingerprint -- but it is blind to sampler-only cheats (temp / seed) and
-decays for small quant, where only the full recompute holds. So the proxy
-**shrinks how often the exact recompute must fire; it does not replace it.**
+Reading the result (see ``docs/results/exp_spec_verifier_cost.txt``): the
+SpeculativeVerifier costs ``params(q)/params(M)`` of the recompute (a large
+saving), but at *realistic* forward-pass strength (quant_4bit / adv_quant_temp)
+the acceptance rate barely moves -- the measured spec_accept AUC sits near
+chance while ``token_difr`` (recompute) separates every attack. Real quant
+noise moves ``TV(p, q)`` far less than a real model's honest run-to-run
+variance, so this regime is RECOMPUTE-DOMINANT, exactly the boundary the CPU
+sweep (``exp_proxy_spec_verify``) predicts for small sigma. The regime where
+the cheap verifier *wins* is model substitution -- a wholesale change of the
+served conditional distribution -- measured in the companion experiment
+``exp_spec_substitution_gpu``. So the proxy **shrinks how often the exact
+recompute must fire; it does not replace it.**
 
 Run:
     IVGYM_M=Qwen/Qwen3-4B IVGYM_PROXY=Qwen/Qwen3-0.6B \
@@ -62,7 +68,6 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from ivgym import attacks, defenses, harness, spec_decode as sd
 from ivgym.attacks import Quantization
 from ivgym.core import SamplingSpec
-from ivgym.metrics import roc_auc
 
 M_NAME = os.environ.get("IVGYM_M", "Qwen/Qwen3-4B")
 PROXY_NAME = os.environ.get("IVGYM_PROXY", "Qwen/Qwen3-0.6B")
@@ -93,8 +98,8 @@ def spec_accept_tv(backend, sequences):
     out = []
     for seq in sequences:
         for s in seq.steps:
-            p = sd._softmax(backend.served_logits(seq.prompt_id, s.position))
-            q = sd._softmax(backend.proxy_logits(seq.prompt_id, s.position))
+            p = sd.softmax(backend.served_logits(seq.prompt_id, s.position))
+            q = sd.softmax(backend.proxy_logits(seq.prompt_id, s.position))
             out.append(sd.tv(p, q))
     return np.asarray(out, float)
 
@@ -107,16 +112,16 @@ def proxy_nll(backend, sequences):
     out = []
     for seq in sequences:
         for s in seq.steps:
-            lq = sd._log_softmax(backend.proxy_logits(seq.prompt_id, s.position))
+            lq = sd.log_softmax(backend.proxy_logits(seq.prompt_id, s.position))
             out.append(float(-lq[s.claimed_token]))
     return np.asarray(out, float)
 
 
-def anchor_dev(raw_honest, raw_other, mu, sigma):
+def anchor_dev(raw, mu, sigma):
     """Standardized absolute deviation from the honest anchor, ``|x − μ| / σ`` --
     exactly ``ProxyReference.score``. A cheat that moves the statistic in EITHER
     direction becomes a high (anomalous) score; honest stays near 0."""
-    return (np.abs(raw_other - mu) / sigma)
+    return np.abs(raw - mu) / sigma
 
 
 # ---------------------------------------------------------------------------
@@ -129,9 +134,9 @@ def build_proxy_samples(backend, sequences):
     = M's true logits (for the ``recompute_divergence`` reference line)."""
     out = []
     for seq in sequences:
-        served = [sd._log_softmax(backend.served_logits(seq.prompt_id, s.position)) for s in seq.steps]
-        proxy = [sd._log_softmax(backend.proxy_logits(seq.prompt_id, s.position)) for s in seq.steps]
-        truth = [sd._log_softmax(backend.reference_logits(seq.prompt_id, s.position)) for s in seq.steps]
+        served = [sd.log_softmax(backend.served_logits(seq.prompt_id, s.position)) for s in seq.steps]
+        proxy = [sd.log_softmax(backend.proxy_logits(seq.prompt_id, s.position)) for s in seq.steps]
+        truth = [sd.log_softmax(backend.reference_logits(seq.prompt_id, s.position)) for s in seq.steps]
         out.append(sd.ProxySample(
             provider_name=seq.config_name, spec=SamplingSpec(),
             positions=[sd.Position(t, q) for t, q in zip(served, proxy)],
@@ -195,8 +200,8 @@ def main():
     mu_tv, sd_tv = h_tv_raw.mean(), h_tv_raw.std() + 1e-12
     mu_nll, sd_nll = h_nll_raw.mean(), h_nll_raw.std() + 1e-12
     # honest-anchor scored arrays (deviation from own mean → centered near 0)
-    h_spec = anchor_dev(h_tv_raw, h_tv_raw, mu_tv, sd_tv)
-    h_nll = anchor_dev(h_nll_raw, h_nll_raw, mu_nll, sd_nll)
+    h_spec = anchor_dev(h_tv_raw, mu_tv, sd_tv)
+    h_nll = anchor_dev(h_nll_raw, mu_nll, sd_nll)
     print(f"honest anchor: accept_rate = 1 - TV(p,q) = {1.0 - mu_tv:.3f}  "
           f"(mean over served tokens)\n")
 
@@ -220,8 +225,8 @@ def main():
                                         N_PROMPTS, N_TOKENS, record_activations=False)
         attack_seqs[name] = seqs
         a_td_raw = harness.verify(backend, seqs, spec, [td]).scores["token_difr"]
-        a_spec = anchor_dev(h_tv_raw, spec_accept_tv(backend, seqs), mu_tv, sd_tv)
-        a_nll = anchor_dev(h_nll_raw, proxy_nll(backend, seqs), mu_nll, sd_nll)
+        a_spec = anchor_dev(spec_accept_tv(backend, seqs), mu_tv, sd_tv)
+        a_nll = anchor_dev(proxy_nll(backend, seqs), mu_nll, sd_nll)
         auc_spec, tpr_spec = batched_auc(h_spec, a_spec, "spec_accept")
         auc_nll, tpr_nll = batched_auc(h_nll, a_nll, "proxy_nll")
         auc_td, tpr_td = batched_auc(h_td, a_td_raw, "token_difr")

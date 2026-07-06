@@ -71,6 +71,25 @@ The consequences (the same recompute-dominant boundary the DiFR detectors hit):
 - The cheap proxy therefore **shrinks how often the exact recompute must fire**; it
   does not replace it.
 
+## Measured on real models
+
+Two GPU experiments put numbers on both sides of that boundary (H100, Qwen3
+family; full logs in `docs/results/`):
+
+- **The win case — model substitution** (`exp_spec_substitution_gpu`). A provider
+  paid to serve Qwen3-4B secretly serves Qwen3-0.6B and bills for the 4B. Against
+  a trusted Qwen3-1.7B draft the honest accept rate is 0.776 vs 0.700 under the
+  substitute — token-batched **AUC 0.998** (per-sequence 0.819), and the verifier
+  never runs `M`. Swapping the whole model changes the served conditional
+  distribution wholesale, so `TV(p, q)` shifts far past honest variance.
+- **The stop case — realistic quant** (`exp_spec_verifier_cost`). The
+  `ProxySpecVerifier` run end-to-end against real forward-pass cheats costs
+  `params(q)/params(M)` of the recompute (6.7× fewer FLOPs for 4B/0.6B), but at
+  realistic strength (`quant_4bit`, `adv_quant_temp`) its measured AUC sits near
+  chance while `token_difr` separates every attack (0.87–1.0). Real quant noise
+  moves `TV(p, q)` less than a real model's honest run-to-run variance — the
+  recompute-dominant regime, exactly as the budget above predicts.
+
 ## Files
 
 - `ivgym/spec_decode.py` — `accept_rate` / `per_token_accept_prob`,
@@ -82,6 +101,11 @@ The consequences (the same recompute-dominant boundary the DiFR detectors hit):
   `proxy_logits` is its genuine forward pass (must share `M`'s tokenizer/vocab).
 - `experiments/exp_proxy_spec_verify.py` — the acceptance-rate verifier, CPU sweep
   plus an optional real-proxy run vs `token_difr`.
+- `experiments/exp_spec_substitution_gpu.py` — the real-model win case: model
+  substitution caught from the accept rate alone, never running `M`.
+- `experiments/exp_spec_verifier_cost.py` — `ProxySpecVerifier` end-to-end on GPU:
+  measured cost saving vs detection AUC (generates
+  `docs/figures/fig_spec_verifier_cost.png`).
 - `experiments/exp_family_correlation.py` / `exp_cross_family_accept.py` /
   `exp_detectability_vs_kl.py` — the real-model measurements of the budget above.
 

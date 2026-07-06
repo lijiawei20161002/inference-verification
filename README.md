@@ -85,6 +85,9 @@ experiments/
   exp_cross_family_accept.py cross-family accept rate (shared Qwen tokenizer): high within family, falls with family distance
   exp_detectability_vs_kl.py proxy detectability is bounded by KL(M‖proxy) — the accept-rate budget
   exp_proxy_spec_verify.py  CPU + optional real proxy (GPU): cheap accept-rate vs full-recompute AUC
+  exp_spec_verifier_cost.py SpeculativeVerifier on GPU: measured cost saving vs detection AUC (+ figure)
+  exp_spec_substitution_gpu.py the win case: model substitution caught from the accept rate, never running M
+  plot_accept_rate_fingerprint.py regenerates docs/figures/fig_accept_rate_*.png
 examples/
   custom_strategies.py      template: a custom attack + a custom defense
   safe_set_strategies.py    seed-aware SAFE-set substitution attack
@@ -240,6 +243,10 @@ comparing to a one-time offline honest reference (`ProxyReference`). The pieces:
 ```bash
 python -m experiments.exp_proxy_spec_verify     # CPU sweep (+ real proxy if IVGYM_M/IVGYM_PROXY set)
 python tests/test_proxy_spec.py                 # dependency-free tests
+# real-model GPU runs (H100):
+python -m experiments.exp_spec_substitution_gpu # the win case: model substitution
+IVGYM_M=Qwen/Qwen3-4B IVGYM_PROXY=Qwen/Qwen3-0.6B \
+    python -m experiments.exp_spec_verifier_cost # cost saving vs detection AUC
 ```
 
 CPU synthetic sweep (120 samples × 200 positions) — detection AUC, honest vs cheat:
@@ -259,8 +266,30 @@ restore `TV(p̂, q)`). But both fingerprints decay to chance for **small** quant
 the full recompute (`recompute_divergence` / `token_difr`) stays at ~1.0 throughout.
 **So quantization/fp8 are not fully catchable without recomputation** — the same
 recompute-dominant boundary the DiFR detectors hit. The cheap proxy **shrinks how
-often the exact recompute must fire**, it does not replace it. The proxy↔`M`
-agreement that bounds this signal is measured on real Qwen3 models in
+often the exact recompute must fire**, it does not replace it.
+
+Two real-model GPU experiments (H100, Qwen3 family) close the loop:
+
+- **`experiments/exp_spec_substitution_gpu.py` — the win case: model substitution.**
+  A provider paid to serve Qwen3-4B secretly serves Qwen3-0.6B (6.7× cheaper) and
+  bills for the 4B. The client verifier holds a trusted Qwen3-1.7B draft and never
+  runs `M`: honest accept rate 0.776 vs 0.700 under the substitute → token-batched
+  **AUC 0.998** (per-sequence verdict 0.819), at 1.4× less wall-clock / 2.3× fewer
+  FLOPs than the recompute — with a bigger `M` the saving is the param ratio.
+  Swapping the whole model shifts `TV(p, q)` wholesale, well past honest variance
+  (full log: `docs/results/exp_spec_substitution_gpu_qwen3-4b_sub0.6b_proxy1.7b.txt`).
+- **`experiments/exp_spec_verifier_cost.py` — where it stops: realistic quant.**
+  The `ProxySpecVerifier` end-to-end on real forward-pass cheats: it costs
+  `params(q)/params(M)` of the recompute (6.7× fewer FLOPs for the 4B/0.6B pair),
+  but at realistic corruption strength (`quant_4bit`, `adv_quant_temp`) the measured
+  accept-rate AUC sits near chance while `token_difr` separates every attack
+  (0.87–1.0) — real quant moves `TV(p, q)` less than a real model's honest
+  run-to-run variance, exactly the recompute-dominant boundary the CPU sweep
+  predicts (full log: `docs/results/exp_spec_verifier_cost.txt`).
+
+![SpeculativeVerifier cost vs performance](docs/figures/fig_spec_verifier_cost.png)
+
+The proxy↔`M` agreement that bounds this signal is measured on real Qwen3 models in
 `experiments/exp_family_correlation.py`; the theory is in
 **[docs/ACCEPTANCE_RATE_FINGERPRINT.md](docs/ACCEPTANCE_RATE_FINGERPRINT.md)** and
 **[docs/SPEC_DECODING_AND_PROXY_DETECTION.md](docs/SPEC_DECODING_AND_PROXY_DETECTION.md)**.

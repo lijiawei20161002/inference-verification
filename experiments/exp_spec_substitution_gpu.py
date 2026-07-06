@@ -49,6 +49,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from ivgym import harness, spec_decode as sd
 from ivgym.backends.hf_gpu import DEFAULT_PROMPTS
+from ivgym.metrics import roc_auc
 
 M_NAME = os.environ.get("IVGYM_M", "Qwen/Qwen3-4B")
 PROXY_NAME = os.environ.get("IVGYM_PROXY", "Qwen/Qwen3-1.7B")
@@ -83,7 +84,7 @@ def serve(model, tok, torch, prompt_text):
         for _ in range(N_TOKENS):
             lg = last.float().cpu().numpy()
             served.append(lg)
-            p = sd._softmax(lg / TEMP)
+            p = sd.softmax(lg / TEMP)
             # sample from the served distribution (rng varied by position count)
             t = int(np.argmax(np.log(p + 1e-12) + _gumbel(len(p), len(toks))))
             toks.append(t)
@@ -123,7 +124,7 @@ def spec_tv_scores(served_logits_list, proxy_logits_list):
     out = []
     for sv, px in zip(served_logits_list, proxy_logits_list):
         for lp, lq in zip(sv, px):
-            out.append(sd.tv(sd._softmax(lp / TEMP), sd._softmax(lq)))
+            out.append(sd.tv(sd.softmax(lp / TEMP), sd.softmax(lq)))
     return np.asarray(out, float)
 
 
@@ -153,10 +154,9 @@ def per_seq_auc(h_served, h_proxy, a_served, a_proxy):
     """The provider-level verdict: one mean accept rate per served SEQUENCE, then
     AUC of separating honest sequences from substitute sequences (score = mean TV)."""
     def seq_tv(served, proxy):
-        return np.array([np.mean([sd.tv(sd._softmax(lp / TEMP), sd._softmax(lq))
+        return np.array([np.mean([sd.tv(sd.softmax(lp / TEMP), sd.softmax(lq))
                                   for lp, lq in zip(sv[1], px)])
                          for sv, px in zip(served, proxy)])
-    from ivgym.metrics import roc_auc
     h = seq_tv(h_served, h_proxy); a = seq_tv(a_served, a_proxy)
     return roc_auc(h, a), h, a
 

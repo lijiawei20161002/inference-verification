@@ -71,13 +71,15 @@ from .core import SamplingSpec
 _EPS = 1e-12
 
 
-def _softmax(logits: np.ndarray) -> np.ndarray:
+def softmax(logits: np.ndarray) -> np.ndarray:
+    """Numerically stable softmax over a 1-D logit row."""
     z = logits - logits.max()
     e = np.exp(z)
     return e / e.sum()
 
 
-def _log_softmax(logits: np.ndarray) -> np.ndarray:
+def log_softmax(logits: np.ndarray) -> np.ndarray:
+    """Numerically stable log-softmax over a 1-D logit row."""
     z = logits - logits.max()
     return z - np.log(np.exp(z).sum())
 
@@ -127,10 +129,10 @@ def synthetic_positions(rng: np.random.Generator, n: int, vocab: int = 64,
     out = []
     for _ in range(n):
         t = rng.standard_normal(vocab) * sharpness
-        t_lp = _log_softmax(t)
+        t_lp = log_softmax(t)
         noise = rng.standard_normal(vocab) * sharpness
         d = agreement * t + (1.0 - agreement) * noise
-        d_lp = _log_softmax(d)
+        d_lp = log_softmax(d)
         out.append(Position(target_logprobs=t_lp, proxy_logprobs=d_lp))
     return out
 
@@ -214,7 +216,7 @@ class QuantTarget(CheatStrategy):
 
     def served_target_logprobs(self, rng, p_true_lp):
         noisy = p_true_lp + rng.normal(0.0, self.sigma, p_true_lp.shape)
-        return _log_softmax(noisy / max(self.temp, 1e-6))
+        return log_softmax(noisy / max(self.temp, 1e-6))
 
 
 @dataclass

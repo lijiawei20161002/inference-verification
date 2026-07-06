@@ -181,8 +181,8 @@ def gpu_real_proxy():
         rows_p = np.stack([backend.reference_logits(seq.prompt_id, s.position) for s in seq.steps])
         rows_q = np.stack([backend.proxy_logits(seq.prompt_id, s.position) for s in seq.steps])
         pos = sd.positions_from_rows(rows_p, rows_q)
-        accs.append(np.mean([sd.accept_rate(sd._softmax(pp.target_logprobs),
-                                            sd._softmax(pp.proxy_logprobs)) for pp in pos]))
+        accs.append(np.mean([sd.accept_rate(sd.softmax(pp.target_logprobs),
+                                            sd.softmax(pp.proxy_logprobs)) for pp in pos]))
     print(f"honest accept_rate = 1 − TV(M, proxy) = {np.mean(accs):.3f}  "
           f"(the real-proxy speculative-decoding acceptance rate)\n")
 

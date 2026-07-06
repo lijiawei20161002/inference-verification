@@ -122,10 +122,17 @@ Panel C is also available standalone:
 It's the **best of the no-recompute options, not a silver bullet**:
 
 * it needs a one-time trusted reference;
-* it only fires once quant moves `TV` past honest run-to-run variance — **small
-  quant is invisible**; and
+* it only fires once the cheat moves `TV` past honest run-to-run variance — **small
+  quant is invisible**, and on real models even `quant_4bit`-strength noise stays
+  under that variance (measured in `experiments/exp_spec_verifier_cost.py`: the
+  accept-rate AUC sits near chance while `token_difr` separates every attack); and
 * it does not dominate `recompute_divergence` (exact full-`M` recompute, AUC 1.0
   throughout).
+
+The deviation it *does* catch on real models is the one that moves `TV(p, q)`
+wholesale: **model substitution** (serving a cheaper model and billing for `M`) —
+AUC 0.998 without ever running `M`, at a fraction of the recompute cost
+(`experiments/exp_spec_substitution_gpu.py`).
 
 What it buys is a **shrink in how often the exact recompute must fire** — the
 draft-anchored acceptance-rate test is the one no-recompute algorithm the
@@ -138,4 +145,7 @@ entropy does not restore `TV(p̂, q)`.
 python -m experiments.plot_accept_rate_fingerprint   # regenerates both figures
 python -m experiments.exp_proxy_spec_verify          # CPU sweep (+ real proxy if IVGYM_M/IVGYM_PROXY)
 python tests/test_proxy_spec.py                      # dependency-free tests
+# real-model GPU runs:
+python -m experiments.exp_spec_substitution_gpu      # the win case: model substitution
+python -m experiments.exp_spec_verifier_cost         # cost saving vs detection AUC
 ```
