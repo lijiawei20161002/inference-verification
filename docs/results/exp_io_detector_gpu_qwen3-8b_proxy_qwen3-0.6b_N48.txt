@@ -1,61 +1,0 @@
-loading Qwen/Qwen3-8B  + proxy Qwen/Qwen3-0.6B ...
-Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
-Loading weights:   0%|          | 0/399 [00:00<?, ?it/s]Loading weights:  24%|██▍       | 97/399 [00:00<00:00, 928.81it/s]Loading weights:  48%|████▊     | 190/399 [00:00<00:00, 444.55it/s]Loading weights:  62%|██████▏   | 248/399 [00:00<00:00, 402.70it/s]Loading weights:  74%|███████▍  | 295/399 [00:00<00:00, 364.68it/s]Loading weights: 100%|██████████| 399/399 [00:00<00:00, 539.41it/s]
-Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights:  14%|█▍        | 45/311 [00:00<00:00, 442.94it/s]Loading weights:  29%|██▉       | 90/311 [00:00<00:00, 243.55it/s]Loading weights:  40%|███▉      | 124/311 [00:00<00:00, 272.58it/s]Loading weights:  68%|██████▊   | 213/311 [00:00<00:00, 442.97it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 478.31it/s]
-loaded in 52.2s | vocab=151936 hidden=4096 | 48 prompts x 128 tokens
-  REAL proxy: 0.60B params vs M 8.19B  ->  proxy cost ratio = 0.073 (13.7x cheaper than recompute)
-  honest pool scored (521.3s)
-  null floor scored (978.2s)
-    [judge] transient API error (OverloadedError 529); retry 1/8 in 2s
-    [judge] transient API error (OverloadedError 529); retry 1/8 in 2s
-    [judge] transient API error (OverloadedError 529); retry 1/8 in 2s
-    [judge] transient API error (OverloadedError 529); retry 1/8 in 2s
-    quant_4bit scored (1626.0s)
-        kv_fp8 scored (2104.4s)
-      temp_1.1 scored (2569.9s)
-       seed_43 scored (3023.7s)
-        bug_k2 scored (3494.4s)
-       bug_k32 scored (3956.0s)
-
-I/O (black-box) detectors vs Token-DiFR (recomputation)   [Qwen/Qwen3-8B, 48x128 tok, batch=100]
-Cells are symmetric DETECTABILITY = max(AUC,1-AUC); ~0.50 = indistinguishable to that detector
-(compare to the (honest null) floor row). An I/O detector -- including the LLM judge -- at ~0.5 while
-token_difr is high proves the attack is invisible in the outputs (recomputation adds real information).
-
-          attack |  token_difr |   surface_stat   surface_rank surface_tokens      llm_judge    logit_judge   note
------------------------------------------------------------------------------------------------------------
-   (honest null) |       0.583 |          0.687          0.582          0.500          0.619          0.918   floor: honest vs reseeded honest
-      quant_4bit |       0.692 |          0.640          0.605          0.500          0.913          0.672   
-          kv_fp8 |       0.511 |          0.621          0.550          0.500          0.503          0.842   
-        temp_1.1 |       0.564 |          0.645          0.570          0.500          0.823          0.916   
-         seed_43 |       0.892 |          0.664          0.589          0.500          0.919          0.954   
-          bug_k2 |       0.521 |          0.665          0.536          0.500          0.955          0.955   
-         bug_k32 |       0.661 |          0.572          0.748          0.500          1.000          1.000   
-
-HONEST CAVEAT: a HIGH I/O-AUC (e.g. temp_1.1) is NOT a verifier win -- it means that
-attack is crude enough to catch from outputs alone (a statement about the attack,
-not the verifier). The interesting rows are the LOW I/O-AUC ones with high token_difr.
-
-NOTE: per-SEQUENCE-constant detectors (llm_judge, logit_judge, surface_tokens) emit one value per
-sequence broadcast to its tokens, so with few sequences their token-batch null FLOOR
-inflates well above 0.5 (a known finite-pool artifact). Read them via the dominance
-block below -- excess over each detector's OWN floor -- not via the absolute AUC cell.
-
-Dominant detector family per attack  (excess over each detector's OWN honest-null floor; margin=0.08):
-         quant_4bit  td_excess=+0.109  io_excess=+0.294  -> I/O-DOMINANT       (cheap output detection suffices)
-             kv_fp8  td_excess=-0.072  io_excess=+0.000  -> NEITHER           (at floor for every detector)
-           temp_1.1  td_excess=-0.019  io_excess=+0.204  -> I/O-DOMINANT       (cheap output detection suffices)
-            seed_43  td_excess=+0.309  io_excess=+0.299  -> BOTH              (output-visible -- weak safety evidence)
-             bug_k2  td_excess=-0.062  io_excess=+0.336  -> I/O-DOMINANT       (cheap output detection suffices)
-            bug_k32  td_excess=+0.078  io_excess=+0.381  -> I/O-DOMINANT       (cheap output detection suffices)
-
-  HEADLINE (Role 2 -- recomputation sees what outputs cannot, on a real model):
-    RECOMPUTE-DOMINANT = (none)
-    For these the recomputation excess dwarfs every cheap I/O detector's AND the
-    LLM judge's -- a forward-pass/seed deviation that is (near-)invisible in the
-    real model's outputs. seed_43 is the extreme: wrong seed redraws the SAME
-    distribution, so a re-run flips Gumbel winners while the text looks honest.
-
-wrote Pareto figure: /home/ubuntu/inference-verification/docs/figures/fig3_io_pareto_gpu.png
-
-total 3956.0s on Qwen/Qwen3-8B
