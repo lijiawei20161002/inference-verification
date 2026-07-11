@@ -1,0 +1,46 @@
+### exp_real_quant_triage.py  IVGYM_QUANT=nf4  (real bitsandbytes NF4 4-bit)
+========================================================================================
+REAL-MODEL subtle-quant fidelity + triage   M=Qwen/Qwen3-1.7B  proxy=Qwen/Qwen3-0.6B
+config: 24 prompts x 96 tokens, audit-batch=8 x 400, quant=nf4 settings=['nf4']
+========================================================================================
+loaded M (1.72B, V=151936) [5s]
+generated + p* cached [42s]
+loaded proxy + q/tieness cached [54s]
+  nf4: meanTV=0.1258 sparsity(>0.05)=0.60 p99=0.578  [79s]
+
+========================================================================================
+(a) FIDELITY: faithful deterministic quant vs MATCHED i.i.d.-Gaussian, across bit-width
+========================================================================================
+  faithful weight-quant is sparse/heavy-tailed (see spars = frac positions TV>0.05,
+  and p99 vs meanTV); the matched iid model is dense. proxy_acc = NO-recompute
+  accept-rate baseline. faith/iid mean+MAX = recompute AUC (both saturate once batched).
+
+  bits  meanTV  spars    p99 | proxy_acc |  faith mean faith MAX |  iid mean  iid MAX
+  -----------------------------------------------------------------------------------
+   nf4  0.1258   0.60  0.578 |     0.531 |       1.000     1.000 |     1.000    1.000
+
+========================================================================================
+(b) TRIAGE: proxy-q tie-guided vs random selective recompute  [subtle regime: bits=nf4, meanTV=0.1258]
+========================================================================================
+  full recompute (audit 100% of a batch): AUC 1.000 (TPR@1% 1.00)
+
+  recompute budget   triaged (proxy-q)      random
+  ------------------------------------------------
+           12.5 %               0.996       0.819
+           25.0 %               1.000       0.950
+           50.0 %               1.000       0.995
+
+Reading it:
+  (a) TWO findings. (i) The no-recompute proxy accept-rate is at CHANCE for subtle
+      quant (bits 8/6/5, proxy_acc~0.5) and only wakes at brutal 4-bit -- the
+      recompute-dominant boundary holds on REAL quantized weights, not just the
+      synthetic Gaussian. (ii) Real weight-quant divergence is SPARSE + heavy-tailed
+      (8-bit: meanTV 0.025 but 17% of positions >0.05, p99 5x the mean), structurally
+      UNLIKE the repo's dense i.i.d.-Gaussian model even when matched on mean TV.
+      (Recompute AUC saturates at 1.0 for both once batched, so it can't rank them --
+      the fidelity gap is structural, and its consequence is (b).)
+  (b) That sparsity is the lever: the client's trusted q flags the quant-sensitive
+      near-tie positions, so tie-triaged recompute reaches full detection at ~1/8 the
+      audited positions while random subsampling misses the rare corrupted ones.
+
+total 79s

@@ -1,0 +1,19 @@
+==============================================================================
+Selective-recompute verifier tier (real backend)  M=Qwen/Qwen3-1.7B  proxy=Qwen/Qwen3-0.6B
+==============================================================================
+loaded  M=1.72B  proxy=0.60B [6s]
+generated + verified [271s]
+
+attack = quant_4bit;  full-recompute token_difr AUC = 0.749 (TPR@1% 0.23)
+
+   budget  recompute ratio  selective AUC   TPR@1%
+  ----------------------------------------------
+      10%            10.0%          0.863     0.24
+      25%            25.0%          0.898     0.48
+      50%            50.0%          0.739     0.16
+     100%           100.0%          0.749     0.23
+
+  proxy-triaged recompute recovers the full-recompute AUC at a fraction of the
+  M-calls; the ratio column is the measured fraction of tokens re-run on M.
+
+total 271s

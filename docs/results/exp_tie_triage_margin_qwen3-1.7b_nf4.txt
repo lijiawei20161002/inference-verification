@@ -1,0 +1,11 @@
+### exp_tie_triage_margin.py  IVGYM_QUANT=nf4  (real bitsandbytes NF4 4-bit)
+loaded M (1.72B, V=151936) [5s]
+honest continuation + honest margins [57s]  (mean honest margin 0.0001)
+proxy tie-ness [61s]
+  nf4: flip-rate=0.149  mean margin=0.1300 [78s]
+saved -> /root/inference-verification/experiments/difr_data/tie_triage_margin_nf4.npz
+wrote figure -> /root/inference-verification/docs/figures/fig_tie_triage_margin_nf4.png
+
+recompute ratio to reach AUC >= 0.95:
+  quant   flip%   triaged   random   saving
+    nf4   14.9%     0.029    0.058     2.0x

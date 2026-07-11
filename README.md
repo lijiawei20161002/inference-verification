@@ -73,6 +73,9 @@ ivgym/
   spec_decode.py         client-side proxy verification: speculative accept rate
                          1−TV(p,q), ProxyReference anchor, ProxySpecVerifier (no vLLM changes)
   harness.py             generate_dataset / verify / winsorize / batch_means / evaluate
+                         + verify_selective: proxy-triaged SELECTIVE recompute tier
+                           (recompute M only on the top-budget tokens a cheap proxy
+                           flags as near-ties) -- sits between io_verify and verify
   backends/
     base.py              Backend protocol
     hf_gpu.py            REAL model on a GPU (transformers) — the arena
@@ -88,6 +91,15 @@ experiments/
   exp_spec_verifier_cost.py SpeculativeVerifier on GPU: measured cost saving vs detection AUC (+ figure)
   exp_spec_substitution_gpu.py the win case: model substitution caught from the accept rate, never running M
   plot_accept_rate_fingerprint.py regenerates docs/figures/fig_accept_rate_*.png
+  exp_subtle_quant_detectors.py CPU: why subtle quant evades the cheap proxy (anchor,
+                            not aggregation) + proxy-tie-triaged selective recompute
+  exp_real_quant_triage.py  GPU: faithful (deterministic int-n) quant is sparse/heavy-
+                            tailed, unlike the i.i.d.-Gaussian model; proxy stays blind
+  exp_tie_triage_pareto.py  GPU: detection AUC vs recomputation ratio (TV signal) ->
+                            docs/figures/fig_tie_triage_pareto.png
+  exp_tie_triage_margin.py  GPU: same, sparse Token-DiFR flip signal (sharper win) ->
+                            docs/figures/fig_tie_triage_margin.png
+  exp_selective_verify_gpu.py GPU: verify_selective end-to-end on the real backend
 examples/
   custom_strategies.py      template: a custom attack + a custom defense
   safe_set_strategies.py    seed-aware SAFE-set substitution attack
@@ -293,6 +305,48 @@ The proxy↔`M` agreement that bounds this signal is measured on real Qwen3 mode
 `experiments/exp_family_correlation.py`; the theory is in
 **[docs/ACCEPTANCE_RATE_FINGERPRINT.md](docs/ACCEPTANCE_RATE_FINGERPRINT.md)** and
 **[docs/SPEC_DECODING_AND_PROXY_DETECTION.md](docs/SPEC_DECODING_AND_PROXY_DETECTION.md)**.
+
+## Proxy-triaged selective recompute (spend recompute where it matters)
+
+The cheap proxy above shrinks *how often* the full recompute must fire, but on
+subtle quantization it collapses to chance (the recompute-dominant boundary). A
+middle tier keeps the trusted anchor — full recompute of `M` — but spends it only
+where a cheap signal says it will matter. A forward-pass corruption
+(quantization/fp8) flips the sampled token only at **near-tie** positions; the
+client's own small proxy `q` is an *uncorrupted* estimate of where `M` has those
+ties. So `harness.verify_selective(backend, seqs, spec, defense, budget)` ranks
+tokens by the proxy's tie-ness (`proxy_tie_scores`, reads only `proxy_logits`,
+never `M`), recomputes the `defense` (e.g. `token_difr`) on just the top-`budget`
+fraction (`select_triaged`), and leaves the rest at the "no divergence" value.
+It sits between `io_verify` (no recompute) and `verify` (full recompute).
+
+Two things fall out, both measured on real Qwen3 (`M`=Qwen3-1.7B, proxy=Qwen3-0.6B):
+
+- **It reaches full-recompute detection at a fraction of the M-calls.** The proxy
+  tie-ness ranks quant-corrupted tokens with Spearman ≈ 0.73, so a few audited
+  tokens carry the signal. On the sparse **Token-DiFR flip** signal, tie-triage
+  reaches AUC 0.95 at ~**2.8×** fewer recomputes than random subsampling for
+  subtle 8-bit weight-quant (bigger the sparser the quant):
+  `experiments/exp_tie_triage_margin.py` → **[fig_tie_triage_margin.png](docs/figures/fig_tie_triage_margin.png)**
+  (the denser per-token TV signal gives ~2×: `exp_tie_triage_pareto.py` →
+  [fig_tie_triage_pareto.png](docs/figures/fig_tie_triage_pareto.png)).
+- **It can beat full recompute at a fraction of the cost**, because focusing on the
+  flip-prone tokens *denoises* the batch statistic. End-to-end through the shipped
+  harness on synthetic `quant_4bit` (`experiments/exp_selective_verify_gpu.py`):
+
+  ```
+  attack = quant_4bit;  full-recompute token_difr AUC = 0.749
+    budget  recompute ratio   selective AUC
+       10%            10.0%          0.863
+       25%            25.0%          0.898
+      100%           100.0%          0.749   (= full recompute)
+  ```
+
+Why subtle quant needs this tier (and no cheaper proxy statistic escapes it) is
+worked out in `experiments/exp_subtle_quant_detectors.py` (the blocker is the
+proxy *anchor*, not the aggregation) and `experiments/exp_real_quant_triage.py`
+(faithful deterministic quant is sparse/heavy-tailed — structurally unlike the
+i.i.d.-Gaussian `attacks.Quantization` model — even matched on mean divergence).
 
 ## Add your own attack / defense (no edits to the library)
 

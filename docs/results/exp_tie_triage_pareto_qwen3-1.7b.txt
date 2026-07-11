@@ -1,0 +1,8 @@
+re-plotting from /root/inference-verification/experiments/difr_data/tie_triage_pareto.npz
+wrote figure -> /root/inference-verification/docs/figures/fig_tie_triage_pareto.png
+
+recompute ratio to reach AUC >= 0.95:
+  bits  meanTV   triaged   random   saving
+     8  0.0254     0.024    0.052     2.2x
+     6  0.0714     0.016    0.037     2.4x
+     5  0.1601     0.016    0.030     1.9x

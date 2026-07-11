@@ -1,0 +1,46 @@
+========================================================================================
+REAL-MODEL subtle-quant fidelity + triage   M=Qwen/Qwen3-1.7B  proxy=Qwen/Qwen3-0.6B
+config: 24 prompts x 96 tokens, audit-batch=16 x 400, bits=[8, 6, 5, 4]
+========================================================================================
+loaded M (1.72B, V=151936) [5s]
+generated + p* cached [39s]
+loaded proxy + q/tieness cached [50s]
+  bits=8: meanTV=0.0254 sparsity(>0.05)=0.17 p99=0.128  [73s]
+  bits=6: meanTV=0.0714 sparsity(>0.05)=0.50 p99=0.315  [96s]
+  bits=5: meanTV=0.1601 sparsity(>0.05)=0.67 p99=0.623  [119s]
+  bits=4: meanTV=0.3156 sparsity(>0.05)=0.78 p99=0.941  [141s]
+
+========================================================================================
+(a) FIDELITY: faithful deterministic quant vs MATCHED i.i.d.-Gaussian, across bit-width
+========================================================================================
+  faithful weight-quant is sparse/heavy-tailed; iid is dense. Compare detection AUC
+  under MEAN vs MAX(tail) aggregation. proxy_acc = NO-recompute accept-rate baseline.
+
+  bits  meanTV  spars    p99 | proxy_acc |  faith mean faith MAX |  iid mean  iid MAX
+  -----------------------------------------------------------------------------------
+     8  0.0254   0.17  0.128 |     0.504 |       1.000     1.000 |     1.000    1.000
+     6  0.0714   0.50  0.315 |     0.477 |       1.000     1.000 |     1.000    1.000
+     5  0.1601   0.67  0.623 |     0.457 |       1.000     1.000 |     1.000    1.000
+     4  0.3156   0.78  0.941 |     0.780 |       1.000     1.000 |     1.000    1.000
+
+========================================================================================
+(b) TRIAGE: proxy-q tie-guided vs random selective recompute  [subtle regime: bits=8, meanTV=0.0254]
+========================================================================================
+  full recompute (audit 100% of a batch): AUC 1.000 (TPR@1% 1.00)
+
+  recompute budget   triaged (proxy-q)      random
+  ------------------------------------------------
+           12.5 %               0.992       0.851
+           25.0 %               1.000       0.987
+           50.0 %               1.000       1.000
+
+Reading it:
+  (a) faithful weight-quant is SPARSE (few high-TV near-tie positions); the matched
+      i.i.d. model is dense. Where MAX >> MEAN for faithful but MAX ~ MEAN for iid,
+      the real signal lives in the tail -- so the repo's dense-Gaussian model and a
+      mean statistic BOTH understate how detectable real quant is. proxy_acc (no
+      recompute) stays weak in the subtle regime: the recompute-dominant boundary.
+  (b) triaged >= random at low budget => the client's trusted q locates the quant-
+      sensitive near-tie positions, so selective recompute buys detection cheaply.
+
+total 141s

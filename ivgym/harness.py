@@ -10,7 +10,7 @@ from .core import IOContext, SamplingSpec, Sequence, VerifyContext
 from .defenses import Defense
 from .io_detectors import IODetector
 from .metrics import roc_auc, tpr_at_fpr
-from .sampling import gumbel_noise, position_seed, projection
+from .sampling import gumbel_noise, log_softmax, position_seed, projection
 
 
 @dataclass
@@ -103,6 +103,95 @@ def io_verify(backend, sequences: list[Sequence], spec: SamplingSpec,
 
     return TokenScores(cfg, {k: (np.concatenate(v) if v else np.array([]))
                              for k, v in out.items()})
+
+
+# ---------------------------------------------------------------------------
+# Cost-aware verifier tier: proxy-triaged SELECTIVE recompute.
+#
+# `verify` recomputes the reference model M for EVERY claimed token -- correct
+# but as expensive as re-running inference. This tier spends that recompute only
+# where a CHEAP proxy signal says it will matter. A forward-pass corruption
+# (quantization, fp8) changes the sampled token only at NEAR-TIE positions (where
+# the top logits are close); the client's own small proxy `q` -- which it runs
+# anyway and never trusts the provider for -- is an uncorrupted estimate of where
+# M has those ties. So we rank tokens by the proxy's tie-ness, recompute the
+# expensive `Defense` on only the top `budget` fraction, and leave the rest at the
+# defense's "no divergence" value. Non-audited tokens cost nothing.
+#
+# This is the concrete form of "shrink how often the exact recompute must fire":
+# selective recompute reaches full-recompute detection at a fraction of the
+# M-calls (see experiments/exp_tie_triage_margin.py for the AUC-vs-ratio curve).
+# It sits between the no-recompute I/O detectors (io_verify) and full `verify`.
+# ---------------------------------------------------------------------------
+def proxy_tie_scores(backend, sequences: list[Sequence], spec: SamplingSpec) -> np.ndarray:
+    """Cheap per-token triage signal: the proxy's near-tie-ness, -(p1 - p2) of the
+    two largest probabilities under the proxy's temperature-scaled softmax (higher
+    = more tie-like). Reads ONLY `backend.proxy_logits` (a small, cheap, DIFFERENT
+    model), never `backend.reference_logits` -- so triage never itself recomputes
+    M. Flat, in the same (seq, step) order as `verify`."""
+    temp = max(spec.temperature, 1e-6)
+    out = []
+    for seq in sequences:
+        for step in seq.steps:
+            p = np.exp(log_softmax(backend.proxy_logits(seq.prompt_id, step.position) / temp))
+            top2 = np.partition(p, -2)[-2:]
+            out.append(-float(top2[1] - top2[0]))
+    return np.asarray(out, float)
+
+
+def select_triaged(triage: np.ndarray, budget: float) -> np.ndarray:
+    """Boolean mask of the top-`budget` fraction of tokens by `triage` score
+    (highest audited first). Always audits at least one token."""
+    n = len(triage)
+    if n == 0:
+        return np.zeros(0, bool)
+    k = int(np.clip(round(budget * n), 1, n))
+    mask = np.zeros(n, bool)
+    mask[np.argsort(-triage, kind="mergesort")[:k]] = True
+    return mask
+
+
+def verify_selective(backend, sequences: list[Sequence], spec: SamplingSpec,
+                     defense: Defense, budget: float, triage: np.ndarray | None = None,
+                     neutral: float = 0.0, proj_seed: int = 123, proj_dim: int = 32
+                     ) -> tuple[TokenScores, float]:
+    """Recompute `defense` (needs `ref_logits`) on only the top-`budget` fraction of
+    tokens ranked by a cheap `triage` signal (default: `proxy_tie_scores`). Tokens
+    that are not audited are NOT recomputed -- that is the cost saving -- and take
+    the `neutral` score (the value a divergence Defense returns when nothing is
+    wrong; 0.0 for `token_difr`). Returns `(TokenScores, realized_recompute_ratio)`.
+
+    The returned scores flow through the SAME winsorize/batch_means/evaluate
+    pipeline as a full `verify`, so honest-vs-attack AUC is comparable across
+    budgets. Calibrate the honest reference with the SAME budget (the null is
+    defined by the selective procedure, not the full recompute)."""
+    if triage is None:
+        triage = proxy_tie_scores(backend, sequences, spec)
+    mask = select_triaged(triage, budget)
+    needs_act = defense.needs_activation
+    proj = projection(proj_seed, proj_dim, backend.hidden_dim) if needs_act else None
+    scores = np.full(len(triage), float(neutral))
+    cfg = sequences[0].config_name if sequences else "?"
+
+    i = 0
+    for seq in sequences:
+        for step in seq.steps:
+            if mask[i]:
+                g = gumbel_noise(backend.vocab,
+                                 position_seed(spec.seed, seq.prompt_id, step.position))
+                ref_fp = None
+                if needs_act:
+                    ref_fp = proj @ backend.reference_activation(seq.prompt_id, step.position)
+                ctx = VerifyContext(
+                    claimed_token=step.claimed_token,
+                    ref_logits=backend.reference_logits(seq.prompt_id, step.position),
+                    gumbel=g, sampling=spec, fingerprint=step.fingerprint,
+                    ref_fingerprint=ref_fp,
+                )
+                scores[i] = defense.score(ctx)
+            i += 1
+
+    return TokenScores(cfg, {defense.name: scores}), float(mask.mean())
 
 
 def winsorize(scores: np.ndarray, honest_train: np.ndarray, pct: float) -> np.ndarray:

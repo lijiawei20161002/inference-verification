@@ -12,6 +12,11 @@ safetensors
 # Optional: the llm_judge I/O detector (experiments/exp_io_detector_gpu.py).
 # anthropic
 
+# Optional: real bitsandbytes NF4 4-bit weights for the subtle-quant experiments
+# (IVGYM_QUANT=nf4 in exp_real_quant_triage / exp_tie_triage_margin; see
+# experiments/quantlib.py). Without it, the deterministic fake-quant path is used.
+# bitsandbytes
+
 # Optional: render the Pareto figure (docs/figures/*.png).
 # matplotlib
 

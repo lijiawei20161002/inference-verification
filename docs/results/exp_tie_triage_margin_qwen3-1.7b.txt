@@ -1,0 +1,8 @@
+re-plotting from /root/inference-verification/experiments/difr_data/tie_triage_margin.npz
+wrote figure -> /root/inference-verification/docs/figures/fig_tie_triage_margin.png
+
+recompute ratio to reach AUC >= 0.95:
+  bits   flip%   triaged   random   saving
+     8    3.2%     0.118    0.330     2.8x
+     6    9.4%     0.044    0.093     2.1x
+     5   17.5%     0.030    0.048     1.6x
