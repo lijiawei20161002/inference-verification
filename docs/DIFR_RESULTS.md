@@ -67,12 +67,24 @@ astronomically below ZKP (zkLLM ≈ days per generation).
 | LR features (0.5B proxy)      | 0.679 | 0.649 | 0.680 | 0.723 | 0.782 |
 | LR features (0.5B+1.5B panel) | 0.706 | 0.711 | 0.778 | 0.845 | **0.899** |
 
-### Where the cheap proxy fails (as predicted)
+### Capability gradient: detectability vs. how far the model is downgraded
 
-| honest 7B vs. | best cheap detector | AUC @128 |
-|---|---|---|
-| sub → 3B (still capable) | log-rank / LR | ~0.55 |
-| **4-bit quant of the 7B (subtle)** | LR panel | **0.46 ≈ chance** |
+The two "works" points above (0.5B, SmolLM2-360M) are the far end of a gradient. Filling in
+the interior with the same 0.5B+1.5B panel (`detect.py` capability-gradient rows) turns the
+anecdote into a dose-response — detectability tracks the attacker's compute saving and
+collapses as the served model approaches the claimed 7B. See `fig_difr_capability_gap.png`.
+
+| served (honest 7B vs.) | × smaller | panel AUC @32 | panel AUC @128 | verdict |
+|---|---|---|---|---|
+| Qwen2.5-0.5B | 15.4× | 0.994 | **0.997** | ✓ works |
+| Qwen2.5-1.5B | 4.9×  | 0.965 | **0.991** | ✓ works |
+| Qwen2.5-3B   | 2.5×  | 0.488 | 0.580 | ✗ near chance |
+| Qwen2.5-7B nf4 (same weights) | 1.0× | 0.462 | 0.462 | ✗ chance |
+
+The cliff sits between **~5× (1.5B, still caught at 0.99)** and **~2.5× (3B, gone)** — i.e.
+the panel owns downgrades of roughly a half-order of magnitude or more and cedes everything
+closer to the claimed tier. (The earlier "~0.55 @128 for 3B" came from the single-statistic
+`analyze.py`; the panel gives 0.58 — same conclusion, near chance.)
 
 ## Findings
 
@@ -85,9 +97,11 @@ astronomically below ZKP (zkLLM ≈ days per generation).
 3. **Two cheap levers do the work:** (a) richer features from the *same* single forward pass
    (tail/fraction-of-surprising-token stats, not just the mean); (b) a 2-proxy panel.
    Neither changes the "small proxy" premise.
-4. **Hard boundary confirmed:** subtle same-model 4-bit quant stays at chance (0.46) under
-   every cheap detector. Detectability tracks the attacker's savings — cheap proxies own
-   the high-value downgrade attack and cede subtle tampering to full same-model DiFR.
+4. **Detectability is a dose-response, not a knife-edge claim.** Sweeping the served tier
+   (0.5B → 1.5B → 3B → nf4) gives a monotone AUC curve: the panel catches downgrades down to
+   **~5× smaller (1.5B, AUC 0.99)**, then collapses through 3B (2.5×, 0.58) to chance at the
+   subtle nf4 (1×, 0.46). Detectability tracks the attacker's savings — cheap proxies own the
+   high-value downgrade attack and cede subtle tampering to full same-model DiFR.
 5. **Not adversarially airtight.** A purely statistical proxy is evadable by an adaptive
    attacker (temperature tuning / paraphrase). This is a cheap first-line/triage signal.
 
@@ -200,8 +214,9 @@ escalate only ambiguous or subtle cases to seed-synchronized same-model DiFR.
 python3 experiments/generate.py honest        # then sub_3b sub_1.5b sub_0.5b quant_4bit
 python3 experiments/score2.py  proxy_0.5b      # then proxy_1.5b   (rich per-token features)
 python3 experiments/crossfam2.py               # cross-family served + scoring
-python3 experiments/detect.py                  # baseline vs LR vs panel (CV AUC tables)
+python3 experiments/detect.py                  # baseline vs LR vs panel + capability-gradient table
 python3 experiments/plot2.py                   # -> docs/figures/fig_difr_detect.png
+python3 experiments/plot_capability_gap.py     # -> docs/figures/fig_difr_capability_gap.png
 python3 experiments/robust_temp.py             # Test 1: adaptive temperature attack
 python3 experiments/robust_stack.py            # Test 2: benign cross-stack shift (kernel/batch)
 python3 experiments/attack_paraphrase.py       # Test 3: paraphrase/rewrite attack
@@ -222,7 +237,8 @@ Scripts live in `experiments/`; their generated tensors + `prompts.json` live in
 | `score2.py` | rich per-token features (NLL/rank/entropy) → `feats_proxy_*.pt` |
 | `cross_family.py` | v1 cross-family de-confound check |
 | `crossfam2.py` | cross-family served (SmolLM2-360M) + rich scoring → `feats_cross_*.pt` |
-| `detect.py` | logistic-regression detector, 5-fold CV, baseline/LR/panel |
+| `detect.py` | logistic-regression detector, 5-fold CV, baseline/LR/panel + capability-gradient (all served tiers) |
+| `plot_capability_gap.py` | dose-response figure: panel AUC vs capability gap + vs tokens → `fig_difr_capability_gap.png` |
 | `detlib.py` | shared feature-extraction + detector helpers (Tests 3–5) |
 | `robust_temp.py` | Test 1: adaptive temperature-tuning attack → `robust_temp_results.pt` |
 | `robust_stack.py` | Test 2: benign cross-stack (kernel/batch) → `robust_stack_results.pt` |
@@ -234,6 +250,7 @@ Scripts live in `experiments/`; their generated tensors + `prompts.json` live in
 | `difr_data/*.pt` | generated tensors (gen/scores/feats/*_results) consumed by the scripts above |
 | `docs/figures/fig_difr_summary.png` | v1 summary (single-stat 0.5B proxy) |
 | `docs/figures/fig_difr_detect.png` | **main figure** — richer features + panel, same-tier & cross-family |
+| `docs/figures/fig_difr_capability_gap.png` | **dose-response figure** — panel AUC vs capability gap (all served tiers) |
 | `docs/figures/fig_difr_robustness.png` | **robustness figure** — temperature attack + cross-stack |
 
 ## Caveats / threats to validity
