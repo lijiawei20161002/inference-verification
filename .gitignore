@@ -2,6 +2,7 @@
 upstream/
 __pycache__/
 *.pyc
+.DS_Store
 
 # Local secrets / key helpers — never commit
 .set_key.sh

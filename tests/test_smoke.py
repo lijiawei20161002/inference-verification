@@ -69,10 +69,31 @@ def test_plugin_loading_registers_strategies():
     root = Path(__file__).resolve().parents[1]
     load_strategies([str(root / "examples" / "custom_strategies.py")])
     assert "logit_spike" in attacks.all_attacks()
-    assert "topk_overlap" in defenses.all_defenses()
+    assert "top1_mismatch_toy" in defenses.all_defenses()
     # the registered objects are usable instances, not bare classes
     assert not isinstance(attacks.get("logit_spike"), type)
-    assert not isinstance(defenses.get("topk_overlap"), type)
+    assert not isinstance(defenses.get("top1_mismatch_toy"), type)
+
+
+def test_token_toploc_scores_rank_of_claimed_token():
+    """`token_toploc` (built-in, promoted from the examples/ demo) must score 0
+    when the claimed token is the verifier's argmax, and a positive rank
+    otherwise, capped at `rank_cap`."""
+    from ivgym.core import VerifyContext, SamplingSpec
+
+    toploc = defenses.get("token_toploc")
+    assert "token_toploc" in defenses.all_defenses()
+    assert toploc.needs_seed is False
+
+    spec = SamplingSpec(temperature=1.0, top_k=None, top_p=None)
+    logits = np.array([5.0, 3.0, 1.0, 0.0], dtype=np.float32)
+    gumbel = np.zeros_like(logits)
+
+    honest_ctx = VerifyContext(claimed_token=0, ref_logits=logits, gumbel=gumbel, sampling=spec)
+    assert toploc.score(honest_ctx) == 0.0
+
+    cheat_ctx = VerifyContext(claimed_token=2, ref_logits=logits, gumbel=gumbel, sampling=spec)
+    assert toploc.score(cheat_ctx) == 2.0  # two tokens (idx 0, 1) rank above idx 2
 
 
 class _FakeBackend:

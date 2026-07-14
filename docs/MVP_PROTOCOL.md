@@ -1,9 +1,10 @@
 # The MVP inference-verification protocol: mechanism, performance, cost
 
-This document explains the **end-to-end MVP** that lives in the four top-level
-files — [`model.py`](../model.py), [`commit.py`](../commit.py),
-[`protocol.py`](../protocol.py), and the measurement harness
-[`experiment.py`](../experiment.py) — and reproduced in
+This document explains the **end-to-end MVP** that lives in the
+[`mvp/`](../mvp/) package —
+[`model.py`](../mvp/model.py), [`commit.py`](../mvp/commit.py),
+[`protocol.py`](../mvp/protocol.py), and the measurement harness
+[`experiment.py`](../mvp/experiment.py) — and reproduced in
 [`docs/results/exp_protocol_measurement.txt`](results/exp_protocol_measurement.txt).
 
 Where `ivgym/` studies the **detector** in isolation (given a claimed transcript
@@ -16,7 +17,7 @@ detector alone cannot: **how much does verification cost, and how little of it
 do you need?**
 
 Everything below is *measured*, not estimated. Every FLOP count comes from a real
-matmul counter ([`model.py:26`](../model.py)); every detection number comes from
+matmul counter ([`model.py:26`](../mvp/model.py)); every detection number comes from
 really serving, committing, and auditing a 6-layer transformer.
 
 ---
@@ -30,7 +31,7 @@ quantized copy, half the layers, a stubbed sampler — and pocket the difference
 The MVP models the cleanest version of this: the honest provider runs all
 `n_layer` layers; the **cheating** provider early-exits after `n_layer // 2`
 layers, a real approximation that **saves 48.7% of generation FLOPs**
-([`protocol.py:32`](../protocol.py), measured in Phase 1). The **client** wants
+([`protocol.py:32`](../mvp/protocol.py), measured in Phase 1). The **client** wants
 to catch that deviation while (a) paying far less than re-running everything and
 (b) almost never falsely accusing an honest provider.
 
@@ -54,7 +55,7 @@ runs in two modes that mirror production:
   transcript in a single shot.
 
 A `Transcript` records the prompt, the emitted tokens, the per-token logits, and
-the real `gen_flops` the provider spent ([`protocol.py:22`](../protocol.py)).
+the real `gen_flops` the provider spent ([`protocol.py:22`](../mvp/protocol.py)).
 
 ### 2.2 Commit — bind the transcripts before the audit (`commit.py`)
 
@@ -69,13 +70,13 @@ see the audit set and then swap a cheated transcript for an honest one — any s
 swap changes a leaf, hence the root, and fails the authentication-path check.
 This is what pins the per-request catch probability to exactly the audit rate `q`
 rather than something the provider can drive toward zero by guessing the audit
-set ([`commit.py:1`](../commit.py)).
+set ([`commit.py:1`](../mvp/commit.py)).
 
 ### 2.3 Audit — re-score a random sample (`protocol.py`)
 
 The client picks each request independently with probability `q` (its private
 coins, flipped *after* the root is fixed). For each audited request it does two
-things ([`protocol.py:46`](../protocol.py)):
+things ([`protocol.py:46`](../mvp/protocol.py)):
 
 1. **Binding check** — verify the Merkle authentication path against the
    published root. A tampered or non-committed transcript fails here.
@@ -90,7 +91,7 @@ A cheat is **caught** iff it is both *audited* and *flagged*.
 
 Real inference is not bit-exact across hardware, so the client's re-score is
 modeled as the true logits plus Gaussian noise `sigma`
-([`protocol.py:82`](../protocol.py)). The tolerance `eps` must sit **above** the
+([`protocol.py:82`](../mvp/protocol.py)). The tolerance `eps` must sit **above** the
 honest noise floor (so honest providers aren't flagged, keeping the
 false-positive rate `α` low) and **below** the deviation a real cheat induces (so
 cheats aren't missed, keeping the miss rate `δ` low). Phase 1 of the experiment
@@ -211,7 +212,7 @@ governed entirely by two knobs:
 Because `β ≈ 1` and `(1−δ) = 1` here, the cost is almost purely `ln(1/(1−P)) /
 f` re-scores. A cheaper detector (a black-box I/O test, or the speculative-decode
 *trace* check that needs no recompute — see the README and
-[SPEC_DECODE_TRACE_VERIFICATION.md](SPEC_DECODE_TRACE_VERIFICATION.md)) lowers the
+[SPEC_DECODING_AND_PROXY_DETECTION.md](SPEC_DECODING_AND_PROXY_DETECTION.md)) lowers the
 per-audit `β`, but the `1/f · ln(1/(1−P))` **count** is a property of the
 inspection game, not the detector.
 
@@ -237,6 +238,6 @@ inspection game, not the detector.
 
 ```bash
 # from inference-verification/  (pure numpy + matplotlib; no GPU, ~1 min)
-python experiment.py
+python -m mvp.experiment
 # prints Phases 1–4 and writes docs/figures/fig_protocol_measurement.png
 ```

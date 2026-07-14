@@ -24,10 +24,10 @@ This settles the two questions Roy raised on the thread:
                 Qwen2.5-1.5B  (same family as M, bigger)
                 SmolLM2-1.7B  (DIFFERENT family -- does the proxy need M's lineage?)
 
-  2. "What are 'verified tokens' and how can AUC be < 0.5?"  -- the verifier never
+  2. "What are 'scored tokens' and how can AUC be < 0.5?"  -- the verifier never
      re-runs M. It teacher-forces only the first k tokens of the provider's claimed
      completion through the cheap proxy and reads per-token SURPRISE features
-     (NLL / rank / entropy). k = "verified tokens" = the verifier's cost knob; we
+     (NLL / rank / entropy). k = "scored tokens" = the verifier's cost knob; we
      sweep it. Detection AUC is the OUT-OF-FOLD AUC of a logistic regression on
      those features (5-fold CV). When the substitution is indistinguishable under
      the proxy (e.g. quantized self), the LR fits fold noise and its held-out
@@ -54,7 +54,7 @@ Env overrides:
   IVGYM_N        prompts / sequences per cell (default 64)
   IVGYM_TOKENS   generated continuation len  (default 64)
   IVGYM_MAXPROMPT prompt truncation tokens   (default 48)
-  IVGYM_KSWEEP   comma verified-token budgets (default 8,16,32,64)
+  IVGYM_KSWEEP   comma scored-token budgets (default 8,16,32,64)
 """
 from __future__ import annotations
 
@@ -391,7 +391,7 @@ def report(results, meta, t0):
         print(s, flush=True); out_lines.append(s)
 
     emit(f"\n{'='*100}")
-    emit(f"CHEAP-PROXY DETECTION AUC   (claimed M = {CLAIMED};  verified tokens k = {kmax};  "
+    emit(f"CHEAP-PROXY DETECTION AUC   (claimed M = {CLAIMED};  scored tokens k = {kmax};  "
          f"out-of-fold LR)")
     emit(f"rows = model the provider SECRETLY runs (increasing distance from M);  "
          f"cols = verifier's cheap proxy")
@@ -417,9 +417,9 @@ def report(results, meta, t0):
             cells += f" {r.auc_nll:>14.3f}" if r and not np.isnan(r.auc_nll) else f" {'--':>14}"
         emit(f"{prov:>20} {group:>28} |{cells}")
 
-    # ---- verified-token sweep (cost knob) on the same-family 0.5B proxy ----
+    # ---- scored-token sweep (cost knob) on the same-family 0.5B proxy ----
     ref_prox = proxies[0]
-    emit(f"\nVERIFIED-TOKEN SWEEP  (proxy = {ref_prox}; AUC vs k = the verifier's cost knob):")
+    emit(f"\nSCORED-TOKEN SWEEP  (proxy = {ref_prox}; AUC vs k = the verifier's cost knob):")
     hk = f"{'substituted model':>20} |" + "".join(f" {'k='+str(k):>9}" for k in K_SWEEP)
     emit(hk); emit("-" * len(hk))
     for dist, prov, group in rows:
@@ -436,7 +436,7 @@ def report(results, meta, t0):
     emit("  * A DIFFERENT-family proxy (SmolLM2) still detects far substitutions but is weaker on")
     emit("    near ones -- proxy lineage matters most exactly where detection is hardest.")
     emit("  * Sub-0.5 signed AUC on the near rows is the noise-fit artifact (mean-NLL AUC stays 0.5).")
-    emit("  * More verified tokens k => higher AUC on the detectable rows: k is the cost/accuracy knob.")
+    emit("  * More scored tokens k => higher AUC on the detectable rows: k is the cost/accuracy knob.")
 
     resdir = Path(__file__).resolve().parents[1] / "docs" / "results"
     resdir.mkdir(parents=True, exist_ok=True)
@@ -484,19 +484,19 @@ def render(results, rows, proxies, path):
                   "far enough from M (distance ladder, x-axis)", fontsize=10)
     axH.legend(fontsize=8, loc="lower right", title="verifier proxy")
 
-    # right: verified-token sweep on the same-family 0.5B proxy
+    # right: scored-token sweep on the same-family 0.5B proxy
     ref = proxies[0]
     cmap = plt.cm.viridis(np.linspace(0, 0.92, len(rows)))
     for i, (_, prov, group) in enumerate(rows):
         ys = [get(prov, ref, k).auc_lr if get(prov, ref, k) else np.nan for k in K_SWEEP]
         axK.plot(K_SWEEP, ys, "o-", color=cmap[i], lw=1.6, ms=6, label=f"{prov}")
     axK.axhline(0.5, ls=":", color="0.4", lw=1.3)
-    axK.set_xlabel("verified tokens k  (verifier cost knob)")
+    axK.set_xlabel("scored tokens k  (verifier cost knob)")
     axK.set_ylabel("detection AUC")
     axK.set_xscale("log", base=2); axK.set_xticks(K_SWEEP)
     axK.get_xaxis().set_major_formatter(matplotlib.ticker.ScalarFormatter())
     axK.set_ylim(0.35, 1.03); axK.grid(alpha=0.25)
-    axK.set_title(f"More verified tokens => more detection\n(proxy = {ref})", fontsize=10)
+    axK.set_title(f"More scored tokens => more detection\n(proxy = {ref})", fontsize=10)
     axK.legend(fontsize=6.5, loc="lower right", ncol=1)
 
     fig.suptitle("When does the cheap-proxy verifier work? Detection AUC across a model-distance grid",

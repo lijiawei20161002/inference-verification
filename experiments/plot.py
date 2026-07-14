@@ -25,7 +25,7 @@ plt.plot(KS, cross,                         "s-", lw=2, label="sub → SmolLM2-3
 plt.plot(KS, curve("sub_3b","logrank"),   "^--", lw=2, label="sub → Qwen 3B (still capable)  ✗")
 plt.plot(KS, curve("quant_4bit","ce"),    "x--", lw=2, label="4-bit quant of 7B (subtle)  ✗")
 plt.axhline(0.5,color="gray",ls=":"); plt.xscale("log",base=2); plt.xticks(KS,KS)
-plt.ylim(0.45,1.0); plt.xlabel("verified tokens"); plt.ylabel("detection AUC")
+plt.ylim(0.45,1.0); plt.xlabel("scored tokens"); plt.ylabel("detection AUC")
 plt.title("Cheap 0.5B proxy (6.5% of claimed-7B FLOP) as inference verifier")
 plt.legend(fontsize=9,loc="lower right"); plt.grid(alpha=0.3); plt.tight_layout()
 plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)),"..","docs","figures","fig_difr_summary.png"),dpi=130)

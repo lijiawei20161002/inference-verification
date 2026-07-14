@@ -49,7 +49,7 @@ Verification only prefills the tokens you audit (converges in ~16–32), so tota
 small fraction of one forward pass — orders of magnitude below full same-model DiFR, and
 astronomically below ZKP (zkLLM ≈ days per generation).
 
-## Results — detection AUC vs. verified tokens
+## Results — detection AUC vs. scored tokens
 
 ### Same-tier substitution: honest 7B vs. sub → 0.5B (5-fold CV)
 
@@ -85,6 +85,37 @@ The cliff sits between **~5× (1.5B, still caught at 0.99)** and **~2.5× (3B, g
 the panel owns downgrades of roughly a half-order of magnitude or more and cedes everything
 closer to the claimed tier. (The earlier "~0.55 @128 for 3B" came from the single-statistic
 `analyze.py`; the panel gives 0.58 — same conclusion, near chance.)
+
+### Model-distance ladder: how *different* does the substitute need to be? (`exp_proxy_distance_grid.py`)
+
+The capability gradient above varies *size* along one family. `exp_proxy_distance_grid.py`
+makes "how different" an explicit 2-D grid instead: rows step a substituted model away from
+the claimed model M along an ordered distance ladder (quantized self → smaller sibling →
+same-size different-domain → next-gen → RL-distilled → different family/tokenizer), columns
+vary the verifier's cheap proxy (including a cross-family proxy with a different tokenizer —
+the verifier re-tokenizes the provider's decoded text under its own vocabulary, so this works
+even when proxy and M don't share token ids). Run with `IVGYM_LADDER=qwen` (claimed
+`Qwen2.5-7B-Instruct`) or `IVGYM_LADDER=llama` (claimed `Llama-3.1-8B-Instruct`):
+
+| substituted model (Qwen ladder, distance ↑) | AUC (Qwen2.5-0.5B proxy) | AUC (Qwen2.5-1.5B proxy) | AUC (SmolLM2-1.7B proxy, cross-family) |
+|---|---|---|---|
+| Qwen2.5-7B (self) | 0.304 | 0.323 | 0.307 |
+| Qwen2.5-7B NF4 (quantized self) | 0.372 | 0.441 | 0.324 |
+| Qwen2.5-3B (same family, smaller) | 0.493 | 0.493 | 0.522 |
+| Qwen2.5-Coder-7B (same fam+size, diff domain) | 0.650 | 0.637 | 0.560 |
+| Qwen3-8B (same company, next gen) | 0.624 | 0.722 | 0.690 |
+| DeepSeek-R1-Distill-Qwen-7B (same base, RL-distilled) | 0.871 | 0.887 | 0.813 |
+| Llama-3.1-8B (different family, different tokenizer) | 0.860 | 0.866 | 0.758 |
+
+Same shape as the capability gradient: quantized-self sits at chance (~0.4, indistinguishable
+to a cheap proxy), and AUC climbs monotonically with distance from M, crossing the
+"a cheap proxy is enough" threshold (~0.85) once the substitution reaches a different
+post-training lineage or a different model family entirely — and this holds even when the
+proxy's tokenizer differs from M's (SmolLM2 column). Full tables (including the fixed-direction
+mean-NLL AUC and the scored-token-budget `k` sweep) are in
+`docs/results/exp_proxy_distance_grid.txt` (Qwen ladder) and
+`docs/results/exp_proxy_distance_grid_llama.txt` (Llama ladder); figures are
+`docs/figures/fig_proxy_distance_grid_qwen.png` and `fig_proxy_distance_grid_llama.png`.
 
 ## Findings
 
@@ -223,6 +254,10 @@ python3 experiments/attack_paraphrase.py       # Test 3: paraphrase/rewrite atta
 python3 experiments/attack_joint.py            # Test 4: joint sampling-knob attacker
 python3 experiments/robust_stack_large.py      # Test 5: larger stack gap (fp32)
 python3 experiments/plot3.py                   # -> docs/figures/fig_difr_robustness.png
+
+# model-distance ladder (separate real-model run; needs GPU + HF access)
+IVGYM_LADDER=qwen  python3 -m experiments.exp_proxy_distance_grid   # -> fig_proxy_distance_grid_qwen.png
+IVGYM_LADDER=llama python3 -m experiments.exp_proxy_distance_grid   # -> fig_proxy_distance_grid_llama.png
 ```
 Scripts live in `experiments/`; their generated tensors + `prompts.json` live in
 `experiments/difr_data/` (loaded via an `EXP` path resolved relative to `__file__`).
@@ -246,12 +281,14 @@ Scripts live in `experiments/`; their generated tensors + `prompts.json` live in
 | `attack_joint.py` | Test 4: joint sampling-knob attacker → `attack_joint_results.pt` |
 | `robust_stack_large.py` | Test 5: larger stack gap (fp32) → `robust_stack_large_results.pt` |
 | `plot.py` / `plot2.py` / `plot3.py` | figures → `docs/figures/fig_difr_summary.png` / `fig_difr_detect.png` / `fig_difr_robustness.png` |
+| `exp_proxy_distance_grid.py` | 2-D model-distance ladder (quant/family/domain/tokenizer) → `feats_proxy_*` not cached, real-model run each time |
 | `difr_data/prompts.json` | 300 fixed prompts |
 | `difr_data/*.pt` | generated tensors (gen/scores/feats/*_results) consumed by the scripts above |
 | `docs/figures/fig_difr_summary.png` | v1 summary (single-stat 0.5B proxy) |
 | `docs/figures/fig_difr_detect.png` | **main figure** — richer features + panel, same-tier & cross-family |
 | `docs/figures/fig_difr_capability_gap.png` | **dose-response figure** — panel AUC vs capability gap (all served tiers) |
 | `docs/figures/fig_difr_robustness.png` | **robustness figure** — temperature attack + cross-stack |
+| `docs/figures/fig_proxy_distance_grid_qwen.png` / `_llama.png` | model-distance ladder, two claimed models |
 
 ## Caveats / threats to validity
 

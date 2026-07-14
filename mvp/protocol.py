@@ -15,8 +15,8 @@ Nondeterminism: the client's re-score adds Gaussian noise sigma to emulate
 non-bit-exact hardware. eps must exceed the noise to avoid false positives.
 """
 import numpy as np
-import model as M
-from commit import leaf_hash, MerkleTree
+from mvp import model as M
+from mvp.commit import leaf_hash, MerkleTree
 
 
 class Transcript:

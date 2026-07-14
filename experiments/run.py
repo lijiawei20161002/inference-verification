@@ -15,7 +15,7 @@ Examples (the backend is a real model on a GPU; needs CUDA + transformers)
 
     # only your strategies, larger batch
     .venv/bin/python -m experiments.run --strategies examples/custom_strategies.py \
-        --attacks logit_spike --defenses topk_overlap token_difr --batch 2000
+        --attacks logit_spike --defenses top1_mismatch_toy token_difr --batch 2000
 """
 from __future__ import annotations
 

@@ -7,7 +7,7 @@ unavailable**. The verifier is left with seed-free scores:
   * `cross_entropy`   -- NLL of the claimed token under the reference logits,
   * `activation_difr` -- L2 between the provider-*reported* activation fingerprint
                          and the verifier's recomputed one,
-  * `topk_overlap`    -- rank of the claimed token (a TOPLOC-style check).
+  * `token_toploc`    -- rank of the claimed token (a TOPLOC-style check).
 
 All three are functions only of what the provider *emits* (the claimed token, or
 the reported fingerprint). That is the opening: the attacker quantizes for the

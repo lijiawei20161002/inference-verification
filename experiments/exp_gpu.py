@@ -25,7 +25,7 @@ N_PROMPTS = int(os.environ.get("IVGYM_PROMPTS", 12))
 N_TOKENS = int(os.environ.get("IVGYM_TOKENS", 48))
 BATCH = int(os.environ.get("IVGYM_BATCH", 200))
 ATTACKS = ["quant_4bit", "kv_fp8", "temp_1.1", "seed_43", "bug_k2", "bug_k32"]
-DEFENSES = ["token_difr", "cross_entropy", "activation_difr"]
+DEFENSES = ["token_difr", "cross_entropy", "activation_difr", "token_toploc"]
 
 
 def main():

@@ -7,7 +7,7 @@ difr_data/feats_*.pt (the same 0.5B+1.5B panel detector as detect.py), so the fi
 tracks the actual experiment data rather than transcribed numbers.
 
 Left  : panel AUC vs served-model size (log x). The dose-response / capability gap.
-Right : panel AUC vs verified tokens, one curve per served tier.
+Right : panel AUC vs scored tokens, one curve per served tier.
 """
 import os
 import matplotlib; matplotlib.use("Agg")
@@ -74,7 +74,7 @@ axL.set_title("Dose-response: detectability tracks the capability gap")
 axL.grid(alpha=0.3)
 axL.legend(fontsize=8.5, loc="center left")
 
-# ---- Right: AUC vs verified tokens, one curve per tier ---------------------------
+# ---- Right: AUC vs scored tokens, one curve per tier ---------------------------
 for t in TIERS:
     axR.plot(KS, [panel_auc(t, k) for k in KS], "o-", lw=2,
              color=COLOR[t], label=SERVED[t]["label"])
@@ -85,7 +85,7 @@ axR.set_xscale("log", base=2)
 axR.set_xticks(KS)
 axR.set_xticklabels(KS)
 axR.set_ylim(0.42, 1.02)
-axR.set_xlabel("verified tokens")
+axR.set_xlabel("scored tokens")
 axR.set_ylabel("detection AUC (0.5B+1.5B panel, 5-fold CV)")
 axR.set_title("Convergence vs. tokens audited, per served tier")
 axR.grid(alpha=0.3)

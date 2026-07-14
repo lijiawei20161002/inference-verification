@@ -14,9 +14,9 @@ Phases:
 """
 import time
 import numpy as np
-import model as M
-import protocol as P
-from commit import MerkleTree
+from mvp import model as M
+from mvp import protocol as P
+from mvp.commit import MerkleTree
 
 np.set_printoptions(precision=4, suppress=True)
 
@@ -244,7 +244,7 @@ def render(path):
 
 from pathlib import Path
 try:
-    figpath = Path(__file__).resolve().parent / "docs" / "figures" / "fig_protocol_measurement.png"
+    figpath = Path(__file__).resolve().parents[1] / "docs" / "figures" / "fig_protocol_measurement.png"
     render(figpath)
     print(f"\nwrote figure: {figpath}")
 except Exception as e:

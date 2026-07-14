@@ -20,7 +20,7 @@ ax[1].plot(KS,quant_pan,"x:",color="#2ca02c",lw=2,label="4-bit quant (subtle) â€
 ax[1].set_title("Cross-family substitution  (7B â†’ SmolLM2-360M)")
 for a in ax:
     a.axhline(0.5,color="k",ls=":",alpha=0.5); a.set_xscale("log",base=2); a.set_xticks(KS); a.set_xticklabels(KS)
-    a.set_ylim(0.4,1.0); a.set_xlabel("verified tokens"); a.grid(alpha=0.3); a.legend(fontsize=9,loc="lower right")
+    a.set_ylim(0.4,1.0); a.set_xlabel("scored tokens"); a.grid(alpha=0.3); a.legend(fontsize=9,loc="lower right")
 ax[0].set_ylabel("detection AUC (5-fold CV)")
 fig.suptitle("Pushing the cheap proxy higher: richer features + 2-proxy panel  (panel = 27% of one 7B forward pass)",fontsize=12)
 plt.tight_layout(); plt.savefig(os.path.join(os.path.dirname(os.path.abspath(__file__)),"..","docs","figures","fig_difr_detect.png"),dpi=130); print("saved")

@@ -8,6 +8,11 @@ No library files are edited: importing this module runs the `@register`
 decorators, which add the strategies to the same registries the harness and
 every backend already use. The two strategies below run unchanged on a real
 model on a GPU (the default `hf_gpu` backend).
+
+(The rank-based TOPLOC-flavoured defense that used to live here as a demo has
+since been promoted to a first-class built-in: `ivgym.defenses.TokenTOPLOC`,
+name `"token_toploc"`. The defense below is a distinct, deliberately-naive
+example kept purely to show the registration mechanism.)
 """
 from __future__ import annotations
 
@@ -43,25 +48,21 @@ class LogitSpike(Attack):
 
 
 # ---------------------------------------------------------------------------
-# A custom DEFENSE: rank of the claimed token in the verifier's filtered
-# distribution (a TOPLOC-flavoured score). 0 means the claimed token is the
-# verifier's argmax; larger means the provider emitted something the verifier
-# ranks lower. Needs no shared Gumbel noise -- it only reads the reference
-# logits -- so it is a cheap, seed-free contrast to Token-DiFR.
+# A custom DEFENSE: is the claimed token the verifier's argmax under the
+# filtered (top-k/top-p) distribution? A deliberately naive top-1-only check
+# (no seed sync needed) -- weaker than the built-in rank-based `token_toploc`,
+# here only to demonstrate the registration mechanism.
 # ---------------------------------------------------------------------------
 @register_defense
 @dataclass
-class TopKOverlap(Defense):
-    name: str = "topk_overlap"
+class Top1Mismatch(Defense):
+    name: str = "top1_mismatch_toy"
     needs_seed: bool = False
     needs_activation: bool = False
-    rank_cap: float = 50.0      # clip so a single filtered token can't dominate
 
     def score(self, ctx) -> float:
         s = ctx.sampling
         filt = filtered_logits(ctx.ref_logits, s.top_k, s.top_p)
         if filt[ctx.claimed_token] <= -1e29:
-            return self.rank_cap            # claimed token isn't even in top-k/p
-        # how many tokens the verifier ranks strictly above the claimed one
-        rank = float(np.sum(filt > filt[ctx.claimed_token]))
-        return min(rank, self.rank_cap)
+            return 1.0               # claimed token isn't even in top-k/p
+        return 0.0 if int(np.argmax(filt)) == ctx.claimed_token else 1.0

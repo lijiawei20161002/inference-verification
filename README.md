@@ -65,7 +65,8 @@ ivgym/
   sampling.py            seed-synced Gumbel-Max + top-k/top-p (Alg. 1)
   core.py                SamplingSpec, Sequence/TokenStep, VerifyContext
   attacks.py             Attack base + registry (honest, quant, temp, seed, bug, adv-temp)
-  defenses.py            Defense base + registry (token_difr, cross_entropy, activation_difr)
+  defenses.py            Defense base + registry (token_difr, cross_entropy, activation_difr,
+                         token_toploc)
                          -- white-box: handed ref_logits (verifier re-ran model M)
   io_detectors.py        IODetector base + registry (surface_stat/rank/tokens, learned, llm_judge)
                          -- black-box: score (prompt, claimed_tokens) WITHOUT recomputing M
@@ -100,12 +101,16 @@ experiments/
   exp_tie_triage_margin.py  GPU: same, sparse Token-DiFR flip signal (sharper win) ->
                             docs/figures/fig_tie_triage_margin.png
   exp_selective_verify_gpu.py GPU: verify_selective end-to-end on the real backend
+  exp_proxy_distance_grid.py GPU: 2-D model-distance ladder (quant/family/domain/tokenizer) ->
+                            docs/figures/fig_proxy_distance_grid_{qwen,llama}.png
 examples/
   custom_strategies.py      template: a custom attack + a custom defense
   safe_set_strategies.py    seed-aware SAFE-set substitution attack
   seed_free_strategies.py   quant + temp-retune + fingerprint-spoof attack
 tests/test_smoke.py         backend-agnostic unit tests (sampling, projection, metrics, registry)
 tests/test_proxy_spec.py    client-side proxy verifier (accept-rate identity, reference, evasion)
+mvp/                        standalone Merkle-commit-and-audit demo (separate from ivgym --
+                             see docs/MVP_PROTOCOL.md); reproduce with `python -m mvp.experiment`
 ```
 
 ## Run it
@@ -126,28 +131,33 @@ IVGYM_PROMPTS=20 IVGYM_TOKENS=128 IVGYM_BATCH=1000 .venv/bin/python -m experimen
 
 Override with env vars: `IVGYM_MODEL`, `IVGYM_PROMPTS`, `IVGYM_TOKENS`, `IVGYM_BATCH`.
 
-Real-model output (Qwen3-0.6B, 20 prompts × 128 tokens, batch=1000, ~13.5 min on an H100-80GB):
+Real-model output (Qwen3-0.6B, 20 prompts × 128 tokens, batch=1000, ~14.6 min on an H100-80GB;
+full log in `docs/results/exp_gpu_qwen3-0.6b.txt`):
 
 ```
-      attack |       token_difr    cross_entropy  activation_difr
-  quant_4bit |           1.0000           0.9186           1.0000
-      kv_fp8 |           1.0000           0.9931           1.0000
-    temp_1.1 |           1.0000           1.0000           0.0000
-     seed_43 |           1.0000           1.0000           0.0000
-      bug_k2 |           1.0000           0.1347           0.0000
-     bug_k32 |           1.0000           0.9791           0.0000
+      attack |       token_difr    cross_entropy  activation_difr     token_toploc
+  quant_4bit |           1.0000           0.9618           1.0000           0.9998
+      kv_fp8 |           0.9974           0.9830           1.0000           0.9838
+    temp_1.1 |           0.9867           1.0000           0.0122           0.9913
+     seed_43 |           1.0000           1.0000           0.0000           1.0000
+      bug_k2 |           0.9800           0.0164           0.0015           0.8907
+     bug_k32 |           1.0000           0.6838           0.0000           1.0000
 ```
 
 Over a real LLM's logit geometry, with a large enough token pool the picture is crisp:
 
-- **Token-DiFR** catches *every* attack (AUC 1.0 across the board) — the strong,
-  general detector that sees both forward-pass and sampling deviations.
-- **Activation-DiFR** is perfectly bifurcated: 1.0 on forward-pass attacks
-  (quant/fp8) and 0.0 on every sampling-only change (temp/seed/bug) — it never
+- **Token-DiFR** catches *every* attack (AUC ≥0.98) — the strong, general
+  detector that sees both forward-pass and sampling deviations.
+- **Activation-DiFR** is sharply bifurcated: ~1.0 on forward-pass attacks
+  (quant/fp8) and ~0.0 on every sampling-only change (temp/seed/bug) — it never
   sees the sampler.
-- **Cross-entropy** flags almost everything (0.92–1.0) but is blinded by the tiny
-  `bug_k2` (1%-rate flip of the top-2 tokens, AUC 0.13) — the hard case, where
-  only Token-DiFR still holds at 1.0.
+- **Cross-entropy** flags most attacks (0.68–1.0) but is nearly blind to the tiny
+  `bug_k2` (1%-rate flip of the top-2 tokens, AUC 0.02).
+- **Token-TOPLOC** (rank of the claimed token in the verifier's filtered
+  distribution, no seed sync needed) tracks Token-DiFR closely (≥0.89
+  everywhere, 1.0 on 3/6 attacks) — a cheap, seed-free rank check catches
+  almost as much as the seed-synced margin score, and clearly more than
+  cross-entropy on the subtle `bug_k2` case (0.89 vs 0.02).
 
 At the smaller default pool (12 prompts × 48 tokens, batch=200, ~3 min) the same
 structure is visible but noisier — several AUCs sit near or below 0.5. Push
@@ -406,7 +416,7 @@ real model, with no other changes:
 
 # pick the matchups and the batch size
 .venv/bin/python -m experiments.run --strategies examples/custom_strategies.py \
-    --attacks logit_spike quant_4bit --defenses token_difr cross_entropy topk_overlap
+    --attacks logit_spike quant_4bit --defenses token_difr cross_entropy top1_mismatch_toy
 ```
 
 `experiments/run.py --help` lists every flag (`--model`, `--prompts`, `--tokens`,
@@ -424,10 +434,12 @@ need no changes. See the module docstring for the full contract.
 
 ## Status / not yet done
 
-- TOPLOC baseline defense (top-k index/value polynomial) — stub slot in defenses.
 - Likelihood-style Token-DiFR transforms (Appendix A) and multi-feature
   aggregation (the paper monitors several detectors in parallel).
-- Communication-cost Pareto sweep for Activation-DiFR vs TOPLOC (k × J).
+- Communication-cost Pareto sweep for Activation-DiFR vs TOPLOC (k × J). (TOPLOC
+  itself is now a built-in defense, `ivgym.defenses.TokenTOPLOC` / `token_toploc`
+  — see `experiments/exp_toploc_gpu.py`; the cost-Pareto sweep against
+  Activation-DiFR specifically is still open.)
 - Real vLLM backend implementation + the temp-0 spot-check mode (Appendix D).
   (The HF GPU backend in `ivgym/backends/hf_gpu.py` now runs the harness against a
   real model end-to-end; vLLM remains for higher throughput.)

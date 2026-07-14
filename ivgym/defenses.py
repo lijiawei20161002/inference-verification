@@ -110,5 +110,36 @@ class ActivationDiFR(Defense):
         return float(np.linalg.norm(ctx.fingerprint - ctx.ref_fingerprint))
 
 
-for d in [TokenDiFR(), CrossEntropy(), ActivationDiFR()]:
+@dataclass
+class TokenTOPLOC(Defense):
+    """TOPLOC-flavoured score: rank of the claimed token in the verifier's
+    filtered (top-k/top-p) distribution. 0 means the claimed token is the
+    verifier's argmax; larger means the provider emitted something the
+    verifier ranks lower. Needs no shared Gumbel noise -- it only reads the
+    reference logits -- so it is a cheap, seed-free contrast to Token-DiFR.
+
+    A real TOPLOC (Sun et al., "TOPLOC: A Locality Sensitive Hashing Scheme
+    for Trustless Verifiable Inference") commits to top-k index/value pairs
+    per token and checks overlap against that commitment; this defense plays
+    the same top-k-rank role within `ivgym`'s scalar-per-token-score harness,
+    without the separate hashing/commitment layer (out of scope for a
+    `Defense.score(ctx) -> float` contract).
+    """
+
+    name: str = "token_toploc"
+    needs_seed: bool = False
+    needs_activation: bool = False
+    rank_cap: float = 50.0      # clip so a single filtered token can't dominate
+
+    def score(self, ctx: VerifyContext) -> float:
+        s = ctx.sampling
+        filt = filtered_logits(ctx.ref_logits, s.top_k, s.top_p)
+        if filt[ctx.claimed_token] <= -1e29:
+            return self.rank_cap            # claimed token isn't even in top-k/p
+        # how many tokens the verifier ranks strictly above the claimed one
+        rank = float(np.sum(filt > filt[ctx.claimed_token]))
+        return min(rank, self.rank_cap)
+
+
+for d in [TokenDiFR(), CrossEntropy(), ActivationDiFR(), TokenTOPLOC()]:
     register(d)

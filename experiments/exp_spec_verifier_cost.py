@@ -31,7 +31,7 @@ What we report, side by side
   performance  : detection AUC (honest vs attack), batched like token_difr
   cost         : MEASURED GPU wall-clock per verified sequence (proxy prefill vs
                  full-M prefill) + the analytic FLOP ratio (= param ratio) + a
-                 $/1M-verified-tokens figure at a configurable GPU price.
+                 $/1M-scored-tokens figure at a configurable GPU price.
 
 Reading the result (see ``docs/results/exp_spec_verifier_cost.txt``): the
 SpeculativeVerifier costs ``params(q)/params(M)`` of the recompute (a large
