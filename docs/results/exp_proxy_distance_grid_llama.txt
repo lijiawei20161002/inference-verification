@@ -1,6 +1,6 @@
 
 ====================================================================================================
-CHEAP-PROXY DETECTION AUC   (claimed M = unsloth/Meta-Llama-3.1-8B-Instruct;  verified tokens k = 64;  out-of-fold LR)
+CHEAP-PROXY DETECTION AUC   (claimed M = unsloth/Meta-Llama-3.1-8B-Instruct;  scored tokens k = 64;  out-of-fold LR)
 rows = model the provider SECRETLY runs (increasing distance from M);  cols = verifier's cheap proxy
 cell = signed AUC (0.50 = indistinguishable; <0.50 = LR fit fold-noise, dir. reversed held-out)
 ====================================================================================================
@@ -28,7 +28,7 @@ SAME CELLS, fixed-direction mean-NLL AUC (no fitting -> cannot dip below ~0.5 on
  DS-R1-Distill-Llama        same base, RL-distill |          0.557          0.478          0.495
           Qwen2.5-7B             different family |          0.273          0.184          0.241
 
-VERIFIED-TOKEN SWEEP  (proxy = Llama-3.2-1B; AUC vs k = the verifier's cost knob):
+SCORED-TOKEN SWEEP  (proxy = Llama-3.2-1B; AUC vs k = the verifier's cost knob):
    substituted model |       k=8      k=16      k=32      k=64
 --------------------------------------------------------------
  Llama-3.1-8B (self) |     0.338     0.367     0.355     0.365
@@ -48,4 +48,4 @@ READING IT:
   * A DIFFERENT-family proxy (SmolLM2) still detects far substitutions but is weaker on
     near ones -- proxy lineage matters most exactly where detection is hardest.
   * Sub-0.5 signed AUC on the near rows is the noise-fit artifact (mean-NLL AUC stays 0.5).
-  * More verified tokens k => higher AUC on the detectable rows: k is the cost/accuracy knob.
+  * More scored tokens k => higher AUC on the detectable rows: k is the cost/accuracy knob.
