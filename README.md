@@ -103,6 +103,11 @@ experiments/
   exp_selective_verify_gpu.py GPU: verify_selective end-to-end on the real backend
   exp_proxy_distance_grid.py GPU: 2-D model-distance ladder (quant/family/domain/tokenizer) ->
                             docs/figures/fig_proxy_distance_grid_{qwen,llama}.png
+  exp_robustness_gpu.py     GPU: unified algorithm vs every attack on a MATRIX of real
+                            families/sizes -> docs/results/robustness_sweep.{json,md}
+  analyze_robustness.py     orientation-correct cross-model tables -> robustness_report.md
+  plot_robustness.py        figures from the sweep JSON (no GPU) ->
+                            docs/figures/fig_robustness_{heatmap,summary}.png
 examples/
   custom_strategies.py      template: a custom attack + a custom defense
   safe_set_strategies.py    seed-aware SAFE-set substitution attack
@@ -421,6 +426,39 @@ real model, with no other changes:
 
 `experiments/run.py --help` lists every flag (`--model`, `--prompts`, `--tokens`,
 `--batch`, `--n-batches`, `--backend`).
+
+## Robustness: does the unified detector generalize beyond one model?
+
+The repo was validated on Qwen3-0.6B. `experiments/exp_robustness_gpu.py` re-runs
+the whole unified verification algorithm — every registered attack against every
+Tier-0/Tier-1 verifier — on a **matrix of real models** (Qwen3, Llama-3.2,
+SmolLM2, Pythia; four families, nine sizes, different tokenizers and
+architectures) on an H100, and `analyze_robustness.py` renders the
+orientation-correct cross-model tables. `plot_robustness.py` turns that same
+`docs/results/robustness_sweep.json` into figures (pure numpy + matplotlib, no
+GPU) so the robustness story is visual like every other experiment here:
+
+```
+.venv/bin/python -m experiments.exp_robustness_gpu    # GPU sweep -> robustness_sweep.json
+.venv/bin/python -m experiments.analyze_robustness    # -> robustness_report.md
+.venv/bin/python -m experiments.plot_robustness       # -> the two figures below (no GPU)
+```
+
+![Robustness heatmap](docs/figures/fig_robustness_heatmap.png)
+
+The headline: **no single recompute detector is uniformly robust** —
+`token_difr` alone drops as low as AUC 0.04 on some family/attack cells (e.g.
+`kv_fp8` on SmolLM2-1.7B, where the divergence signal reverses) — but the
+**unified registry, taking the strongest verifier per attack, closes those gaps
+to a minimum detectability of 0.78** across all 63 cells. That is the case for
+keeping the detectors as a pluggable registry rather than betting on one score.
+
+![Robustness synthesis](docs/figures/fig_robustness_summary.png)
+
+The synthesis panels show which verifiers are most robust across all cells, which
+attacks are hardest (`bug_k2` and `kv_fp8` lead), the size trend within each
+family, and that **information-directed selective recompute at 25% budget matches
+(here, slightly edges out) full recompute** on the hard forward-pass attacks.
 
 ## Moving to real models
 
