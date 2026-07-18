@@ -6,6 +6,7 @@
     "n_batch": 200,
     "boot": 6,
     "target": 0.95,
+    "rel_frac": 0.95,
     "rhos": [
       0.02,
       0.026,
@@ -86,6 +87,7 @@
         "quant_4bit": {
           "token_difr": {
             "full_auc": 0.6739375,
+            "rel_target": 0.6402406249999999,
             "triaged": {
               "entropy": [
                 0.5725,
@@ -184,11 +186,19 @@
               "triage:surprisal": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.025606120689655162,
+              "triage:tie_margin": 0.031081660294117644,
+              "triage:surprisal": 0.07259057327586205,
+              "random": 0.14574644712259016
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 5.691859727173415
           },
           "cross_entropy": {
             "full_auc": 0.2411,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.6320625,
@@ -249,11 +259,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.03278622146438296
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.639311073219148
           },
           "activation_difr": {
             "full_auc": 1.0,
+            "rel_target": 0.95,
             "triaged": {
               "entropy": [
                 0.599125,
@@ -314,11 +330,17 @@
               "triage:entropy": 0.18658344370860921,
               "random": 0.12033740880724267
             },
+            "cost_rel": {
+              "triage:entropy": 0.18658344370860921,
+              "random": 0.12033740880724267
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 0.6449522337854146
+            "saving_factor": 0.6449522337854146,
+            "saving_rel": 0.6449522337854146
           },
           "token_toploc": {
             "full_auc": 0.5645625,
+            "rel_target": 0.5363343749999999,
             "triaged": {
               "entropy": [
                 0.7166375,
@@ -379,13 +401,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.03239100698539417
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.6195503492697083
           }
         },
         "kv_fp8": {
           "token_difr": {
             "full_auc": 0.725475,
+            "rel_target": 0.68920125,
             "triaged": {
               "entropy": [
                 0.575,
@@ -484,11 +512,19 @@
               "triage:surprisal": null,
               "random": null
             },
-            "best_value_fn": "entropy",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.36892194302606823,
+              "triage:tie_margin": 0.0526315604477612,
+              "triage:surprisal": 0.027988174999999994,
+              "random": 0.34309506716936927
+            },
+            "best_value_fn": "surprisal",
+            "saving_factor": null,
+            "saving_rel": 12.258572313820725
           },
           "cross_entropy": {
             "full_auc": 0.391875,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.5599125,
@@ -549,11 +585,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.023266687891329726
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.1633343945664862
           },
           "activation_difr": {
             "full_auc": 1.0,
+            "rel_target": 0.95,
             "triaged": {
               "entropy": [
                 0.5654125,
@@ -614,11 +656,17 @@
               "triage:entropy": 0.20185418224758905,
               "random": 0.14343229112384928
             },
+            "cost_rel": {
+              "triage:entropy": 0.20185418224758905,
+              "random": 0.14343229112384928
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 0.7105737890925589
+            "saving_factor": 0.7105737890925589,
+            "saving_rel": 0.7105737890925589
           },
           "token_toploc": {
             "full_auc": 0.7149,
+            "rel_target": 0.679155,
             "triaged": {
               "entropy": [
                 0.6113125,
@@ -679,13 +727,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.0246627147766323,
+              "random": 0.34817500054036526
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 14.117464508418918
           }
         },
         "temp_1.1": {
           "token_difr": {
             "full_auc": 0.705025,
+            "rel_target": 0.66977375,
             "triaged": {
               "entropy": [
                 0.5775,
@@ -784,11 +838,19 @@
               "triage:surprisal": 0.07053124999999998,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.03700316666666666,
+              "triage:tie_margin": 0.046952200961538466,
+              "triage:surprisal": 0.02,
+              "random": null
+            },
             "best_value_fn": "surprisal",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "cross_entropy": {
             "full_auc": 0.272425,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.570825,
@@ -849,11 +911,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.023346900210771133
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.1673450105385565
           },
           "activation_difr": {
             "full_auc": 0.376525,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.449025,
@@ -914,11 +982,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.04232498169570948,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.4725341677354445
           },
           "token_toploc": {
             "full_auc": 0.625725,
+            "rel_target": 0.5944387499999999,
             "triaged": {
               "entropy": [
                 0.6387375,
@@ -979,13 +1053,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.040854173312068046
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 2.0427086656034024
           }
         },
         "seed_43": {
           "token_difr": {
             "full_auc": 0.9924,
+            "rel_target": 0.94278,
             "triaged": {
               "entropy": [
                 0.9825,
@@ -1084,11 +1164,19 @@
               "triage:surprisal": 0.021799999999999986,
               "random": 0.1434603404862178
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "triage:tie_margin": 0.03310292916666667,
+              "triage:surprisal": 0.020067199999999986,
+              "random": 0.14060303719054298
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 7.17301702431089
+            "saving_factor": 7.17301702431089,
+            "saving_rel": 7.030151859527149
           },
           "cross_entropy": {
             "full_auc": 0.23395,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.681325,
@@ -1149,11 +1237,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           },
           "activation_difr": {
             "full_auc": 0.542375,
+            "rel_target": 0.51525625,
             "triaged": {
               "entropy": [
                 0.6447375,
@@ -1214,11 +1308,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           },
           "token_toploc": {
             "full_auc": 0.5550375,
+            "rel_target": 0.527285625,
             "triaged": {
               "entropy": [
                 0.696125,
@@ -1279,13 +1379,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           }
         },
         "bug_k2": {
           "token_difr": {
             "full_auc": 0.6166375,
+            "rel_target": 0.5858056249999999,
             "triaged": {
               "entropy": [
                 0.65,
@@ -1384,11 +1490,19 @@
               "triage:surprisal": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "triage:tie_margin": 0.035747019230769214,
+              "triage:surprisal": 0.02,
+              "random": 0.15796684859369817
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 7.8983424296849085
           },
           "cross_entropy": {
             "full_auc": 0.605375,
+            "rel_target": 0.5751062499999999,
             "triaged": {
               "entropy": [
                 0.7257375,
@@ -1449,11 +1563,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.039354702794722654
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.9677351397361327
           },
           "activation_difr": {
             "full_auc": 0.342975,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.513625,
@@ -1514,11 +1634,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           },
           "token_toploc": {
             "full_auc": 0.6306625,
+            "rel_target": 0.599129375,
             "triaged": {
               "entropy": [
                 0.785875,
@@ -1579,13 +1705,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.04248114650202396
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 2.124057325101198
           }
         },
         "bug_k32": {
           "token_difr": {
             "full_auc": 0.834075,
+            "rel_target": 0.79237125,
             "triaged": {
               "entropy": [
                 0.6325,
@@ -1684,11 +1816,19 @@
               "triage:surprisal": 0.02239999999999999,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.4144529888044781,
+              "triage:tie_margin": 0.09114480999999997,
+              "triage:surprisal": 0.02,
+              "random": null
+            },
             "best_value_fn": "surprisal",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "cross_entropy": {
             "full_auc": 0.814125,
+            "rel_target": 0.7734187499999999,
             "triaged": {
               "entropy": [
                 0.6310375,
@@ -1749,11 +1889,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.06788706039076375,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "activation_difr": {
             "full_auc": 0.375225,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.52565,
@@ -1814,11 +1960,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           },
           "token_toploc": {
             "full_auc": 0.8530125,
+            "rel_target": 0.8103618749999999,
             "triaged": {
               "entropy": [
                 0.7455125,
@@ -1879,13 +2031,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.057715072395637425,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           }
         },
         "adv_quant_temp": {
           "token_difr": {
             "full_auc": 0.803025,
+            "rel_target": 0.7628737499999999,
             "triaged": {
               "entropy": [
                 0.735,
@@ -1984,11 +2142,19 @@
               "triage:surprisal": null,
               "random": null
             },
-            "best_value_fn": "tie_margin",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.023520894736842095,
+              "triage:tie_margin": 0.04992833545454545,
+              "triage:surprisal": 0.09016561385853937,
+              "random": 0.3131499461700283
+            },
+            "best_value_fn": "entropy",
+            "saving_factor": null,
+            "saving_rel": 13.313691918340334
           },
           "cross_entropy": {
             "full_auc": 0.620325,
+            "rel_target": 0.5893087499999999,
             "triaged": {
               "entropy": [
                 0.5521875,
@@ -2049,11 +2215,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.03772267426794506,
+              "random": 0.03894896492461526
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0325080519997025
           },
           "activation_difr": {
             "full_auc": 1.0,
+            "rel_target": 0.95,
             "triaged": {
               "entropy": [
                 0.5396375,
@@ -2114,11 +2286,17 @@
               "triage:entropy": 0.17068597174866046,
               "random": 0.12033740880724267
             },
+            "cost_rel": {
+              "triage:entropy": 0.17068597174866046,
+              "random": 0.12033740880724267
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 0.7050222556335364
+            "saving_factor": 0.7050222556335364,
+            "saving_rel": 0.7050222556335364
           },
           "token_toploc": {
             "full_auc": 0.7259625,
+            "rel_target": 0.6896643749999999,
             "triaged": {
               "entropy": [
                 0.6580375,
@@ -2179,8 +2357,13 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.042518723014523085,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           }
         }
       }
@@ -2220,6 +2403,7 @@
         "quant_4bit": {
           "token_difr": {
             "full_auc": 0.85175,
+            "rel_target": 0.8091625,
             "triaged": {
               "entropy": [
                 0.5,
@@ -2318,11 +2502,19 @@
               "triage:surprisal": null,
               "random": null
             },
-            "best_value_fn": "entropy",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.14218499501495516,
+              "triage:tie_margin": 0.173063768115942,
+              "triage:surprisal": 0.13139936000000002,
+              "random": null
+            },
+            "best_value_fn": "surprisal",
+            "saving_factor": null,
+            "saving_rel": null
           },
           "cross_entropy": {
             "full_auc": 0.64325,
+            "rel_target": 0.6110875,
             "triaged": {
               "entropy": [
                 0.42905,
@@ -2383,11 +2575,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.06965256489493203,
+              "random": 0.031087548056087575
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.4463230909440569
           },
           "activation_difr": {
             "full_auc": 1.0,
+            "rel_target": 0.95,
             "triaged": {
               "entropy": [
                 0.3744,
@@ -2448,11 +2646,17 @@
               "triage:entropy": 0.11109667774086368,
               "random": 0.1196731557377048
             },
+            "cost_rel": {
+              "triage:entropy": 0.11109667774086368,
+              "random": 0.1196731557377048
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 1.0771983300602923
+            "saving_factor": 1.0771983300602923,
+            "saving_rel": 1.0771983300602923
           },
           "token_toploc": {
             "full_auc": 0.82825,
+            "rel_target": 0.7868375,
             "triaged": {
               "entropy": [
                 0.5123875,
@@ -2513,13 +2717,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.48767435650378527,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           }
         },
         "kv_fp8": {
           "token_difr": {
             "full_auc": 0.7023375,
+            "rel_target": 0.6672206249999999,
             "triaged": {
               "entropy": [
                 0.5,
@@ -2618,11 +2828,19 @@
               "triage:surprisal": null,
               "random": null
             },
-            "best_value_fn": "entropy",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.11108997471717516,
+              "triage:tie_margin": 0.35096437371487305,
+              "triage:surprisal": 0.07781309466506214,
+              "random": 0.53193304608493
+            },
+            "best_value_fn": "surprisal",
+            "saving_factor": null,
+            "saving_rel": 6.836035096336637
           },
           "cross_entropy": {
             "full_auc": 0.445025,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.1872375,
@@ -2683,11 +2901,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": null,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "activation_difr": {
             "full_auc": 1.0,
+            "rel_target": 0.95,
             "triaged": {
               "entropy": [
                 0.3617125,
@@ -2748,11 +2972,17 @@
               "triage:entropy": 0.14212818791946305,
               "random": 0.15493013783811796
             },
+            "cost_rel": {
+              "triage:entropy": 0.14212818791946305,
+              "random": 0.15493013783811796
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 1.0900732648889404
+            "saving_factor": 1.0900732648889404,
+            "saving_rel": 1.0900732648889404
           },
           "token_toploc": {
             "full_auc": 0.6266375,
+            "rel_target": 0.595305625,
             "triaged": {
               "entropy": [
                 0.16345,
@@ -2813,13 +3043,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.39584058890005014,
+              "random": 0.03230371771827134
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.08160789626964716
           }
         },
         "temp_1.1": {
           "token_difr": {
             "full_auc": 0.7554375,
+            "rel_target": 0.717665625,
             "triaged": {
               "entropy": [
                 0.5,
@@ -2918,11 +3154,19 @@
               "triage:surprisal": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.055474330640050695,
+              "triage:tie_margin": 0.19250789149198522,
+              "triage:surprisal": 0.07031786518144235,
+              "random": 0.540079952699209
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 9.73567317474379
           },
           "cross_entropy": {
             "full_auc": 0.730325,
+            "rel_target": 0.69380875,
             "triaged": {
               "entropy": [
                 0.2349375,
@@ -2983,11 +3227,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.15631663117546848,
+              "random": 0.03271616387165657
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.20929419746087055
           },
           "activation_difr": {
             "full_auc": 0.47345,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.23695,
@@ -3048,11 +3298,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.10116341320864991,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.19769993286752718
           },
           "token_toploc": {
             "full_auc": 0.7505875,
+            "rel_target": 0.7130581249999999,
             "triaged": {
               "entropy": [
                 0.2424125,
@@ -3113,13 +3369,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.26286859185185174,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           }
         },
         "seed_43": {
           "token_difr": {
             "full_auc": 0.9887,
+            "rel_target": 0.939265,
             "triaged": {
               "entropy": [
                 0.5,
@@ -3218,11 +3480,19 @@
               "triage:surprisal": 0.0721183775209608,
               "random": 0.12172170702608581
             },
+            "cost_rel": {
+              "triage:entropy": 0.03750538116591928,
+              "triage:tie_margin": 0.04335523683921311,
+              "triage:surprisal": 0.07175294911498854,
+              "random": 0.12053789056202237
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 3.0869591687592703
+            "saving_factor": 3.0869591687592703,
+            "saving_rel": 3.213882563378766
           },
           "cross_entropy": {
             "full_auc": 0.227675,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.3431,
@@ -3283,11 +3553,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": null,
+              "random": 0.024698450211334814
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "activation_difr": {
             "full_auc": 0.68055,
+            "rel_target": 0.6465225,
             "triaged": {
               "entropy": [
                 0.416825,
@@ -3348,11 +3624,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.41214951400138855,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "token_toploc": {
             "full_auc": 0.4619,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.4332125,
@@ -3413,13 +3695,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02558404459153458,
+              "random": 0.027850698555529244
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0885963888893733
           }
         },
         "bug_k2": {
           "token_difr": {
             "full_auc": 0.6481875,
+            "rel_target": 0.615778125,
             "triaged": {
               "entropy": [
                 0.5,
@@ -3518,11 +3806,19 @@
               "triage:surprisal": null,
               "random": null
             },
-            "best_value_fn": "entropy",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.24305220761381474,
+              "triage:tie_margin": 0.3419413539553751,
+              "triage:surprisal": 0.08139043735323716,
+              "random": 0.5588445865917545
+            },
+            "best_value_fn": "surprisal",
+            "saving_factor": null,
+            "saving_rel": 6.866219236129065
           },
           "cross_entropy": {
             "full_auc": 0.3782,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.2122125,
@@ -3583,11 +3879,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.06567413127413123,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.30453391026244025
           },
           "activation_difr": {
             "full_auc": 0.62,
+            "rel_target": 0.589,
             "triaged": {
               "entropy": [
                 0.3067875,
@@ -3648,11 +3950,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.07514536340852127,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "token_toploc": {
             "full_auc": 0.516825,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.177075,
@@ -3713,13 +4021,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.07252745780873292,
+              "random": 0.02633168297327467
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.3630581267954509
           }
         },
         "bug_k32": {
           "token_difr": {
             "full_auc": 0.948275,
+            "rel_target": 0.90086125,
             "triaged": {
               "entropy": [
                 0.5,
@@ -3818,11 +4132,19 @@
               "triage:surprisal": 0.08949672131147535,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.30937236214605024,
+              "triage:tie_margin": 0.30726965903992814,
+              "triage:surprisal": 0.07232906618911175,
+              "random": null
+            },
             "best_value_fn": "surprisal",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "cross_entropy": {
             "full_auc": 0.81975,
+            "rel_target": 0.7787624999999999,
             "triaged": {
               "entropy": [
                 0.4713875,
@@ -3883,11 +4205,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.5781891959798993,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "activation_difr": {
             "full_auc": 0.707175,
+            "rel_target": 0.67181625,
             "triaged": {
               "entropy": [
                 0.40875,
@@ -3948,11 +4276,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.08199361111111111,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "token_toploc": {
             "full_auc": 0.922025,
+            "rel_target": 0.8759237499999999,
             "triaged": {
               "entropy": [
                 0.537125,
@@ -4013,13 +4347,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.48700250881316026,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           }
         },
         "adv_quant_temp": {
           "token_difr": {
             "full_auc": 0.8083,
+            "rel_target": 0.7678849999999999,
             "triaged": {
               "entropy": [
                 0.5,
@@ -4118,11 +4458,19 @@
               "triage:surprisal": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.10152582627118643,
+              "triage:tie_margin": 0.19700013210039627,
+              "triage:surprisal": 0.12317763636363635,
+              "random": 0.5380301326562633
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 5.299441062603389
           },
           "cross_entropy": {
             "full_auc": 0.144775,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.2779625,
@@ -4183,11 +4531,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": null,
+              "random": 0.029758608309516498
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "activation_difr": {
             "full_auc": 1.0,
+            "rel_target": 0.95,
             "triaged": {
               "entropy": [
                 0.3649375,
@@ -4248,11 +4602,17 @@
               "triage:entropy": 0.12856246006389774,
               "random": 0.1196731557377048
             },
+            "cost_rel": {
+              "triage:entropy": 0.12856246006389774,
+              "random": 0.1196731557377048
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 0.930856143218053
+            "saving_factor": 0.930856143218053,
+            "saving_rel": 0.930856143218053
           },
           "token_toploc": {
             "full_auc": 0.5426125,
+            "rel_target": 0.515481875,
             "triaged": {
               "entropy": [
                 0.2332,
@@ -4313,8 +4673,13 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.3821937291897891,
+              "random": 0.03108418742645823
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.08133097184078207
           }
         }
       }
@@ -4354,6 +4719,7 @@
         "quant_4bit": {
           "token_difr": {
             "full_auc": 0.8693375,
+            "rel_target": 0.825870625,
             "triaged": {
               "entropy": [
                 0.5,
@@ -4452,11 +4818,19 @@
               "triage:surprisal": null,
               "random": null
             },
-            "best_value_fn": "entropy",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.3396071952718217,
+              "triage:tie_margin": 0.15341488724775101,
+              "triage:surprisal": 0.12913934258881174,
+              "random": null
+            },
+            "best_value_fn": "surprisal",
+            "saving_factor": null,
+            "saving_rel": null
           },
           "cross_entropy": {
             "full_auc": 0.851975,
+            "rel_target": 0.80937625,
             "triaged": {
               "entropy": [
                 0.406525,
@@ -4517,11 +4891,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.44769571948998177,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "activation_difr": {
             "full_auc": 1.0,
+            "rel_target": 0.95,
             "triaged": {
               "entropy": [
                 0.473875,
@@ -4582,11 +4962,17 @@
               "triage:entropy": 0.3231986030267752,
               "random": 0.2704535384380486
             },
+            "cost_rel": {
+              "triage:entropy": 0.3231986030267752,
+              "random": 0.2704535384380486
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 0.8368029314026553
+            "saving_factor": 0.8368029314026553,
+            "saving_rel": 0.8368029314026553
           },
           "token_toploc": {
             "full_auc": 0.7409375,
+            "rel_target": 0.703890625,
             "triaged": {
               "entropy": [
                 0.495025,
@@ -4647,13 +5033,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.5715432117840956,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           }
         },
         "kv_fp8": {
           "token_difr": {
             "full_auc": 0.7918875,
+            "rel_target": 0.7522931249999999,
             "triaged": {
               "entropy": [
                 0.5,
@@ -4752,11 +5144,19 @@
               "triage:surprisal": null,
               "random": null
             },
-            "best_value_fn": "entropy",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.33819379469033783,
+              "triage:tie_margin": 0.4002285971223019,
+              "triage:surprisal": 0.09035727897949955,
+              "random": null
+            },
+            "best_value_fn": "surprisal",
+            "saving_factor": null,
+            "saving_rel": null
           },
           "cross_entropy": {
             "full_auc": 0.681575,
+            "rel_target": 0.64749625,
             "triaged": {
               "entropy": [
                 0.4976125,
@@ -4817,11 +5217,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.04119269041272918,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "activation_difr": {
             "full_auc": 1.0,
+            "rel_target": 0.95,
             "triaged": {
               "entropy": [
                 0.48655,
@@ -4882,11 +5288,17 @@
               "triage:entropy": 0.3268241195741195,
               "random": 0.2710269178289873
             },
+            "cost_rel": {
+              "triage:entropy": 0.3268241195741195,
+              "random": 0.2710269178289873
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 0.8292745290101574
+            "saving_factor": 0.8292745290101574,
+            "saving_rel": 0.8292745290101574
           },
           "token_toploc": {
             "full_auc": 0.7716875,
+            "rel_target": 0.733103125,
             "triaged": {
               "entropy": [
                 0.5533875,
@@ -4947,13 +5359,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.036711159669111905,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           }
         },
         "temp_1.1": {
           "token_difr": {
             "full_auc": 0.693475,
+            "rel_target": 0.6588012499999999,
             "triaged": {
               "entropy": [
                 0.5,
@@ -5052,11 +5470,19 @@
               "triage:surprisal": 0.15530132610006014,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.3155213054863913,
+              "triage:tie_margin": 0.13955307712538628,
+              "triage:surprisal": 0.0826253108558963,
+              "random": 0.093851903644264
+            },
             "best_value_fn": "surprisal",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.1358735316342419
           },
           "cross_entropy": {
             "full_auc": 0.95405,
+            "rel_target": 0.9063474999999999,
             "triaged": {
               "entropy": [
                 0.389975,
@@ -5117,11 +5543,17 @@
               "triage:entropy": 0.7458322580645159,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.5230285285433067,
+              "random": 0.9096281349911153
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.7391558688481714
           },
           "activation_difr": {
             "full_auc": 0.596475,
+            "rel_target": 0.5666512499999999,
             "triaged": {
               "entropy": [
                 0.25295,
@@ -5182,11 +5614,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.43212421491658487,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "token_toploc": {
             "full_auc": 0.8459125,
+            "rel_target": 0.8036168749999999,
             "triaged": {
               "entropy": [
                 0.6201625,
@@ -5247,13 +5685,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.24485996401515125,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           }
         },
         "seed_43": {
           "token_difr": {
             "full_auc": 1.0,
+            "rel_target": 0.95,
             "triaged": {
               "entropy": [
                 0.5,
@@ -5352,11 +5796,19 @@
               "triage:surprisal": 0.09341,
               "random": 0.2562714440237966
             },
+            "cost_rel": {
+              "triage:entropy": 0.34421,
+              "triage:tie_margin": 0.15739999999999998,
+              "triage:surprisal": 0.09341,
+              "random": 0.2562714440237966
+            },
             "best_value_fn": "surprisal",
-            "saving_factor": 2.7435118726452905
+            "saving_factor": 2.7435118726452905,
+            "saving_rel": 2.7435118726452905
           },
           "cross_entropy": {
             "full_auc": 0.845625,
+            "rel_target": 0.8033437499999999,
             "triaged": {
               "entropy": [
                 0.5039,
@@ -5417,11 +5869,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.5990247883917772,
+              "random": 0.9647482079431706
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.6105313613703096
           },
           "activation_difr": {
             "full_auc": 0.562775,
+            "rel_target": 0.53463625,
             "triaged": {
               "entropy": [
                 0.437725,
@@ -5482,11 +5940,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.2964395365853663,
+              "random": 0.020029760077550716
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.06756777556823196
           },
           "token_toploc": {
             "full_auc": 0.7829,
+            "rel_target": 0.743755,
             "triaged": {
               "entropy": [
                 0.53935,
@@ -5547,13 +6011,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.39362764140875145,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           }
         },
         "bug_k2": {
           "token_difr": {
             "full_auc": 0.7724125,
+            "rel_target": 0.7337918749999999,
             "triaged": {
               "entropy": [
                 0.5,
@@ -5652,11 +6122,19 @@
               "triage:surprisal": null,
               "random": null
             },
-            "best_value_fn": "entropy",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.42693130439082266,
+              "triage:tie_margin": 0.34894009232199774,
+              "triage:surprisal": 0.15648991128421502,
+              "random": null
+            },
+            "best_value_fn": "surprisal",
+            "saving_factor": null,
+            "saving_rel": null
           },
           "cross_entropy": {
             "full_auc": 0.6911,
+            "rel_target": 0.656545,
             "triaged": {
               "entropy": [
                 0.493875,
@@ -5717,11 +6195,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.07094217834394904,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "activation_difr": {
             "full_auc": 0.681575,
+            "rel_target": 0.64749625,
             "triaged": {
               "entropy": [
                 0.4369625,
@@ -5782,11 +6266,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.9285598630449668,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "token_toploc": {
             "full_auc": 0.7431875,
+            "rel_target": 0.706028125,
             "triaged": {
               "entropy": [
                 0.5395625,
@@ -5847,13 +6337,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.41217324314827825,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           }
         },
         "bug_k32": {
           "token_difr": {
             "full_auc": 0.9420875,
+            "rel_target": 0.8949831249999999,
             "triaged": {
               "entropy": [
                 0.5,
@@ -5952,11 +6448,19 @@
               "triage:surprisal": 0.09481748004499921,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.5227468091361369,
+              "triage:tie_margin": 0.7108358098471983,
+              "triage:surprisal": 0.09223566280066428,
+              "random": null
+            },
             "best_value_fn": "surprisal",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "cross_entropy": {
             "full_auc": 0.92745,
+            "rel_target": 0.8810775,
             "triaged": {
               "entropy": [
                 0.3662875,
@@ -6017,11 +6521,17 @@
               "triage:entropy": null,
               "random": 0.9681886624421986
             },
+            "cost_rel": {
+              "triage:entropy": 0.6492486916426511,
+              "random": 0.6930101492537311
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0674032280301713
           },
           "activation_difr": {
             "full_auc": 0.6208,
+            "rel_target": 0.58976,
             "triaged": {
               "entropy": [
                 0.267725,
@@ -6082,11 +6592,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.9238591452991451,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "token_toploc": {
             "full_auc": 0.935875,
+            "rel_target": 0.8890812499999999,
             "triaged": {
               "entropy": [
                 0.4027125,
@@ -6147,13 +6663,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.6008468834688337,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           }
         },
         "adv_quant_temp": {
           "token_difr": {
             "full_auc": 0.95035,
+            "rel_target": 0.9028325,
             "triaged": {
               "entropy": [
                 0.5,
@@ -6252,11 +6774,19 @@
               "triage:surprisal": 0.3979620839363239,
               "random": null
             },
-            "best_value_fn": "entropy",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.34414972626056867,
+              "triage:tie_margin": 0.15854206239168112,
+              "triage:surprisal": 0.12030400843881861,
+              "random": null
+            },
+            "best_value_fn": "surprisal",
+            "saving_factor": null,
+            "saving_rel": null
           },
           "cross_entropy": {
             "full_auc": 0.51645,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.4697125,
@@ -6317,11 +6847,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.036970851083972356,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.540966718742118
           },
           "activation_difr": {
             "full_auc": 1.0,
+            "rel_target": 0.95,
             "triaged": {
               "entropy": [
                 0.5031625,
@@ -6382,11 +6918,17 @@
               "triage:entropy": 0.30589789789789784,
               "random": 0.2704535384380486
             },
+            "cost_rel": {
+              "triage:entropy": 0.30589789789789784,
+              "random": 0.2704535384380486
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 0.8841300979724946
+            "saving_factor": 0.8841300979724946,
+            "saving_rel": 0.8841300979724946
           },
           "token_toploc": {
             "full_auc": 0.7893,
+            "rel_target": 0.7498349999999999,
             "triaged": {
               "entropy": [
                 0.5197375,
@@ -6447,8 +6989,13 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.5487482133333332,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           }
         }
       }
@@ -6488,6 +7035,7 @@
         "quant_4bit": {
           "token_difr": {
             "full_auc": 0.972375,
+            "rel_target": 0.92375625,
             "triaged": {
               "entropy": [
                 0.5,
@@ -6586,11 +7134,19 @@
               "triage:surprisal": 0.2461755671902266,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.3673307006982904,
+              "triage:tie_margin": 0.3014139590942293,
+              "triage:surprisal": 0.1915113356949364,
+              "random": null
+            },
             "best_value_fn": "surprisal",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "cross_entropy": {
             "full_auc": 0.725775,
+            "rel_target": 0.68948625,
             "triaged": {
               "entropy": [
                 0.5625125,
@@ -6651,11 +7207,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.32173887666395,
+              "random": 0.7727622648160387
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 2.4018305553517982
           },
           "activation_difr": {
             "full_auc": 1.0,
+            "rel_target": 0.95,
             "triaged": {
               "entropy": [
                 0.489825,
@@ -6716,11 +7278,17 @@
               "triage:entropy": 0.360607155322862,
               "random": 0.3290166442752649
             },
+            "cost_rel": {
+              "triage:entropy": 0.360607155322862,
+              "random": 0.3290166442752649
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 0.9123963277453182
+            "saving_factor": 0.9123963277453182,
+            "saving_rel": 0.9123963277453182
           },
           "token_toploc": {
             "full_auc": 0.8666,
+            "rel_target": 0.82327,
             "triaged": {
               "entropy": [
                 0.75285,
@@ -6781,13 +7349,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.47184122448979576,
+              "random": 0.7509295612548488
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.5914878189518786
           }
         },
         "kv_fp8": {
           "token_difr": {
             "full_auc": 0.7627375,
+            "rel_target": 0.7246006249999999,
             "triaged": {
               "entropy": [
                 0.5,
@@ -6886,11 +7460,19 @@
               "triage:surprisal": null,
               "random": null
             },
-            "best_value_fn": "entropy",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.40340506351446703,
+              "triage:tie_margin": 0.283430916847237,
+              "triage:surprisal": 0.468162215301705,
+              "random": null
+            },
+            "best_value_fn": "tie_margin",
+            "saving_factor": null,
+            "saving_rel": null
           },
           "cross_entropy": {
             "full_auc": 0.457775,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.4562875,
@@ -6951,11 +7533,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.1453082837419662,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.1376384021953997
           },
           "activation_difr": {
             "full_auc": 1.0,
+            "rel_target": 0.95,
             "triaged": {
               "entropy": [
                 0.38845,
@@ -7016,11 +7604,17 @@
               "triage:entropy": 0.3976243243243242,
               "random": 0.3303496445497629
             },
+            "cost_rel": {
+              "triage:entropy": 0.3976243243243242,
+              "random": 0.3303496445497629
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 0.8308084398788229
+            "saving_factor": 0.8308084398788229,
+            "saving_rel": 0.8308084398788229
           },
           "token_toploc": {
             "full_auc": 0.688225,
+            "rel_target": 0.65381375,
             "triaged": {
               "entropy": [
                 0.6523125,
@@ -7081,13 +7675,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02023170418006431,
+              "random": 0.32720308199042647
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 16.17278895926336
           }
         },
         "temp_1.1": {
           "token_difr": {
             "full_auc": 0.807625,
+            "rel_target": 0.76724375,
             "triaged": {
               "entropy": [
                 0.5,
@@ -7186,11 +7786,19 @@
               "triage:surprisal": 0.1453592483852025,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.15811697650400205,
+              "triage:tie_margin": 0.42382539062499996,
+              "triage:surprisal": 0.054550856224090505,
+              "random": null
+            },
             "best_value_fn": "surprisal",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "cross_entropy": {
             "full_auc": 0.802325,
+            "rel_target": 0.7622087499999999,
             "triaged": {
               "entropy": [
                 0.5503,
@@ -7251,11 +7859,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.5518386339165534,
+              "random": 0.4765541390770796
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.8635751645274297
           },
           "activation_difr": {
             "full_auc": 0.67915,
+            "rel_target": 0.6451925,
             "triaged": {
               "entropy": [
                 0.3467125,
@@ -7316,11 +7930,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.9661236497936128,
+              "random": 0.8886998714416892
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.919861419013536
           },
           "token_toploc": {
             "full_auc": 0.9063375,
+            "rel_target": 0.861020625,
             "triaged": {
               "entropy": [
                 0.7361625,
@@ -7381,13 +8001,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.39235850638977626,
+              "random": 0.8523758482016425
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 2.1724413624790295
           }
         },
         "seed_43": {
           "token_difr": {
             "full_auc": 1.0,
+            "rel_target": 0.95,
             "triaged": {
               "entropy": [
                 0.5,
@@ -7486,11 +8112,19 @@
               "triage:surprisal": 0.05549589794897449,
               "random": 0.05635790902258963
             },
+            "cost_rel": {
+              "triage:entropy": 0.055522215537339256,
+              "triage:tie_margin": 0.09341,
+              "triage:surprisal": 0.05549589794897449,
+              "random": 0.05635790902258963
+            },
             "best_value_fn": "surprisal",
-            "saving_factor": 1.0155328791041045
+            "saving_factor": 1.0155328791041045,
+            "saving_rel": 1.0155328791041045
           },
           "cross_entropy": {
             "full_auc": 0.639725,
+            "rel_target": 0.60773875,
             "triaged": {
               "entropy": [
                 0.48295,
@@ -7551,11 +8185,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.33297138755375666,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "activation_difr": {
             "full_auc": 0.6448,
+            "rel_target": 0.61256,
             "triaged": {
               "entropy": [
                 0.36325,
@@ -7616,11 +8256,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.3498912336892052,
+              "random": 0.934077602203857
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 2.669622763494446
           },
           "token_toploc": {
             "full_auc": 0.6896125,
+            "rel_target": 0.6551318749999999,
             "triaged": {
               "entropy": [
                 0.612825,
@@ -7681,13 +8327,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.5437175243902436,
+              "random": 0.9607968138586956
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.7670881859770642
           }
         },
         "bug_k2": {
           "token_difr": {
             "full_auc": 0.7835125,
+            "rel_target": 0.7443368749999999,
             "triaged": {
               "entropy": [
                 0.5,
@@ -7786,11 +8438,19 @@
               "triage:surprisal": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.3473598534389385,
+              "triage:tie_margin": 0.42539737588652476,
+              "triage:surprisal": 0.4117159027058996,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "cross_entropy": {
             "full_auc": 0.897275,
+            "rel_target": 0.85241125,
             "triaged": {
               "entropy": [
                 0.5476375,
@@ -7851,11 +8511,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.38195643985419164,
+              "random": 0.7852029580632355
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 2.05573954549105
           },
           "activation_difr": {
             "full_auc": 0.73725,
+            "rel_target": 0.7003874999999999,
             "triaged": {
               "entropy": [
                 0.46085,
@@ -7916,11 +8582,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.9722458435809149,
+              "random": 0.9884529420145319
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.01666975337629
           },
           "token_toploc": {
             "full_auc": 0.9416375,
+            "rel_target": 0.894555625,
             "triaged": {
               "entropy": [
                 0.671425,
@@ -7981,13 +8653,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.23987575615284965,
+              "random": 0.8208669472651458
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 3.422050483259703
           }
         },
         "bug_k32": {
           "token_difr": {
             "full_auc": 0.9072625,
+            "rel_target": 0.8618993749999999,
             "triaged": {
               "entropy": [
                 0.5,
@@ -8086,11 +8764,19 @@
               "triage:surprisal": null,
               "random": null
             },
-            "best_value_fn": "entropy",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.6673465982404679,
+              "triage:tie_margin": 0.7449736666666662,
+              "triage:surprisal": 0.05650886676798379,
+              "random": 0.8830768065253656
+            },
+            "best_value_fn": "surprisal",
+            "saving_factor": null,
+            "saving_rel": 15.627225549419265
           },
           "cross_entropy": {
             "full_auc": 0.859425,
+            "rel_target": 0.81645375,
             "triaged": {
               "entropy": [
                 0.5706875,
@@ -8151,11 +8837,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.7720115771230499,
+              "random": 0.6820211320754714
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.8834338140589374
           },
           "activation_difr": {
             "full_auc": 0.4729,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.4356875,
@@ -8216,11 +8908,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.1197176988036594,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.16705967622047763
           },
           "token_toploc": {
             "full_auc": 0.9504875,
+            "rel_target": 0.902963125,
             "triaged": {
               "entropy": [
                 0.765775,
@@ -8281,13 +8979,19 @@
               "triage:entropy": 0.992743598055104,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.670944674698795,
+              "random": 0.8804637088170696
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.312274680788447
           }
         },
         "adv_quant_temp": {
           "token_difr": {
             "full_auc": 0.990275,
+            "rel_target": 0.94076125,
             "triaged": {
               "entropy": [
                 0.5,
@@ -8386,11 +9090,19 @@
               "triage:surprisal": 0.2087533110317038,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.27160552650957276,
+              "triage:tie_margin": 0.20472926565874733,
+              "triage:surprisal": 0.2060560708583593,
+              "random": null
+            },
             "best_value_fn": "tie_margin",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "cross_entropy": {
             "full_auc": 0.55825,
+            "rel_target": 0.5303375,
             "triaged": {
               "entropy": [
                 0.464675,
@@ -8451,11 +9163,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.055431656003937006,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.36080466364886354
           },
           "activation_difr": {
             "full_auc": 1.0,
+            "rel_target": 0.95,
             "triaged": {
               "entropy": [
                 0.33445,
@@ -8516,11 +9234,17 @@
               "triage:entropy": 0.3495254118282473,
               "random": 0.3290166442752649
             },
+            "cost_rel": {
+              "triage:entropy": 0.3495254118282473,
+              "random": 0.3290166442752649
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 0.9413239585479405
+            "saving_factor": 0.9413239585479405,
+            "saving_rel": 0.9413239585479405
           },
           "token_toploc": {
             "full_auc": 0.8044625,
+            "rel_target": 0.7642393749999999,
             "triaged": {
               "entropy": [
                 0.654675,
@@ -8581,8 +9305,13 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.6684606780580415,
+              "random": 0.6939816395046629
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.038178702628796
           }
         }
       }
@@ -8622,6 +9351,7 @@
         "quant_4bit": {
           "token_difr": {
             "full_auc": 0.82,
+            "rel_target": 0.7789999999999999,
             "triaged": {
               "entropy": [
                 0.5,
@@ -8720,11 +9450,19 @@
               "triage:surprisal": null,
               "random": null
             },
-            "best_value_fn": "entropy",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.18905487723954872,
+              "triage:tie_margin": 0.03158249999999998,
+              "triage:surprisal": 0.23145653366583535,
+              "random": 0.8302393094289492
+            },
+            "best_value_fn": "tie_margin",
+            "saving_factor": null,
+            "saving_rel": 26.287954070417154
           },
           "cross_entropy": {
             "full_auc": 0.59595,
+            "rel_target": 0.5661525,
             "triaged": {
               "entropy": [
                 0.5615,
@@ -8785,11 +9523,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.030200819512195085,
+              "random": 0.8117034033786552
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 26.876866803263056
           },
           "activation_difr": {
             "full_auc": 1.0,
+            "rel_target": 0.95,
             "triaged": {
               "entropy": [
                 0.6021875,
@@ -8850,11 +9594,17 @@
               "triage:entropy": 0.40384818702290076,
               "random": 0.3341158698472902
             },
+            "cost_rel": {
+              "triage:entropy": 0.40384818702290076,
+              "random": 0.3341158698472902
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 0.8273303696379939
+            "saving_factor": 0.8273303696379939,
+            "saving_rel": 0.8273303696379939
           },
           "token_toploc": {
             "full_auc": 0.8271,
+            "rel_target": 0.7857449999999999,
             "triaged": {
               "entropy": [
                 0.5875125,
@@ -8915,13 +9665,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.20227121123464006,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           }
         },
         "kv_fp8": {
           "token_difr": {
             "full_auc": 0.3387875,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.5,
@@ -9020,11 +9776,19 @@
               "triage:surprisal": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "triage:tie_margin": 0.02,
+              "triage:surprisal": 0.02,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           },
           "cross_entropy": {
             "full_auc": 0.39995,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.4825125,
@@ -9085,11 +9849,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.03711021227768216,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.5389352087330385
           },
           "activation_difr": {
             "full_auc": 1.0,
+            "rel_target": 0.95,
             "triaged": {
               "entropy": [
                 0.5315875,
@@ -9150,11 +9920,17 @@
               "triage:entropy": 0.20387134445534832,
               "random": 0.3343132279367618
             },
+            "cost_rel": {
+              "triage:entropy": 0.20387134445534832,
+              "random": 0.3343132279367618
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 1.6398245120220059
+            "saving_factor": 1.6398245120220059,
+            "saving_rel": 1.6398245120220059
           },
           "token_toploc": {
             "full_auc": 0.32335,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.5342,
@@ -9215,13 +9991,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           }
         },
         "temp_1.1": {
           "token_difr": {
             "full_auc": 0.64095,
+            "rel_target": 0.6089025,
             "triaged": {
               "entropy": [
                 0.5,
@@ -9320,11 +10102,19 @@
               "triage:surprisal": null,
               "random": null
             },
-            "best_value_fn": "entropy",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.08477868888630821,
+              "triage:tie_margin": 0.02,
+              "triage:surprisal": 0.04099298509961494,
+              "random": 0.12592285038904757
+            },
+            "best_value_fn": "tie_margin",
+            "saving_factor": null,
+            "saving_rel": 6.296142519452379
           },
           "cross_entropy": {
             "full_auc": 0.7933,
+            "rel_target": 0.7536349999999999,
             "triaged": {
               "entropy": [
                 0.5228375,
@@ -9385,11 +10175,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.3447250082217524,
+              "random": 0.7540685347250099
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 2.187449464762759
           },
           "activation_difr": {
             "full_auc": 0.71335,
+            "rel_target": 0.6776825,
             "triaged": {
               "entropy": [
                 0.4365375,
@@ -9450,11 +10246,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.17809670070699135,
+              "random": 0.9415853770415845
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 5.2869332969323315
           },
           "token_toploc": {
             "full_auc": 0.68725,
+            "rel_target": 0.6528875,
             "triaged": {
               "entropy": [
                 0.607925,
@@ -9515,13 +10317,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.05572477712880417,
+              "random": 0.56097774256211
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 10.066935597883983
           }
         },
         "seed_43": {
           "token_difr": {
             "full_auc": 0.99455,
+            "rel_target": 0.9448225,
             "triaged": {
               "entropy": [
                 0.5,
@@ -9620,11 +10428,19 @@
               "triage:surprisal": 0.04270878356397488,
               "random": 0.1926146662560628
             },
+            "cost_rel": {
+              "triage:entropy": 0.09318322550000001,
+              "triage:tie_margin": 0.0241787,
+              "triage:surprisal": 0.04260513250419159,
+              "random": 0.18802271922395875
+            },
             "best_value_fn": "tie_margin",
-            "saving_factor": 7.766720413550921
+            "saving_factor": 7.766720413550921,
+            "saving_rel": 7.77637835052996
           },
           "cross_entropy": {
             "full_auc": 0.5543,
+            "rel_target": 0.526585,
             "triaged": {
               "entropy": [
                 0.2694125,
@@ -9685,11 +10501,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.055226725233139616,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.36214350779572757
           },
           "activation_difr": {
             "full_auc": 0.5571,
+            "rel_target": 0.529245,
             "triaged": {
               "entropy": [
                 0.3944875,
@@ -9750,11 +10572,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.056466235246235244,
+              "random": 0.02157301220364496
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.38205154123646473
           },
           "token_toploc": {
             "full_auc": 0.5529,
+            "rel_target": 0.5252549999999999,
             "triaged": {
               "entropy": [
                 0.2945375,
@@ -9815,13 +10643,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.04807416627347362,
+              "random": 0.04333302666821939
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.9013786411129028
           }
         },
         "bug_k2": {
           "token_difr": {
             "full_auc": 0.5396375,
+            "rel_target": 0.512655625,
             "triaged": {
               "entropy": [
                 0.5,
@@ -9920,11 +10754,19 @@
               "triage:surprisal": null,
               "random": null
             },
-            "best_value_fn": "entropy",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.07745553099593494,
+              "triage:tie_margin": 0.02,
+              "triage:surprisal": 0.07704369266804661,
+              "random": 0.06519258869060408
+            },
+            "best_value_fn": "tie_margin",
+            "saving_factor": null,
+            "saving_rel": 3.259629434530204
           },
           "cross_entropy": {
             "full_auc": 0.463575,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.4482625,
@@ -9985,11 +10827,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.04366108108108108,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.45807386131504346
           },
           "activation_difr": {
             "full_auc": 0.69265,
+            "rel_target": 0.6580174999999999,
             "triaged": {
               "entropy": [
                 0.3995625,
@@ -10050,11 +10898,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.20002867632466756,
+              "random": 0.8630269721792305
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 4.314516238553951
           },
           "token_toploc": {
             "full_auc": 0.4854625,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.4790875,
@@ -10115,13 +10969,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02740310100413467,
+              "random": 0.022576225515597473
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.8238565960907526
           }
         },
         "bug_k32": {
           "token_difr": {
             "full_auc": 0.8236875,
+            "rel_target": 0.782503125,
             "triaged": {
               "entropy": [
                 0.5,
@@ -10220,11 +11080,19 @@
               "triage:surprisal": null,
               "random": null
             },
-            "best_value_fn": "entropy",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.7218878048780487,
+              "triage:tie_margin": 0.738590026445032,
+              "triage:surprisal": 0.04085922769893563,
+              "random": null
+            },
+            "best_value_fn": "surprisal",
+            "saving_factor": null,
+            "saving_rel": null
           },
           "cross_entropy": {
             "full_auc": 0.862825,
+            "rel_target": 0.8196837499999999,
             "triaged": {
               "entropy": [
                 0.398975,
@@ -10285,11 +11153,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.7185960119760477,
+              "random": 0.6061377417595262
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.8435027910782923
           },
           "activation_difr": {
             "full_auc": 0.4152,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.3806625,
@@ -10350,11 +11224,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.06073108695652173,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.32932063301152986
           },
           "token_toploc": {
             "full_auc": 0.880925,
+            "rel_target": 0.8368787499999999,
             "triaged": {
               "entropy": [
                 0.4659375,
@@ -10415,13 +11295,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.3189683730834745,
+              "random": 0.7059168239116307
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 2.213124822023942
           }
         },
         "adv_quant_temp": {
           "token_difr": {
             "full_auc": 0.64815,
+            "rel_target": 0.6157425,
             "triaged": {
               "entropy": [
                 0.5,
@@ -10520,11 +11406,19 @@
               "triage:surprisal": null,
               "random": null
             },
-            "best_value_fn": "entropy",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.0830134092683599,
+              "triage:tie_margin": 0.027820901923076923,
+              "triage:surprisal": 0.038443302084934176,
+              "random": 0.10560013630532392
+            },
+            "best_value_fn": "tie_margin",
+            "saving_factor": null,
+            "saving_rel": 3.795712180622389
           },
           "cross_entropy": {
             "full_auc": 0.16595,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.4583375,
@@ -10585,11 +11479,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.03855087091386304,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.5187950239746185
           },
           "activation_difr": {
             "full_auc": 1.0,
+            "rel_target": 0.95,
             "triaged": {
               "entropy": [
                 0.5597625,
@@ -10650,11 +11550,17 @@
               "triage:entropy": 0.38229999999999986,
               "random": 0.3341158698472902
             },
+            "cost_rel": {
+              "triage:entropy": 0.38229999999999986,
+              "random": 0.3341158698472902
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 0.8739625159489676
+            "saving_factor": 0.8739625159489676,
+            "saving_rel": 0.8739625159489676
           },
           "token_toploc": {
             "full_auc": 0.339075,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.565375,
@@ -10715,8 +11621,13 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.030441893882175223
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.5220946941087612
           }
         }
       }
@@ -10756,6 +11667,7 @@
         "quant_4bit": {
           "token_difr": {
             "full_auc": 0.37605,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.49,
@@ -10854,11 +11766,19 @@
               "triage:surprisal": null,
               "random": null
             },
-            "best_value_fn": "entropy",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.020468201326570425,
+              "triage:tie_margin": 0.02,
+              "triage:surprisal": null,
+              "random": 0.02
+            },
+            "best_value_fn": "tie_margin",
+            "saving_factor": null,
+            "saving_rel": 1.0
           },
           "cross_entropy": {
             "full_auc": 0.215975,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.7299875,
@@ -10919,11 +11839,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           },
           "activation_difr": {
             "full_auc": 0.9939,
+            "rel_target": 0.944205,
             "triaged": {
               "entropy": [
                 0.77255,
@@ -10984,11 +11910,17 @@
               "triage:entropy": 0.9524666823862296,
               "random": 0.9112879547062985
             },
+            "cost_rel": {
+              "triage:entropy": 0.9461920679085121,
+              "random": 0.8999883198867656
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 0.9567662276891772
+            "saving_factor": 0.9567662276891772,
+            "saving_rel": 0.9511687430186596
           },
           "token_toploc": {
             "full_auc": 0.194525,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.654275,
@@ -11049,13 +11981,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           }
         },
         "kv_fp8": {
           "token_difr": {
             "full_auc": 0.3224,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.5694625,
@@ -11154,11 +12092,19 @@
               "triage:surprisal": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "triage:tie_margin": null,
+              "triage:surprisal": null,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           },
           "cross_entropy": {
             "full_auc": 0.415525,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.6718,
@@ -11219,11 +12165,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           },
           "activation_difr": {
             "full_auc": 0.559275,
+            "rel_target": 0.5313112499999999,
             "triaged": {
               "entropy": [
                 0.733425,
@@ -11284,11 +12236,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.020207650643195664
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0103825321597832
           },
           "token_toploc": {
             "full_auc": 0.404,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.5899375,
@@ -11349,13 +12307,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           }
         },
         "temp_1.1": {
           "token_difr": {
             "full_auc": 0.727725,
+            "rel_target": 0.6913387499999999,
             "triaged": {
               "entropy": [
                 0.5915,
@@ -11454,11 +12418,19 @@
               "triage:surprisal": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.06063772185939297,
+              "triage:tie_margin": 0.6865467560521412,
+              "triage:surprisal": 0.7143081446688583,
+              "random": 0.7198741607000795
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 11.871721737325934
           },
           "cross_entropy": {
             "full_auc": 0.5095,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.5524625,
@@ -11519,11 +12491,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           },
           "activation_difr": {
             "full_auc": 0.7111,
+            "rel_target": 0.675545,
             "triaged": {
               "entropy": [
                 0.651,
@@ -11584,11 +12562,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.9655515223124802,
+              "random": 0.8294122479328243
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.8590036147904313
           },
           "token_toploc": {
             "full_auc": 0.7134875,
+            "rel_target": 0.677813125,
             "triaged": {
               "entropy": [
                 0.540075,
@@ -11649,13 +12633,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.14792775199793762,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           }
         },
         "seed_43": {
           "token_difr": {
             "full_auc": 0.993875,
+            "rel_target": 0.9441812499999999,
             "triaged": {
               "entropy": [
                 0.8980625,
@@ -11754,11 +12744,19 @@
               "triage:surprisal": 0.3880692307692305,
               "random": 0.042952057905194435
             },
+            "cost_rel": {
+              "triage:entropy": 0.025779895561357687,
+              "triage:tie_margin": 0.08106646722164397,
+              "triage:surprisal": 0.35822948717948644,
+              "random": 0.04196107011070109
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 1.5831762496916002
+            "saving_factor": 1.5831762496916002,
+            "saving_rel": 1.6276664120237123
           },
           "cross_entropy": {
             "full_auc": 0.298025,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.43595,
@@ -11819,11 +12817,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.04025305692199579,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.49685667448206267
           },
           "activation_difr": {
             "full_auc": 0.5343,
+            "rel_target": 0.507585,
             "triaged": {
               "entropy": [
                 0.52215,
@@ -11884,11 +12888,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           },
           "token_toploc": {
             "full_auc": 0.223375,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.4007625,
@@ -11949,13 +12959,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": null,
+              "random": 0.03707501442807125
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           }
         },
         "bug_k2": {
           "token_difr": {
             "full_auc": 0.43245,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.49,
@@ -12054,11 +13070,19 @@
               "triage:surprisal": null,
               "random": null
             },
-            "best_value_fn": "entropy",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.051767706974410445,
+              "triage:tie_margin": 0.02,
+              "triage:surprisal": 0.02,
+              "random": 0.02
+            },
+            "best_value_fn": "tie_margin",
+            "saving_factor": null,
+            "saving_rel": 1.0
           },
           "cross_entropy": {
             "full_auc": 0.556425,
+            "rel_target": 0.5286037499999999,
             "triaged": {
               "entropy": [
                 0.7576625,
@@ -12119,11 +13143,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           },
           "activation_difr": {
             "full_auc": 0.394575,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.798625,
@@ -12184,11 +13214,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           },
           "token_toploc": {
             "full_auc": 0.480875,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.6467625,
@@ -12249,13 +13285,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           }
         },
         "bug_k32": {
           "token_difr": {
             "full_auc": 0.74005,
+            "rel_target": 0.7030474999999999,
             "triaged": {
               "entropy": [
                 0.6310125,
@@ -12354,11 +13396,19 @@
               "triage:surprisal": null,
               "random": null
             },
-            "best_value_fn": "entropy",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.7080950213944122,
+              "triage:tie_margin": 0.12399128383921246,
+              "triage:surprisal": 0.05669120519059204,
+              "random": null
+            },
+            "best_value_fn": "surprisal",
+            "saving_factor": null,
+            "saving_rel": null
           },
           "cross_entropy": {
             "full_auc": 0.6219,
+            "rel_target": 0.590805,
             "triaged": {
               "entropy": [
                 0.7094,
@@ -12419,11 +13469,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           },
           "activation_difr": {
             "full_auc": 0.343675,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.761425,
@@ -12484,11 +13540,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           },
           "token_toploc": {
             "full_auc": 0.726475,
+            "rel_target": 0.69015125,
             "triaged": {
               "entropy": [
                 0.5707375,
@@ -12549,13 +13611,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.15354661856253538,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           }
         },
         "adv_quant_temp": {
           "token_difr": {
             "full_auc": 0.515425,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.8589,
@@ -12654,11 +13722,19 @@
               "triage:surprisal": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "triage:tie_margin": 0.11288678317859094,
+              "triage:surprisal": 0.021203883495145657,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           },
           "cross_entropy": {
             "full_auc": 0.378825,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.71545,
@@ -12719,11 +13795,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.02205263157894737
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.1026315789473684
           },
           "activation_difr": {
             "full_auc": 0.9942,
+            "rel_target": 0.9444899999999999,
             "triaged": {
               "entropy": [
                 0.748775,
@@ -12784,11 +13866,17 @@
               "triage:entropy": 0.9201548387096774,
               "random": 0.8840077756080239
             },
+            "cost_rel": {
+              "triage:entropy": 0.9102012903225806,
+              "random": 0.8705325829930762
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 0.9607163255780493
+            "saving_factor": 0.9607163255780493,
+            "saving_rel": 0.9564176542581636
           },
           "token_toploc": {
             "full_auc": 0.4182,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.683525,
@@ -12849,8 +13937,13 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.023945366548888028
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.1972683274444014
           }
         }
       }
@@ -12890,6 +13983,7 @@
         "quant_4bit": {
           "token_difr": {
             "full_auc": 0.70815,
+            "rel_target": 0.6727424999999999,
             "triaged": {
               "entropy": [
                 0.3954,
@@ -12988,11 +14082,19 @@
               "triage:surprisal": null,
               "random": null
             },
-            "best_value_fn": "entropy",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.2764960502008031,
+              "triage:tie_margin": 0.04232859241575612,
+              "triage:surprisal": 0.026725747126436775,
+              "random": null
+            },
+            "best_value_fn": "surprisal",
+            "saving_factor": null,
+            "saving_rel": null
           },
           "cross_entropy": {
             "full_auc": 0.985625,
+            "rel_target": 0.9363437499999999,
             "triaged": {
               "entropy": [
                 0.5765875,
@@ -13053,11 +14155,17 @@
               "triage:entropy": 0.6182889061287817,
               "random": 0.9362632713026443
             },
+            "cost_rel": {
+              "triage:entropy": 0.4499947199533254,
+              "random": 0.8309723800195891
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 1.5142812074128216
+            "saving_factor": 1.5142812074128216,
+            "saving_rel": 1.8466269562135742
           },
           "activation_difr": {
             "full_auc": 0.998825,
+            "rel_target": 0.9488837499999999,
             "triaged": {
               "entropy": [
                 0.695025,
@@ -13118,11 +14226,17 @@
               "triage:entropy": 0.5748655378486047,
               "random": 0.7982501236974289
             },
+            "cost_rel": {
+              "triage:entropy": 0.5627424402390426,
+              "random": 0.7936388454906665
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 1.388585801620368
+            "saving_factor": 1.388585801620368,
+            "saving_rel": 1.4103056544900778
           },
           "token_toploc": {
             "full_auc": 0.8820125,
+            "rel_target": 0.837911875,
             "triaged": {
               "entropy": [
                 0.5931625,
@@ -13183,13 +14297,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.2583054121390112,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           }
         },
         "kv_fp8": {
           "token_difr": {
             "full_auc": 0.69615,
+            "rel_target": 0.6613425,
             "triaged": {
               "entropy": [
                 0.388325,
@@ -13288,11 +14408,19 @@
               "triage:surprisal": null,
               "random": null
             },
-            "best_value_fn": "entropy",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.11086250000000011,
+              "triage:tie_margin": 0.07882248778103618,
+              "triage:surprisal": 0.09108951150054766,
+              "random": null
+            },
+            "best_value_fn": "tie_margin",
+            "saving_factor": null,
+            "saving_rel": null
           },
           "cross_entropy": {
             "full_auc": 0.719875,
+            "rel_target": 0.68388125,
             "triaged": {
               "entropy": [
                 0.6292625,
@@ -13353,11 +14481,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.4762237508986341,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "activation_difr": {
             "full_auc": 0.78765,
+            "rel_target": 0.7482675,
             "triaged": {
               "entropy": [
                 0.628675,
@@ -13418,11 +14552,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.87282388185654,
+              "random": 0.8972945468524747
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0280362000910015
           },
           "token_toploc": {
             "full_auc": 0.715625,
+            "rel_target": 0.67984375,
             "triaged": {
               "entropy": [
                 0.4955875,
@@ -13483,13 +14623,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.5211670505266915,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           }
         },
         "temp_1.1": {
           "token_difr": {
             "full_auc": 0.6786,
+            "rel_target": 0.64467,
             "triaged": {
               "entropy": [
                 0.4939,
@@ -13588,11 +14734,19 @@
               "triage:surprisal": null,
               "random": null
             },
-            "best_value_fn": "entropy",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.047131993700787404,
+              "triage:tie_margin": 0.049519443760262724,
+              "triage:surprisal": 0.029849214374787436,
+              "random": null
+            },
+            "best_value_fn": "surprisal",
+            "saving_factor": null,
+            "saving_rel": null
           },
           "cross_entropy": {
             "full_auc": 0.986125,
+            "rel_target": 0.93681875,
             "triaged": {
               "entropy": [
                 0.571725,
@@ -13653,11 +14807,17 @@
               "triage:entropy": 0.577702229845626,
               "random": 0.7452627708470122
             },
+            "cost_rel": {
+              "triage:entropy": 0.5530489965694683,
+              "random": 0.7170135259356532
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 1.2900465539940218
+            "saving_factor": 1.2900465539940218,
+            "saving_rel": 1.2964737851135208
           },
           "activation_difr": {
             "full_auc": 0.058975,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.59545,
@@ -13718,11 +14878,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           },
           "token_toploc": {
             "full_auc": 0.919825,
+            "rel_target": 0.87383375,
             "triaged": {
               "entropy": [
                 0.461925,
@@ -13783,13 +14949,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.5123194495558375,
+              "random": 0.6734641220410311
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.3145394394550123
           }
         },
         "seed_43": {
           "token_difr": {
             "full_auc": 0.999575,
+            "rel_target": 0.9495962499999999,
             "triaged": {
               "entropy": [
                 0.94015,
@@ -13888,11 +15060,19 @@
               "triage:surprisal": 0.19921366384522363,
               "random": 0.04207095703310253
             },
+            "cost_rel": {
+              "triage:entropy": 0.021548565573770474,
+              "triage:tie_margin": 0.030229460431654656,
+              "triage:surprisal": 0.19890120918984272,
+              "random": 0.04202500237124157
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 1.9463999840874142
+            "saving_factor": 1.9463999840874142,
+            "saving_rel": 1.950245932954145
           },
           "cross_entropy": {
             "full_auc": 0.937675,
+            "rel_target": 0.89079125,
             "triaged": {
               "entropy": [
                 0.7642,
@@ -13953,11 +15133,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.7278810923535253,
+              "random": 0.7746216985987989
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0642146179318148
           },
           "activation_difr": {
             "full_auc": 0.010925,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.703325,
@@ -14018,11 +15204,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           },
           "token_toploc": {
             "full_auc": 0.8035375,
+            "rel_target": 0.763360625,
             "triaged": {
               "entropy": [
                 0.6972,
@@ -14083,13 +15275,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.05622570169659036,
+              "random": 0.5818214630418673
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 10.347962684068204
           }
         },
         "bug_k2": {
           "token_difr": {
             "full_auc": 0.4437,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.5076125,
@@ -14188,11 +15386,19 @@
               "triage:surprisal": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "triage:tie_margin": 0.02,
+              "triage:surprisal": 0.09162020826808645,
+              "random": 0.02859511186770428
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.429755593385214
           },
           "cross_entropy": {
             "full_auc": 0.711225,
+            "rel_target": 0.67566375,
             "triaged": {
               "entropy": [
                 0.60205,
@@ -14253,11 +15459,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.06677652736212057,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "activation_difr": {
             "full_auc": 0.115275,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.606225,
@@ -14318,11 +15530,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           },
           "token_toploc": {
             "full_auc": 0.4580875,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.4963375,
@@ -14383,13 +15601,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.0206633962264151,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.9678951020855399
           }
         },
         "bug_k32": {
           "token_difr": {
             "full_auc": 0.758225,
+            "rel_target": 0.72031375,
             "triaged": {
               "entropy": [
                 0.425575,
@@ -14488,11 +15712,19 @@
               "triage:surprisal": null,
               "random": null
             },
-            "best_value_fn": "entropy",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.2681018690391459,
+              "triage:tie_margin": 0.03703054363376252,
+              "triage:surprisal": 0.02,
+              "random": null
+            },
+            "best_value_fn": "surprisal",
+            "saving_factor": null,
+            "saving_rel": null
           },
           "cross_entropy": {
             "full_auc": 0.7728,
+            "rel_target": 0.73416,
             "triaged": {
               "entropy": [
                 0.6222875,
@@ -14553,11 +15785,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.5456859929612872,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           },
           "activation_difr": {
             "full_auc": 0.28055,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.71245,
@@ -14618,11 +15856,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.02,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 1.0
           },
           "token_toploc": {
             "full_auc": 0.7215375,
+            "rel_target": 0.685460625,
             "triaged": {
               "entropy": [
                 0.5127625,
@@ -14683,13 +15927,19 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.3305831912466293,
+              "random": null
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": null
           }
         },
         "adv_quant_temp": {
           "token_difr": {
             "full_auc": 0.54495,
+            "rel_target": 0.5177025000000001,
             "triaged": {
               "entropy": [
                 0.4371,
@@ -14788,11 +16038,19 @@
               "triage:surprisal": null,
               "random": null
             },
-            "best_value_fn": "entropy",
-            "saving_factor": null
+            "cost_rel": {
+              "triage:entropy": 0.041172301136363665,
+              "triage:tie_margin": 0.02,
+              "triage:surprisal": 0.02,
+              "random": 0.02
+            },
+            "best_value_fn": "tie_margin",
+            "saving_factor": null,
+            "saving_rel": 1.0
           },
           "cross_entropy": {
             "full_auc": 0.44715,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.446225,
@@ -14853,11 +16111,17 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.025069128043990575,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.797794002444145
           },
           "activation_difr": {
             "full_auc": 1.0,
+            "rel_target": 0.95,
             "triaged": {
               "entropy": [
                 0.5968,
@@ -14918,11 +16182,17 @@
               "triage:entropy": 0.6672326404926865,
               "random": 0.7065526811039575
             },
+            "cost_rel": {
+              "triage:entropy": 0.6672326404926865,
+              "random": 0.7065526811039575
+            },
             "best_value_fn": "entropy",
-            "saving_factor": 1.0589300316336998
+            "saving_factor": 1.0589300316336998,
+            "saving_rel": 1.0589300316336998
           },
           "token_toploc": {
             "full_auc": 0.4715125,
+            "rel_target": 0.5,
             "triaged": {
               "entropy": [
                 0.351775,
@@ -14983,8 +16253,13 @@
               "triage:entropy": null,
               "random": null
             },
+            "cost_rel": {
+              "triage:entropy": 0.14936268553676219,
+              "random": 0.02
+            },
             "best_value_fn": "entropy",
-            "saving_factor": null
+            "saving_factor": null,
+            "saving_rel": 0.1339022522802555
           }
         }
       }
