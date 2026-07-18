@@ -1,0 +1,166 @@
+selective-robustness over 7 models: ['qwen3-1.7b', 'qwen3-4b', 'llama3.2-3b', 'smollm2-360m', 'smollm2-1.7b', 'pythia-410m', 'pythia-1.4b']
+config: 16x96 tok, batch=128, n_batch=200, boot=6, target=0.95, value_fns=['entropy', 'tie_margin', 'surprisal'], replot=False
+
+==============================================================================
+[qwen3-1.7b] loading ref=Qwen/Qwen3-1.7B proxy=Qwen/Qwen3-0.6B
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 8918.62it/s]
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 10020.88it/s]
+[qwen3-1.7b] loaded 6.4s vocab=151936 params=1.72B proxy=0.60B
+[qwen3-1.7b]     quant_4bit  token_difr full-mean(hon=0.185 att=0.320)
+[qwen3-1.7b]         kv_fp8  token_difr full-mean(hon=0.185 att=0.336)
+[qwen3-1.7b]       temp_1.1  token_difr full-mean(hon=0.185 att=0.200)
+[qwen3-1.7b]        seed_43  token_difr full-mean(hon=0.185 att=0.841)
+[qwen3-1.7b]         bug_k2  token_difr full-mean(hon=0.185 att=0.167)
+[qwen3-1.7b]        bug_k32  token_difr full-mean(hon=0.185 att=0.347)
+[qwen3-1.7b] adv_quant_temp  token_difr full-mean(hon=0.185 att=0.268)
+
+[qwen3-1.7b] token_difr: full AUC | triage-best cost | random cost | saving (target AUC 0.95)
+  [FWD ]     quant_4bit  full=0.674  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [FWD ]         kv_fp8  full=0.725  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [samp]       temp_1.1  full=0.705  triage[surprisal]=0.071  random=  n/a  saving=  n/a
+  [samp]        seed_43  full=0.992  triage[entropy]=0.020  random=0.143  saving=7.173x
+  [samp]         bug_k2  full=0.617  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [samp]        bug_k32  full=0.834  triage[surprisal]=0.022  random=  n/a  saving=  n/a
+  [FWD ] adv_quant_temp  full=0.803  triage[tie_margin]=0.157  random=  n/a  saving=  n/a
+[progress] 1/7 ok, 761s -> /root/inference-verification/docs/results/selective_robustness.json
+
+==============================================================================
+[qwen3-4b] loading ref=Qwen/Qwen3-4B proxy=Qwen/Qwen3-0.6B
+Loading weights:   0%|          | 0/398 [00:00<?, ?it/s]Loading weights:   8%|▊         | 33/398 [00:00<00:01, 214.49it/s]Loading weights:  29%|██▉       | 117/398 [00:00<00:00, 468.93it/s]Loading weights:  42%|████▏     | 167/398 [00:00<00:01, 213.62it/s]Loading weights: 100%|██████████| 398/398 [00:00<00:00, 553.59it/s]
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 9518.46it/s]
+[qwen3-4b] loaded 32.7s vocab=151936 params=4.02B proxy=0.60B
+[qwen3-4b]     quant_4bit  token_difr full-mean(hon=0.161 att=0.378)
+[qwen3-4b]         kv_fp8  token_difr full-mean(hon=0.161 att=0.257)
+[qwen3-4b]       temp_1.1  token_difr full-mean(hon=0.161 att=0.260)
+[qwen3-4b]        seed_43  token_difr full-mean(hon=0.161 att=0.557)
+[qwen3-4b]         bug_k2  token_difr full-mean(hon=0.161 att=0.144)
+[qwen3-4b]        bug_k32  token_difr full-mean(hon=0.161 att=0.482)
+[qwen3-4b] adv_quant_temp  token_difr full-mean(hon=0.161 att=0.244)
+
+[qwen3-4b] token_difr: full AUC | triage-best cost | random cost | saving (target AUC 0.95)
+  [FWD ]     quant_4bit  full=0.852  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [FWD ]         kv_fp8  full=0.702  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [samp]       temp_1.1  full=0.755  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [samp]        seed_43  full=0.989  triage[entropy]=0.039  random=0.122  saving=3.087x
+  [samp]         bug_k2  full=0.648  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [samp]        bug_k32  full=0.948  triage[surprisal]=0.089  random=  n/a  saving=  n/a
+  [FWD ] adv_quant_temp  full=0.808  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+[progress] 2/7 ok, 1606s -> /root/inference-verification/docs/results/selective_robustness.json
+
+==============================================================================
+[llama3.2-3b] loading ref=unsloth/Llama-3.2-3B-Instruct proxy=unsloth/Llama-3.2-1B-Instruct
+Loading weights:   0%|          | 0/254 [00:00<?, ?it/s]Loading weights:  13%|█▎        | 33/254 [00:00<00:01, 144.19it/s]Loading weights:  19%|█▉        | 48/254 [00:00<00:03, 55.81it/s] Loading weights: 100%|██████████| 254/254 [00:00<00:00, 309.18it/s]
+Loading weights:   0%|          | 0/146 [00:00<?, ?it/s]Loading weights:   3%|▎         | 4/146 [00:00<00:04, 33.60it/s]Loading weights:  40%|███▉      | 58/146 [00:00<00:00, 236.17it/s]Loading weights: 100%|██████████| 146/146 [00:00<00:00, 512.07it/s]
+[llama3.2-3b] loaded 33.0s vocab=128256 params=3.21B proxy=1.24B
+[llama3.2-3b]     quant_4bit  token_difr full-mean(hon=0.137 att=0.222)
+[llama3.2-3b]         kv_fp8  token_difr full-mean(hon=0.137 att=0.141)
+[llama3.2-3b]       temp_1.1  token_difr full-mean(hon=0.137 att=0.141)
+[llama3.2-3b]        seed_43  token_difr full-mean(hon=0.137 att=0.922)
+[llama3.2-3b]         bug_k2  token_difr full-mean(hon=0.137 att=0.223)
+[llama3.2-3b]        bug_k32  token_difr full-mean(hon=0.137 att=0.384)
+[llama3.2-3b] adv_quant_temp  token_difr full-mean(hon=0.137 att=0.401)
+
+[llama3.2-3b] token_difr: full AUC | triage-best cost | random cost | saving (target AUC 0.95)
+  [FWD ]     quant_4bit  full=0.869  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [FWD ]         kv_fp8  full=0.792  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [samp]       temp_1.1  full=0.693  triage[surprisal]=0.155  random=  n/a  saving=  n/a
+  [samp]        seed_43  full=1.000  triage[surprisal]=0.093  random=0.256  saving=2.744x
+  [samp]         bug_k2  full=0.772  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [samp]        bug_k32  full=0.942  triage[surprisal]=0.095  random=  n/a  saving=  n/a
+  [FWD ] adv_quant_temp  full=0.950  triage[entropy]=0.367  random=  n/a  saving=  n/a
+[progress] 3/7 ok, 2269s -> /root/inference-verification/docs/results/selective_robustness.json
+
+==============================================================================
+[smollm2-360m] loading ref=HuggingFaceTB/SmolLM2-360M-Instruct proxy=HuggingFaceTB/SmolLM2-135M-Instruct
+Loading weights:   0%|          | 0/290 [00:00<?, ?it/s]Loading weights:   1%|          | 3/290 [00:00<00:26, 10.69it/s]Loading weights: 100%|██████████| 290/290 [00:00<00:00, 954.93it/s]
+Loading weights:   0%|          | 0/272 [00:00<?, ?it/s]Loading weights:  65%|██████▌   | 177/272 [00:00<00:00, 1627.37it/s]Loading weights: 100%|██████████| 272/272 [00:00<00:00, 1037.09it/s]
+[smollm2-360m] loaded 8.5s vocab=49152 params=0.36B proxy=0.13B
+[smollm2-360m]     quant_4bit  token_difr full-mean(hon=0.029 att=0.309)
+[smollm2-360m]         kv_fp8  token_difr full-mean(hon=0.029 att=0.143)
+[smollm2-360m]       temp_1.1  token_difr full-mean(hon=0.029 att=0.085)
+[smollm2-360m]        seed_43  token_difr full-mean(hon=0.029 att=1.103)
+[smollm2-360m]         bug_k2  token_difr full-mean(hon=0.029 att=0.076)
+[smollm2-360m]        bug_k32  token_difr full-mean(hon=0.029 att=0.362)
+[smollm2-360m] adv_quant_temp  token_difr full-mean(hon=0.029 att=0.350)
+
+[smollm2-360m] token_difr: full AUC | triage-best cost | random cost | saving (target AUC 0.95)
+  [FWD ]     quant_4bit  full=0.972  triage[surprisal]=0.246  random=  n/a  saving=  n/a
+  [FWD ]         kv_fp8  full=0.763  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [samp]       temp_1.1  full=0.808  triage[surprisal]=0.145  random=  n/a  saving=  n/a
+  [samp]        seed_43  full=1.000  triage[surprisal]=0.055  random=0.056  saving=1.016x
+  [samp]         bug_k2  full=0.784  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [samp]        bug_k32  full=0.907  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [FWD ] adv_quant_temp  full=0.990  triage[tie_margin]=0.207  random=  n/a  saving=  n/a
+[progress] 4/7 ok, 2629s -> /root/inference-verification/docs/results/selective_robustness.json
+
+==============================================================================
+[smollm2-1.7b] loading ref=HuggingFaceTB/SmolLM2-1.7B-Instruct proxy=HuggingFaceTB/SmolLM2-135M-Instruct
+Loading weights:   0%|          | 0/218 [00:00<?, ?it/s]Loading weights:   6%|▌         | 13/218 [00:00<00:01, 129.98it/s]Loading weights:  12%|█▏        | 26/218 [00:00<00:03, 61.49it/s] Loading weights:  67%|██████▋   | 146/218 [00:00<00:00, 311.16it/s]Loading weights: 100%|██████████| 218/218 [00:00<00:00, 329.23it/s]
+Loading weights:   0%|          | 0/272 [00:00<?, ?it/s]Loading weights: 100%|██████████| 272/272 [00:00<00:00, 8537.96it/s]
+[smollm2-1.7b] loaded 14.5s vocab=49152 params=1.71B proxy=0.13B
+[smollm2-1.7b]     quant_4bit  token_difr full-mean(hon=0.197 att=0.359)
+[smollm2-1.7b]         kv_fp8  token_difr full-mean(hon=0.197 att=0.181)
+[smollm2-1.7b]       temp_1.1  token_difr full-mean(hon=0.197 att=0.203)
+[smollm2-1.7b]        seed_43  token_difr full-mean(hon=0.197 att=0.856)
+[smollm2-1.7b]         bug_k2  token_difr full-mean(hon=0.197 att=0.150)
+[smollm2-1.7b]        bug_k32  token_difr full-mean(hon=0.197 att=0.423)
+[smollm2-1.7b] adv_quant_temp  token_difr full-mean(hon=0.197 att=0.153)
+
+[smollm2-1.7b] token_difr: full AUC | triage-best cost | random cost | saving (target AUC 0.95)
+  [FWD ]     quant_4bit  full=0.820  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [FWD ]         kv_fp8  full=0.339  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [samp]       temp_1.1  full=0.641  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [samp]        seed_43  full=0.995  triage[tie_margin]=0.025  random=0.193  saving=7.767x
+  [samp]         bug_k2  full=0.540  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [samp]        bug_k32  full=0.824  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [FWD ] adv_quant_temp  full=0.648  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+[progress] 5/7 ok, 2935s -> /root/inference-verification/docs/results/selective_robustness.json
+
+==============================================================================
+[pythia-410m] loading ref=EleutherAI/pythia-410m proxy=EleutherAI/pythia-160m
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights:   0%|          | 1/292 [00:00<02:12,  2.20it/s]Loading weights:   9%|▊         | 25/292 [00:00<00:04, 58.88it/s]Loading weights:  14%|█▍        | 42/292 [00:00<00:03, 73.73it/s]Loading weights:  19%|█▉        | 55/292 [00:01<00:03, 60.47it/s]Loading weights:  23%|██▎       | 68/292 [00:01<00:03, 69.53it/s]Loading weights:  27%|██▋       | 78/292 [00:01<00:03, 71.17it/s]Loading weights:  31%|███       | 90/292 [00:01<00:03, 66.28it/s]Loading weights:  35%|███▍      | 102/292 [00:01<00:02, 67.73it/s]Loading weights:  39%|███▉      | 114/292 [00:01<00:02, 74.09it/s]Loading weights:  45%|████▌     | 132/292 [00:02<00:02, 68.56it/s]Loading weights:  51%|█████▏    | 150/292 [00:02<00:01, 72.97it/s]Loading weights:  56%|█████▌    | 164/292 [00:02<00:01, 78.58it/s]Loading weights:  64%|██████▎   | 186/292 [00:02<00:01, 93.30it/s]Loading weights:  67%|██████▋   | 196/292 [00:02<00:01, 83.66it/s]Loading weights:  72%|███████▏  | 210/292 [00:02<00:01, 81.73it/s]Loading weights:  76%|███████▌  | 222/292 [00:03<00:00, 82.42it/s]Loading weights:  80%|████████  | 234/292 [00:03<00:00, 85.03it/s]Loading weights:  83%|████████▎ | 243/292 [00:03<00:00, 83.71it/s]Loading weights:  89%|████████▉ | 260/292 [00:03<00:00, 99.63it/s]Loading weights:  93%|█████████▎| 271/292 [00:03<00:00, 92.76it/s]Loading weights:  97%|█████████▋| 284/292 [00:03<00:00, 97.91it/s]Loading weights: 100%|██████████| 292/292 [00:03<00:00, 77.28it/s]
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights:   1%|          | 1/148 [00:00<01:22,  1.77it/s]Loading weights:  22%|██▏       | 32/148 [00:00<00:01, 63.77it/s]Loading weights:  36%|███▋      | 54/148 [00:00<00:01, 78.88it/s]Loading weights:  50%|█████     | 74/148 [00:00<00:00, 102.26it/s]Loading weights:  62%|██████▏   | 92/148 [00:01<00:00, 94.09it/s] Loading weights:  73%|███████▎  | 108/148 [00:01<00:00, 106.18it/s]Loading weights:  82%|████████▏ | 122/148 [00:01<00:00, 99.08it/s] Loading weights:  97%|█████████▋| 144/148 [00:01<00:00, 121.39it/s]Loading weights: 100%|██████████| 148/148 [00:01<00:00, 92.12it/s] 
+[pythia-410m] loaded 7.6s vocab=50304 params=0.41B proxy=0.16B
+[pythia-410m]     quant_4bit  token_difr full-mean(hon=0.842 att=0.768)
+[pythia-410m]         kv_fp8  token_difr full-mean(hon=0.842 att=0.645)
+[pythia-410m]       temp_1.1  token_difr full-mean(hon=0.842 att=1.108)
+[pythia-410m]        seed_43  token_difr full-mean(hon=0.842 att=2.303)
+[pythia-410m]         bug_k2  token_difr full-mean(hon=0.842 att=0.608)
+[pythia-410m]        bug_k32  token_difr full-mean(hon=0.842 att=0.910)
+[pythia-410m] adv_quant_temp  token_difr full-mean(hon=0.842 att=0.733)
+
+[pythia-410m] token_difr: full AUC | triage-best cost | random cost | saving (target AUC 0.95)
+  [FWD ]     quant_4bit  full=0.376  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [FWD ]         kv_fp8  full=0.322  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [samp]       temp_1.1  full=0.728  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [samp]        seed_43  full=0.994  triage[entropy]=0.027  random=0.043  saving=1.583x
+  [samp]         bug_k2  full=0.432  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [samp]        bug_k32  full=0.740  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [FWD ] adv_quant_temp  full=0.515  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+[progress] 6/7 ok, 3209s -> /root/inference-verification/docs/results/selective_robustness.json
+
+==============================================================================
+[pythia-1.4b] loading ref=EleutherAI/pythia-1.4b proxy=EleutherAI/pythia-160m
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights:   0%|          | 1/292 [00:01<08:26,  1.74s/it]Loading weights:   9%|▉         | 26/292 [00:01<00:14, 18.57it/s]Loading weights:  12%|█▏        | 35/292 [00:02<00:12, 21.25it/s]Loading weights:  14%|█▍        | 42/292 [00:02<00:12, 20.46it/s]Loading weights:  16%|█▌        | 47/292 [00:02<00:12, 19.16it/s]Loading weights:  21%|██        | 60/292 [00:03<00:13, 17.04it/s]Loading weights:  27%|██▋       | 80/292 [00:03<00:07, 29.87it/s]Loading weights:  30%|██▉       | 87/292 [00:04<00:08, 23.71it/s]Loading weights:  33%|███▎      | 96/292 [00:04<00:06, 28.43it/s]Loading weights:  36%|███▌      | 105/292 [00:04<00:05, 34.93it/s]Loading weights:  38%|███▊      | 112/292 [00:05<00:07, 23.95it/s]Loading weights:  42%|████▏     | 122/292 [00:05<00:05, 29.35it/s]Loading weights:  44%|████▍     | 128/292 [00:06<00:07, 20.79it/s]Loading weights:  47%|████▋     | 138/292 [00:06<00:05, 27.97it/s]Loading weights:  49%|████▉     | 144/292 [00:06<00:05, 25.39it/s]Loading weights:  51%|█████     | 149/292 [00:06<00:05, 24.62it/s]Loading weights:  53%|█████▎    | 156/292 [00:06<00:04, 28.69it/s]Loading weights:  56%|█████▌    | 164/292 [00:07<00:04, 31.61it/s]Loading weights:  58%|█████▊    | 168/292 [00:07<00:04, 26.57it/s]Loading weights:  62%|██████▏   | 180/292 [00:07<00:03, 28.24it/s]Loading weights:  63%|██████▎   | 184/292 [00:08<00:04, 24.15it/s]Loading weights:  64%|██████▍   | 188/292 [00:08<00:04, 25.62it/s]Loading weights:  68%|██████▊   | 200/292 [00:08<00:03, 25.10it/s]Loading weights:  73%|███████▎  | 212/292 [00:08<00:02, 27.30it/s]Loading weights:  74%|███████▍  | 216/292 [00:09<00:03, 19.65it/s]Loading weights:  78%|███████▊  | 228/292 [00:09<00:02, 28.57it/s]Loading weights:  82%|████████▏ | 240/292 [00:10<00:02, 21.03it/s]Loading weights:  87%|████████▋ | 254/292 [00:10<00:01, 29.07it/s]Loading weights:  90%|█████████ | 264/292 [00:10<00:00, 30.31it/s]Loading weights:  93%|█████████▎| 272/292 [00:11<00:00, 32.87it/s]Loading weights:  95%|█████████▌| 278/292 [00:11<00:00, 24.07it/s]Loading weights: 100%|██████████| 292/292 [00:11<00:00, 24.93it/s]
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 5600.17it/s]
+[pythia-1.4b] loaded 14.4s vocab=50304 params=1.41B proxy=0.16B
+[pythia-1.4b]     quant_4bit  token_difr full-mean(hon=0.454 att=0.551)
+[pythia-1.4b]         kv_fp8  token_difr full-mean(hon=0.454 att=0.514)
+[pythia-1.4b]       temp_1.1  token_difr full-mean(hon=0.454 att=0.499)
+[pythia-1.4b]        seed_43  token_difr full-mean(hon=0.454 att=2.286)
+[pythia-1.4b]         bug_k2  token_difr full-mean(hon=0.454 att=0.378)
+[pythia-1.4b]        bug_k32  token_difr full-mean(hon=0.454 att=0.619)
+[pythia-1.4b] adv_quant_temp  token_difr full-mean(hon=0.454 att=0.519)
+
+[pythia-1.4b] token_difr: full AUC | triage-best cost | random cost | saving (target AUC 0.95)
+  [FWD ]     quant_4bit  full=0.708  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [FWD ]         kv_fp8  full=0.696  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [samp]       temp_1.1  full=0.679  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [samp]        seed_43  full=1.000  triage[entropy]=0.022  random=0.042  saving=1.946x
+  [samp]         bug_k2  full=0.444  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [samp]        bug_k32  full=0.758  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+  [FWD ] adv_quant_temp  full=0.545  triage[entropy]=  n/a  random=  n/a  saving=  n/a
+[progress] 7/7 ok, 3492s -> /root/inference-verification/docs/results/selective_robustness.json
+
+done in 3492s -> /root/inference-verification/docs/results/selective_robustness.json
