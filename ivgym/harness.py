@@ -1,24 +1,43 @@
-"""The verification harness: generate -> verify -> calibrate -> evaluate."""
+"""The verification harness: generate -> verify -> calibrate -> evaluate.
+
+`verify` is the SINGLE driver for every verifier -- it replaces the old
+`verify` (full white-box recompute) / `io_verify` (black-box, no recompute) /
+`verify_selective` (proxy-triaged partial recompute) trio. Which of those three
+regimes you get is now just a choice of the `budget` argument and the verifiers
+you pass:
+
+  * Tier-0 verifiers (surface / accept-rate / learned) never recompute M, so
+    `budget` does not affect them -- that is the old `io_verify`.
+  * Tier-1 verifiers (token_difr / cross_entropy / toploc / activation) recompute
+    M. At `budget=1.0` every token is audited (old `verify`); at `budget<1.0` the
+    driver spends recompute only on the top-`budget` fraction of tokens by a
+    cheap, proxy-only `value` signal (old `verify_selective`). The default value
+    signal is proxy entropy H(q_t) -- recompute is directed to the positions that
+    actually carry evidence about whether M was run.
+"""
 from __future__ import annotations
 
 from dataclasses import dataclass, field
 
 import numpy as np
 
+from . import verifiers as _verifiers
 from .attacks import Attack
-from .core import IOContext, SamplingSpec, Sequence, VerifyContext
-from .defenses import Defense
-from .io_detectors import IODetector
+from .core import SamplingSpec, Sequence, VContext
 from .metrics import roc_auc, tpr_at_fpr
-from .sampling import gumbel_noise, log_softmax, position_seed, projection
+from .sampling import gumbel_noise, position_seed, projection
+from .verifiers import Verifier
 
 
 @dataclass
 class TokenScores:
-    """Per-token scores for one config, keyed by defense name."""
+    """Per-token scores for one config, keyed by verifier name. `recompute_ratio`
+    is the realized fraction of tokens on which a Tier-1 verifier recomputed M
+    (1.0 for a full audit, 0.0 for a purely Tier-0 run)."""
 
     config_name: str
     scores: dict[str, np.ndarray] = field(default_factory=dict)
+    recompute_ratio: float = 1.0
 
 
 def generate_dataset(backend, attack: Attack, spec: SamplingSpec, n_prompts: int,
@@ -30,168 +49,151 @@ def generate_dataset(backend, attack: Attack, spec: SamplingSpec, n_prompts: int
     ]
 
 
-def verify(backend, sequences: list[Sequence], spec: SamplingSpec,
-           defenses: list[Defense], proj_seed: int = 123, proj_dim: int = 32) -> TokenScores:
-    """Run the verifier over provider sequences, scoring each token with each defense."""
-    needs_act = any(d.needs_activation for d in defenses)
-    proj = projection(proj_seed, proj_dim, backend.hidden_dim) if needs_act else None
-    out = {d.name: [] for d in defenses}
-    cfg = sequences[0].config_name if sequences else "?"
-
-    for seq in sequences:
-        for step in seq.steps:
-            ref_logits = backend.reference_logits(seq.prompt_id, step.position)
-            gseed = position_seed(spec.seed, seq.prompt_id, step.position)
-            g = gumbel_noise(backend.vocab, gseed)
-            ref_fp = None
-            if needs_act:
-                ref_fp = proj @ backend.reference_activation(seq.prompt_id, step.position)
-            ctx = VerifyContext(
-                claimed_token=step.claimed_token,
-                ref_logits=ref_logits,
-                gumbel=g,
-                sampling=spec,
-                fingerprint=step.fingerprint,
-                ref_fingerprint=ref_fp,
-            )
-            for d in defenses:
-                out[d.name].append(d.score(ctx))
-
-    return TokenScores(cfg, {k: np.asarray(v, float) for k, v in out.items()})
-
-
-def io_context(backend, seq: Sequence, spec: SamplingSpec,
-               need_proxy: bool, need_text: bool) -> IOContext:
-    """Build the black-box `IOContext` for one provider sequence.
-
-    Crucially this NEVER calls `backend.reference_logits` / `reference_activation`
-    -- that would be recomputing M, which is exactly what an I/O detector must
-    not do. It may call `backend.proxy_logits` (a *different, cheap* model) and
-    `backend.prompt_text` / `backend.decode` (raw I/O, no forward pass)."""
-    toks = [s.claimed_token for s in seq.steps]
-    proxy = None
-    if need_proxy:
-        proxy = np.stack([backend.proxy_logits(seq.prompt_id, s.position) for s in seq.steps])
-    text = None
-    if need_text:
-        prompt = backend.prompt_text(seq.prompt_id) if hasattr(backend, "prompt_text") else None
-        if prompt is not None:
-            # Pack prompt + decoded continuation as "prompt\x00continuation" so a
-            # text detector can recover both without widening the dataclass.
-            cont = backend.decode(toks) if hasattr(backend, "decode") else ""
-            text = f"{prompt}\x00{cont or ''}"
-    return IOContext(prompt_id=seq.prompt_id, claimed_tokens=toks, sampling=spec,
-                     prompt_text=text, proxy_logits=proxy)
-
-
-def io_verify(backend, sequences: list[Sequence], spec: SamplingSpec,
-              io_detectors: list[IODetector]) -> TokenScores:
-    """Black-box analogue of `verify`: score each sequence with each I/O detector
-    *without* recomputing M. Each detector returns a per-token score array; they
-    are concatenated so the result flows through the SAME winsorize / batch_means
-    / evaluate pipeline as `Defense` scores (an `IODetector` is interchangeable
-    with a `Defense` from `evaluate`'s point of view -- both expose `.name`)."""
-    need_proxy = any(d.needs_proxy for d in io_detectors)
-    need_text = any(d.needs_text for d in io_detectors)
-    out = {d.name: [] for d in io_detectors}
-    cfg = sequences[0].config_name if sequences else "?"
-
-    for seq in sequences:
-        ctx = io_context(backend, seq, spec, need_proxy, need_text)
-        for d in io_detectors:
-            out[d.name].append(np.asarray(d.score_sequence(ctx), float))
-
-    return TokenScores(cfg, {k: (np.concatenate(v) if v else np.array([]))
-                             for k, v in out.items()})
-
-
 # ---------------------------------------------------------------------------
-# Cost-aware verifier tier: proxy-triaged SELECTIVE recompute.
-#
-# `verify` recomputes the reference model M for EVERY claimed token -- correct
-# but as expensive as re-running inference. This tier spends that recompute only
-# where a CHEAP proxy signal says it will matter. A forward-pass corruption
-# (quantization, fp8) changes the sampled token only at NEAR-TIE positions (where
-# the top logits are close); the client's own small proxy `q` -- which it runs
-# anyway and never trusts the provider for -- is an uncorrupted estimate of where
-# M has those ties. So we rank tokens by the proxy's tie-ness, recompute the
-# expensive `Defense` on only the top `budget` fraction, and leave the rest at the
-# defense's "no divergence" value. Non-audited tokens cost nothing.
-#
-# This is the concrete form of "shrink how often the exact recompute must fire":
-# selective recompute reaches full-recompute detection at a fraction of the
-# M-calls (see experiments/exp_tie_triage_margin.py for the AUC-vs-ratio curve).
-# It sits between the no-recompute I/O detectors (io_verify) and full `verify`.
+# Cheap, proxy-only per-token VALUE: where verification value (and thus expensive
+# recompute) should be directed. Reads ONLY backend.proxy_logits (a small, cheap,
+# DIFFERENT model), never backend.reference_logits -- so deciding where to spend
+# recompute never itself recomputes M. Flat, in the same (seq, step) order the
+# driver scores tokens. Generalizes the old `proxy_tie_scores` (== value_fn
+# "tie_margin") to any value signal; default is proxy entropy H(q).
 # ---------------------------------------------------------------------------
-def proxy_tie_scores(backend, sequences: list[Sequence], spec: SamplingSpec) -> np.ndarray:
-    """Cheap per-token triage signal: the proxy's near-tie-ness, -(p1 - p2) of the
-    two largest probabilities under the proxy's temperature-scaled softmax (higher
-    = more tie-like). Reads ONLY `backend.proxy_logits` (a small, cheap, DIFFERENT
-    model), never `backend.reference_logits` -- so triage never itself recomputes
-    M. Flat, in the same (seq, step) order as `verify`."""
-    temp = max(spec.temperature, 1e-6)
+def token_values(backend, sequences: list[Sequence], spec: SamplingSpec,
+                 value_fn: str = "entropy") -> np.ndarray:
+    if value_fn == "uniform":
+        total = sum(len(s.steps) for s in sequences)
+        return np.ones(total)
     out = []
     for seq in sequences:
-        for step in seq.steps:
-            p = np.exp(log_softmax(backend.proxy_logits(seq.prompt_id, step.position) / temp))
-            top2 = np.partition(p, -2)[-2:]
-            out.append(-float(top2[1] - top2[0]))
-    return np.asarray(out, float)
+        if not seq.steps:
+            continue
+        proxy = np.stack([backend.proxy_logits(seq.prompt_id, st.position) for st in seq.steps])
+        ctx = VContext(seq.prompt_id, [st.claimed_token for st in seq.steps], spec,
+                       proxy_logits=proxy)
+        out.append(_verifiers.value_of(value_fn, ctx))
+    return np.concatenate(out) if out else np.array([])
 
 
-def select_triaged(triage: np.ndarray, budget: float) -> np.ndarray:
-    """Boolean mask of the top-`budget` fraction of tokens by `triage` score
-    (highest audited first). Always audits at least one token."""
-    n = len(triage)
+def select_triaged(value: np.ndarray, budget: float) -> np.ndarray:
+    """Boolean mask of the top-`budget` fraction of tokens by `value` (highest
+    audited first). Always audits at least one token."""
+    n = len(value)
     if n == 0:
         return np.zeros(0, bool)
     k = int(np.clip(round(budget * n), 1, n))
     mask = np.zeros(n, bool)
-    mask[np.argsort(-triage, kind="mergesort")[:k]] = True
+    mask[np.argsort(-value, kind="mergesort")[:k]] = True
     return mask
 
 
-def verify_selective(backend, sequences: list[Sequence], spec: SamplingSpec,
-                     defense: Defense, budget: float, triage: np.ndarray | None = None,
-                     neutral: float = 0.0, proj_seed: int = 123, proj_dim: int = 32
-                     ) -> tuple[TokenScores, float]:
-    """Recompute `defense` (needs `ref_logits`) on only the top-`budget` fraction of
-    tokens ranked by a cheap `triage` signal (default: `proxy_tie_scores`). Tokens
-    that are not audited are NOT recomputed -- that is the cost saving -- and take
-    the `neutral` score (the value a divergence Defense returns when nothing is
-    wrong; 0.0 for `token_difr`). Returns `(TokenScores, realized_recompute_ratio)`.
+def _seq_text(backend, seq: Sequence) -> str | None:
+    """Pack 'prompt\\x00continuation' for a text verifier, or None if unavailable."""
+    if not hasattr(backend, "prompt_text"):
+        return None
+    prompt = backend.prompt_text(seq.prompt_id)
+    if prompt is None:
+        return None
+    toks = [st.claimed_token for st in seq.steps]
+    cont = backend.decode(toks) if hasattr(backend, "decode") else ""
+    return f"{prompt}\x00{cont or ''}"
 
-    The returned scores flow through the SAME winsorize/batch_means/evaluate
-    pipeline as a full `verify`, so honest-vs-attack AUC is comparable across
-    budgets. Calibrate the honest reference with the SAME budget (the null is
-    defined by the selective procedure, not the full recompute)."""
-    if triage is None:
-        triage = proxy_tie_scores(backend, sequences, spec)
-    mask = select_triaged(triage, budget)
-    needs_act = defense.needs_activation
-    proj = projection(proj_seed, proj_dim, backend.hidden_dim) if needs_act else None
-    scores = np.full(len(triage), float(neutral))
+
+def verify(backend, sequences: list[Sequence], spec: SamplingSpec,
+           verifiers: list[Verifier], *, budget: float = 1.0, value_fn: str = "entropy",
+           values: np.ndarray | None = None, proj_seed: int = 123, proj_dim: int = 32
+           ) -> TokenScores:
+    """Score every token of every sequence with every verifier.
+
+    `budget` in (0, 1] controls the Tier-1 recompute fraction (ignored by Tier-0
+    verifiers). At `budget<1` the driver ranks tokens by the cheap `value_fn`
+    signal (proxy entropy by default) and recomputes M only on the top fraction;
+    unaudited tokens take each Tier-1 verifier's `neutral` score. Pass a
+    precomputed `values` array (from `token_values`) to reuse a triage ranking
+    across budgets. Returns a `TokenScores` whose per-verifier arrays are the flat
+    per-token scores (concatenated across sequences) plus the realized
+    `recompute_ratio`."""
+    tier1 = [v for v in verifiers if v.tier == 1]
+    need_proxy = any(v.needs_proxy for v in verifiers)
+    need_served = any(v.needs_served for v in verifiers)
+    need_text = any(v.needs_text for v in verifiers)
+    need_act = any(v.needs_activation for v in verifiers)
+    proj = projection(proj_seed, proj_dim, backend.hidden_dim) if need_act else None
+
+    # Selective recompute: build the global audit mask from a cheap value signal.
+    selective = bool(tier1) and budget < 1.0
+    if selective:
+        # `token_values` reads the proxy itself; the per-verifier `need_proxy`
+        # above governs only whether the *scoring* context needs proxy logits.
+        if values is None:
+            values = token_values(backend, sequences, spec, value_fn)
+        mask_flat = select_triaged(values, budget)
+    else:
+        mask_flat = None
+
+    out = {v.name: [] for v in verifiers}
     cfg = sequences[0].config_name if sequences else "?"
-
-    i = 0
+    audited = total = 0
+    i0 = 0
     for seq in sequences:
-        for step in seq.steps:
-            if mask[i]:
-                g = gumbel_noise(backend.vocab,
-                                 position_seed(spec.seed, seq.prompt_id, step.position))
-                ref_fp = None
-                if needs_act:
-                    ref_fp = proj @ backend.reference_activation(seq.prompt_id, step.position)
-                ctx = VerifyContext(
-                    claimed_token=step.claimed_token,
-                    ref_logits=backend.reference_logits(seq.prompt_id, step.position),
-                    gumbel=g, sampling=spec, fingerprint=step.fingerprint,
-                    ref_fingerprint=ref_fp,
-                )
-                scores[i] = defense.score(ctx)
-            i += 1
+        steps = seq.steps
+        n = len(steps)
+        toks = [st.claimed_token for st in steps]
+        # audit mask for this sequence's tokens
+        if tier1:
+            audit = (mask_flat[i0:i0 + n] if selective else np.ones(n, bool))
+        else:
+            audit = np.zeros(n, bool)
+        i0 += n
+        audited += int(audit.sum())
+        total += n
 
-    return TokenScores(cfg, {defense.name: scores}), float(mask.mean())
+        # --- Tier-0 fields (cheap) ---
+        proxy = np.stack([backend.proxy_logits(seq.prompt_id, st.position)
+                          for st in steps]) if (need_proxy and n) else None
+        served = np.stack([backend.served_logits(seq.prompt_id, st.position)
+                           for st in steps]) if (need_served and n) else None
+        text = _seq_text(backend, seq) if need_text else None
+        fps = [st.fingerprint for st in steps] if need_act else None
+
+        # --- Tier-1 fields (expensive), audited rows only ---
+        ref = gum = ref_fps = None
+        if tier1 and n:
+            ref = np.zeros((n, backend.vocab))
+            gum = np.zeros((n, backend.vocab))
+            ref_fps = [None] * n
+            for j, st in enumerate(steps):
+                if not audit[j]:
+                    continue
+                ref[j] = backend.reference_logits(seq.prompt_id, st.position)
+                gum[j] = gumbel_noise(backend.vocab,
+                                      position_seed(spec.seed, seq.prompt_id, st.position))
+                if need_act:
+                    ref_fps[j] = proj @ backend.reference_activation(seq.prompt_id, st.position)
+
+        ctx = VContext(prompt_id=seq.prompt_id, claimed_tokens=toks, sampling=spec,
+                       proxy_logits=proxy, served_logits=served, prompt_text=text,
+                       fingerprints=fps, ref_logits=ref, ref_fingerprints=ref_fps,
+                       gumbel=gum, audit_mask=audit)
+        for v in verifiers:
+            out[v.name].append(np.asarray(v.evidence(ctx), float))
+
+    ratio = (audited / total) if (tier1 and total) else 0.0
+    return TokenScores(cfg, {k: (np.concatenate(v) if v else np.array([]))
+                             for k, v in out.items()}, recompute_ratio=ratio)
+
+
+def io_contexts(backend, sequences: list[Sequence], spec: SamplingSpec,
+                need_proxy: bool = True, need_text: bool = False) -> list[VContext]:
+    """Build per-sequence Tier-0 `VContext`s (proxy/text only, NO recompute of M).
+    Used to `.fit` a `learned_io` verifier on labeled sequences."""
+    ctxs = []
+    for seq in sequences:
+        steps = seq.steps
+        proxy = np.stack([backend.proxy_logits(seq.prompt_id, st.position)
+                          for st in steps]) if (need_proxy and steps) else None
+        text = _seq_text(backend, seq) if need_text else None
+        ctxs.append(VContext(seq.prompt_id, [st.claimed_token for st in steps], spec,
+                             proxy_logits=proxy, prompt_text=text))
+    return ctxs
 
 
 def winsorize(scores: np.ndarray, honest_train: np.ndarray, pct: float) -> np.ndarray:
@@ -204,8 +206,8 @@ def winsorize(scores: np.ndarray, honest_train: np.ndarray, pct: float) -> np.nd
 
 def batch_means(scores: np.ndarray, batch_size: int, n_batches: int,
                 rng: np.random.Generator) -> np.ndarray:
-    """Sample `n_batches` batches of `batch_size` tokens (with replacement across
-    batches) and return their mean scores -- the batch-level statistic S."""
+    """Sample `n_batches` batches of `batch_size` tokens and return their mean
+    scores -- the batch-level statistic S."""
     n = len(scores)
     if batch_size > n:
         batch_size = n
@@ -225,16 +227,15 @@ class EvalResult:
     tpr_at_1pct: float
 
 
-def evaluate(honest: TokenScores, attack: TokenScores, defenses: list[Defense],
+def evaluate(honest: TokenScores, attack: TokenScores, verifiers: list[Verifier],
              batch_sizes: list[int], n_batches: int = 400, winsor_pct: float | None = 99.9,
              seed: int = 0) -> list[EvalResult]:
     """Compare honest vs attack batch statistics across batch sizes."""
     rng = np.random.default_rng(seed)
     results: list[EvalResult] = []
-    for d in defenses:
+    for d in verifiers:
         h = honest.scores[d.name]
         a = attack.scores[d.name]
-        # train/test split at token level
         h_tr, h_te = _split(h, rng)
         a_tr, a_te = _split(a, rng)
         if winsor_pct is not None:

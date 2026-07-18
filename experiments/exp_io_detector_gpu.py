@@ -47,10 +47,10 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from ivgym import attacks, defenses, harness, io_detectors
+from ivgym import attacks, harness, verifiers
 from ivgym.backends.hf_gpu import HFGPUBackend, DEFAULT_PROMPTS
 from ivgym.core import SamplingSpec
-from ivgym.io_detectors import LLMJudgeIODetector, LogitJudgeIODetector
+from ivgym.verifiers import LLMJudge, LogitJudge
 
 MODEL = os.environ.get("IVGYM_MODEL", "Qwen/Qwen3-0.6B")
 # Option B: a REAL cheap proxy model for the black-box detectors. When set, the
@@ -110,7 +110,7 @@ def _maybe_judge():
     """Build the llm_judge if requested and an API key resolves; else None."""
     if not RUN_JUDGE:
         return None
-    judge = LLMJudgeIODetector(model=JUDGE_MODEL)
+    judge = LLMJudge(model=JUDGE_MODEL)
     return judge if _judge_available(judge, "llm_judge") else None
 
 
@@ -122,7 +122,7 @@ def _maybe_logit_judge():
     provides (real proxy when IVGYM_PROXY_MODEL is set, else the noised fallback)."""
     if not RUN_JUDGE:
         return None
-    judge = LogitJudgeIODetector(model=JUDGE_MODEL)
+    judge = LogitJudge(model=JUDGE_MODEL)
     return judge if _judge_available(judge, "logit_judge") else None
 
 
@@ -147,10 +147,10 @@ def run():
               f"({1/ratio:.1f}x fewer params)", flush=True)
 
     spec = SamplingSpec()
-    td = defenses.get("token_difr")
+    td = verifiers.get("token_difr")
     judge = _maybe_judge()
     logit_judge = _maybe_logit_judge()
-    io_dets = ([io_detectors.get(n) for n in IO_NAMES]
+    io_dets = ([verifiers.get(n) for n in IO_NAMES]
                + ([judge] if judge else [])
                + ([logit_judge] if logit_judge else []))
     io_cols = (IO_NAMES + (["llm_judge"] if judge else [])
@@ -162,7 +162,7 @@ def run():
         this config's reference cache is still fresh (the HF backend keys its cache
         by prompt_id and overwrites it on the next generate)."""
         return (harness.verify(backend, seqs, spec, [td]),
-                harness.io_verify(backend, seqs, spec, io_dets))
+                harness.verify(backend, seqs, spec, io_dets))
 
     def eval_auc(honest_scores, attack_scores, dets):
         return {r.defense: _detect(r.auc) for r in harness.evaluate(

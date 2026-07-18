@@ -42,7 +42,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from ivgym import attacks, defenses, harness, io_detectors
+from ivgym import attacks, harness, verifiers
 from ivgym.backends.hf_gpu import HFGPUBackend, DEFAULT_PROMPTS
 from ivgym.core import SamplingSpec
 from ivgym.sampling import log_softmax
@@ -94,11 +94,11 @@ def run():
           flush=True)
 
     spec = SamplingSpec()
-    td = defenses.get("token_difr")
-    ss = io_detectors.get("surface_stat")
+    td = verifiers.get("token_difr")
+    ss = verifiers.get("surface_stat")
 
     def io_scores(seqs):
-        return harness.io_verify(backend, seqs, spec, [ss]).scores[ss.name]
+        return harness.verify(backend, seqs, spec, [ss]).scores[ss.name]
 
     def auc_ss(honest_io, a_io):
         h = harness.TokenScores("honest", {ss.name: honest_io})

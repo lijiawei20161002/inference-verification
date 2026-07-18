@@ -39,14 +39,21 @@ class Backend(Protocol):
         """Run provider-side generation under `attack`, returning claimed tokens."""
         ...
 
-    # --- optional: support for input-output (black-box) detectors -----------
-    # These let an `IODetector` (ivgym.io_detectors) score from outputs alone,
+    # --- optional: support for Tier-0 (black-box) verifiers -----------------
+    # These let a Tier-0 verifier (ivgym.verifiers) score from outputs alone,
     # WITHOUT recomputing M. `proxy_logits` returns a *cheap, different* model's
-    # logits (never M's forward pass); `prompt_text` / `decode` expose raw I/O.
-    # A backend that omits them simply cannot run proxy-/text-based detectors.
+    # logits (never M's forward pass); `served_logits` is the provider's served
+    # distribution p (for the accept-rate fingerprint); `prompt_text` / `decode`
+    # expose raw I/O. A backend that omits them cannot run those verifiers.
 
     def proxy_logits(self, prompt_id: int, position: int) -> np.ndarray:
         """Logits from a cheap proxy LM (the cost/accuracy Pareto's cheap end)."""
+        ...
+
+    def served_logits(self, prompt_id: int, position: int) -> np.ndarray:
+        """The distribution `p` the provider served under (for the accept-rate
+        fingerprint). Not a recompute of M -- it is what a provider returning
+        logprobs exposes. Backends that omit it cannot run `accept_rate`."""
         ...
 
     def prompt_text(self, prompt_id: int) -> str | None:

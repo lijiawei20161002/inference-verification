@@ -9,9 +9,9 @@ decorators, which add the strategies to the same registries the harness and
 every backend already use. The two strategies below run unchanged on a real
 model on a GPU (the default `hf_gpu` backend).
 
-(The rank-based TOPLOC-flavoured defense that used to live here as a demo has
-since been promoted to a first-class built-in: `ivgym.defenses.TokenTOPLOC`,
-name `"token_toploc"`. The defense below is a distinct, deliberately-naive
+(The rank-based TOPLOC-flavoured verifier that used to live here as a demo has
+since been promoted to a first-class built-in: `ivgym.verifiers.TokenTOPLOC`,
+name `"token_toploc"`. The verifier below is a distinct, deliberately-naive
 example kept purely to show the registration mechanism.)
 """
 from __future__ import annotations
@@ -21,8 +21,8 @@ from dataclasses import dataclass
 import numpy as np
 
 from ivgym.attacks import Attack, register as register_attack
-from ivgym.defenses import Defense, register as register_defense
 from ivgym.sampling import filtered_logits
+from ivgym.verifiers import Tier1Verifier, register as register_verifier
 
 
 # ---------------------------------------------------------------------------
@@ -48,21 +48,21 @@ class LogitSpike(Attack):
 
 
 # ---------------------------------------------------------------------------
-# A custom DEFENSE: is the claimed token the verifier's argmax under the
-# filtered (top-k/top-p) distribution? A deliberately naive top-1-only check
-# (no seed sync needed) -- weaker than the built-in rank-based `token_toploc`,
-# here only to demonstrate the registration mechanism.
+# A custom VERIFIER (Tier-1: it recomputes M): is the claimed token the
+# verifier's argmax under the filtered (top-k/top-p) distribution? A deliberately
+# naive top-1-only check (no seed sync needed) -- weaker than the built-in
+# rank-based `token_toploc`, here only to demonstrate the registration mechanism.
 # ---------------------------------------------------------------------------
-@register_defense
+@register_verifier
 @dataclass
-class Top1Mismatch(Defense):
+class Top1Mismatch(Tier1Verifier):
     name: str = "top1_mismatch_toy"
     needs_seed: bool = False
     needs_activation: bool = False
 
-    def score(self, ctx) -> float:
-        s = ctx.sampling
-        filt = filtered_logits(ctx.ref_logits, s.top_k, s.top_p)
-        if filt[ctx.claimed_token] <= -1e29:
+    def score_token(self, ref_logits, gumbel, claimed, sampling, fingerprint=None,
+                    ref_fingerprint=None) -> float:
+        filt = filtered_logits(ref_logits, sampling.top_k, sampling.top_p)
+        if filt[claimed] <= -1e29:
             return 1.0               # claimed token isn't even in top-k/p
-        return 0.0 if int(np.argmax(filt)) == ctx.claimed_token else 1.0
+        return 0.0 if int(np.argmax(filt)) == claimed else 1.0

@@ -2,7 +2,7 @@
 every black-box proxy detector.
 
 The black-box I/O detectors (`surface_stat`/`surface_rank`/`logit_judge` in
-`ivgym/io_detectors.py`) score a claimed token by its surprisal/rank under a small
+`ivgym/verifiers.py`) score a claimed token by its surprisal/rank under a small
 *proxy* LM. They work AT ALL only because, within a model family, the proxy's
 conditional next-token distribution agrees with the large reference M's. This
 experiment measures that agreement directly on a real Qwen3 family ladder, and
@@ -72,7 +72,7 @@ PROXIES = [s for s in os.environ.get(
 N_PROMPTS = int(os.environ.get("IVGYM_PROMPTS", 10))
 N_TOKENS = int(os.environ.get("IVGYM_TOKENS", 48))
 MAX_PROMPT = int(os.environ.get("IVGYM_MAXPROMPT", 32))
-TOPK_OVERLAP = 8        # |top8 ∩|, mirrors io_detectors' frac_in_top8
+TOPK_OVERLAP = 8        # |top8 ∩|, mirrors verifiers' frac_in_top8
 TOPK_SPEARMAN = 64      # rank corr over M's top-K, mirrors RANK_CAP
 SHORT = {              # pretty/short labels for the figure axis
     "Qwen/Qwen3-0.6B": "0.6B", "Qwen/Qwen3-1.7B": "1.7B",

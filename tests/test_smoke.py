@@ -15,7 +15,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from ivgym import attacks, defenses
+from ivgym import attacks, verifiers
 from ivgym.core import SamplingSpec
 from ivgym.metrics import roc_auc, tpr_at_fpr
 from ivgym.sampling import gumbel_noise, position_seed, projection
@@ -46,19 +46,18 @@ def test_register_accepts_class_and_instance():
     class _ClassAttack(attacks.Attack):
         name = "tmp_class_attack"
 
-    @defenses.register
-    class _ClassDefense(defenses.Defense):
-        name = "tmp_class_defense"
-        needs_seed = False
-        def score(self, ctx):
-            return 0.0
+    @verifiers.register
+    class _ClassVerifier(verifiers.Verifier):
+        name = "tmp_class_verifier"
+        def evidence(self, ctx):
+            return np.zeros(len(ctx.claimed_tokens))
 
     atk = attacks.get("tmp_class_attack")
-    dfn = defenses.get("tmp_class_defense")
-    assert not isinstance(atk, type) and not isinstance(dfn, type)
+    vf = verifiers.get("tmp_class_verifier")
+    assert not isinstance(atk, type) and not isinstance(vf, type)
     # instance methods must be callable (they would fail on a bare class)
     assert atk.provider_spec(SamplingSpec()) == SamplingSpec()
-    del attacks._REGISTRY["tmp_class_attack"], defenses._REGISTRY["tmp_class_defense"]
+    del attacks._REGISTRY["tmp_class_attack"], verifiers._REGISTRY["tmp_class_verifier"]
 
 
 def test_plugin_loading_registers_strategies():
@@ -69,31 +68,27 @@ def test_plugin_loading_registers_strategies():
     root = Path(__file__).resolve().parents[1]
     load_strategies([str(root / "examples" / "custom_strategies.py")])
     assert "logit_spike" in attacks.all_attacks()
-    assert "top1_mismatch_toy" in defenses.all_defenses()
+    assert "top1_mismatch_toy" in verifiers.all_verifiers()
     # the registered objects are usable instances, not bare classes
     assert not isinstance(attacks.get("logit_spike"), type)
-    assert not isinstance(defenses.get("top1_mismatch_toy"), type)
+    assert not isinstance(verifiers.get("top1_mismatch_toy"), type)
 
 
 def test_token_toploc_scores_rank_of_claimed_token():
     """`token_toploc` (built-in, promoted from the examples/ demo) must score 0
     when the claimed token is the verifier's argmax, and a positive rank
-    otherwise, capped at `rank_cap`."""
-    from ivgym.core import VerifyContext, SamplingSpec
-
-    toploc = defenses.get("token_toploc")
-    assert "token_toploc" in defenses.all_defenses()
-    assert toploc.needs_seed is False
+    otherwise, capped at `rank_cap`. It is a Tier-1 verifier, so we exercise its
+    per-token `score_token` (what the driver calls on audited tokens)."""
+    toploc = verifiers.get("token_toploc")
+    assert "token_toploc" in verifiers.all_verifiers()
+    assert toploc.tier == 1 and toploc.needs_seed is False
 
     spec = SamplingSpec(temperature=1.0, top_k=None, top_p=None)
     logits = np.array([5.0, 3.0, 1.0, 0.0], dtype=np.float32)
-    gumbel = np.zeros_like(logits)
 
-    honest_ctx = VerifyContext(claimed_token=0, ref_logits=logits, gumbel=gumbel, sampling=spec)
-    assert toploc.score(honest_ctx) == 0.0
-
-    cheat_ctx = VerifyContext(claimed_token=2, ref_logits=logits, gumbel=gumbel, sampling=spec)
-    assert toploc.score(cheat_ctx) == 2.0  # two tokens (idx 0, 1) rank above idx 2
+    assert toploc.score_token(logits, None, 0, spec) == 0.0
+    # two tokens (idx 0, 1) rank above idx 2
+    assert toploc.score_token(logits, None, 2, spec) == 2.0
 
 
 class _FakeBackend:
@@ -133,6 +128,11 @@ class _FakeBackend:
     def proxy_logits(self, pid, pos):
         return self._proxy[(pid, pos)]
 
+    def served_logits(self, pid, pos):
+        # The distribution the provider served under; here == the reference (an
+        # honest provider). accept_rate compares this against the cheap proxy.
+        return self._ref[(pid, pos)]
+
     def sequences(self):
         from ivgym.core import Sequence, TokenStep
         spec = SamplingSpec(temperature=0.1)
@@ -146,19 +146,20 @@ class _FakeBackend:
         return seqs
 
 
-def test_verify_selective_spends_recompute_where_triage_points():
-    """The cost-aware tier must (1) recompute only the budgeted fraction, (2) rank
-    the near-tie flip positions above the peaked ones via the cheap proxy, and (3)
-    concentrate far more divergence signal than a random audit of the same size."""
+def test_selective_recompute_spends_where_value_points():
+    """The single driver at `budget<1` must (1) recompute only the budgeted
+    fraction, (2) rank the near-tie flip positions above the peaked ones via the
+    cheap proxy value signal, and (3) concentrate far more divergence signal than
+    a random audit of the same size."""
     from ivgym import harness
     be = _FakeBackend()
     seqs = be.sequences()
     spec = SamplingSpec(temperature=0.1)
-    td = defenses.get("token_difr")
+    td = verifiers.get("token_difr")
     n_tokens = be.n * be.t
     budget = 0.2                                   # matches flip_every=5 (20% are flips)
 
-    tie = harness.proxy_tie_scores(be, seqs, spec)
+    tie = harness.token_values(be, seqs, spec, "tie_margin")
     flip_mask = np.array([be.flip[(seq.prompt_id, st.position)]
                           for seq in seqs for st in seq.steps])
     # (2) proxy tie-ness ranks flip positions above non-flip ones
@@ -166,15 +167,57 @@ def test_verify_selective_spends_recompute_where_triage_points():
 
     # (1) recompute only the budgeted fraction
     be.n_ref_calls = 0
-    scores_tri, ratio = harness.verify_selective(be, seqs, spec, td, budget)
-    assert abs(ratio - budget) < 1e-6
+    tri = harness.verify(be, seqs, spec, [td], budget=budget, values=tie)
+    assert abs(tri.recompute_ratio - budget) < 1e-6
     assert be.n_ref_calls == int(round(budget * n_tokens))     # NOT n_tokens
 
-    # (3) triage concentrates the divergence vs a random audit of the same budget
+    # (3) value-directed audit concentrates divergence vs a random audit, same budget
     rng = np.random.default_rng(1)
-    scores_rnd, _ = harness.verify_selective(be, seqs, spec, td, budget,
-                                             triage=rng.random(n_tokens))
-    assert scores_tri.scores["token_difr"].sum() > 3 * scores_rnd.scores["token_difr"].sum()
+    rnd = harness.verify(be, seqs, spec, [td], budget=budget, values=rng.random(n_tokens))
+    assert tri.scores["token_difr"].sum() > 3 * rnd.scores["token_difr"].sum()
+
+
+def test_driver_scores_tier0_verifiers_without_recompute():
+    """A Tier-0 run (surface_stat + accept_rate) must (1) never recompute M,
+    (2) report recompute_ratio 0.0, and (3) produce one score per token for each
+    verifier -- flowing through the SAME TokenScores the Tier-1 path uses."""
+    from ivgym import harness
+    be = _FakeBackend()
+    seqs = be.sequences()
+    spec = SamplingSpec(temperature=0.1)
+    ss, ar = verifiers.get("surface_stat"), verifiers.get("accept_rate")
+    n_tokens = be.n * be.t
+
+    be.n_ref_calls = 0
+    ts = harness.verify(be, seqs, spec, [ss, ar])
+    assert be.n_ref_calls == 0                          # no recompute of M
+    assert ts.recompute_ratio == 0.0
+    for name in ("surface_stat", "accept_rate"):
+        assert ts.scores[name].shape == (n_tokens,)
+    # accept_rate = TV(served, proxy) is >= 0 and non-trivial on the flat-proxy flips
+    assert ts.scores["accept_rate"].min() >= 0.0
+    assert ts.scores["accept_rate"].max() > 0.0
+
+
+def test_learned_io_fits_and_scores_through_driver():
+    """learned_io must .fit on Tier-0 contexts (built without recomputing M) and
+    then score per-token probabilities through the single driver."""
+    from ivgym import harness
+    be = _FakeBackend()
+    seqs = be.sequences()
+    spec = SamplingSpec(temperature=0.1)
+
+    det = verifiers.LearnedSeq(epochs=50)
+    ctxs = harness.io_contexts(be, seqs, spec, need_proxy=True)
+    # two-class toy labels so fit has both classes
+    labels = [i % 2 for i in range(len(ctxs))]
+    be.n_ref_calls = 0
+    det.fit(ctxs, labels)
+    assert be.n_ref_calls == 0                          # fitting never recomputes M
+    ts = harness.verify(be, seqs, spec, [det])
+    s = ts.scores["learned_io"]
+    assert s.shape == (be.n * be.t,)
+    assert (s >= 0.0).all() and (s <= 1.0).all()        # probabilities
 
 
 def test_metrics():

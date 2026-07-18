@@ -148,7 +148,7 @@ def gpu_real_proxy():
         return
 
     import time
-    from ivgym import attacks, defenses, harness, io_detectors
+    from ivgym import attacks, harness, verifiers
     from ivgym.backends.hf_gpu import HFGPUBackend
 
     N_PROMPTS = int(os.environ.get("IVGYM_PROMPTS", 12))
@@ -166,13 +166,13 @@ def gpu_real_proxy():
           f"proxy={backend.proxy_n_params/1e9:.2f}B  ({1/ratio:.1f}x fewer params)\n")
 
     spec = SamplingSpec()
-    td = defenses.get("token_difr")
-    surf = io_detectors.get("surface_stat")          # proxy NLL: the cheap real-proxy signal
+    td = verifiers.get("token_difr")
+    surf = verifiers.get("surface_stat")             # proxy NLL: the cheap real-proxy signal
 
     honest = harness.generate_dataset(backend, attacks.get("honest"), spec,
                                       N_PROMPTS, N_TOKENS, record_activations=True)
     honest_td = harness.verify(backend, honest, spec, [td])
-    honest_io = harness.io_verify(backend, honest, spec, [surf])
+    honest_io = harness.verify(backend, honest, spec, [surf])
 
     # honest acceptance-rate anchor: accept_rate = 1 − TV(M, proxy) on served tokens,
     # exactly the speculative-decoding acceptance rate (see exp_family_correlation).
@@ -193,7 +193,7 @@ def gpu_real_proxy():
         seqs = harness.generate_dataset(backend, attacks.get(name), spec,
                                         N_PROMPTS, N_TOKENS, record_activations=True)
         a_td = harness.verify(backend, seqs, spec, [td])
-        a_io = harness.io_verify(backend, seqs, spec, [surf])
+        a_io = harness.verify(backend, seqs, spec, [surf])
         auc_io = harness.evaluate(honest_io, a_io, [surf], [BATCH], seed=7)[0].auc
         auc_td = harness.evaluate(honest_td, a_td, [td], [BATCH], seed=7)[0].auc
         print(f"  {name:>12} | {auc_io:>26.3f} | {auc_td:>24.3f}")

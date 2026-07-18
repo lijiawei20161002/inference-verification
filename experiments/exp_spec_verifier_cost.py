@@ -9,7 +9,7 @@ do you give up for it?*
 The setup (all on one CUDA host)
 --------------------------------
 * **Reference model M** (e.g. ``Qwen/Qwen3-4B``) -- the model the provider claims
-  to run. The strong verifier ``defenses.token_difr`` RE-RUNS M for every claimed
+  to run. The strong verifier ``verifiers.token_difr`` RE-RUNS M for every claimed
   token: correct (AUC ~ 1.0) but as expensive as inference itself.
 * **Proxy q** (e.g. ``Qwen/Qwen3-0.6B``, same tokenizer) -- a genuinely smaller,
   different model the *client* owns. The **SpeculativeVerifier** scores the
@@ -65,7 +65,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from ivgym import attacks, defenses, harness, spec_decode as sd
+from ivgym import attacks, harness, spec_decode as sd, verifiers
 from ivgym.attacks import Quantization
 from ivgym.core import SamplingSpec
 
@@ -188,7 +188,7 @@ def main():
     print(f"config: {N_PROMPTS} prompts x {N_TOKENS} tokens, batch={BATCH}\n")
 
     spec = SamplingSpec()
-    td = defenses.get("token_difr")
+    td = verifiers.get("token_difr")
 
     # --- honest reference set (calibration anchor; same prompts as attacks) ---
     print("generating honest reference set ...")

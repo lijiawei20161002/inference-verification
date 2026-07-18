@@ -16,7 +16,7 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from ivgym import attacks, defenses, harness
+from ivgym import attacks, harness, verifiers
 from ivgym.backends.hf_gpu import HFGPUBackend
 from ivgym.core import SamplingSpec
 
@@ -38,7 +38,7 @@ def main():
         flush=True,
     )
     spec = SamplingSpec()
-    defs = [defenses.get(d) for d in DEFENSES]
+    defs = [verifiers.get(d) for d in DEFENSES]
 
     honest_seqs = harness.generate_dataset(
         backend, attacks.get("honest"), spec, N_PROMPTS, N_TOKENS, record_activations=True

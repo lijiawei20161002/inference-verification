@@ -26,15 +26,15 @@ from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from ivgym import attacks, defenses, harness
+from ivgym import attacks, harness, verifiers
 from ivgym.backends import BACKENDS, make_backend
 from ivgym.core import SamplingSpec
 
 
 def load_strategies(paths: list[str]) -> None:
-    """Import each user file so its `@register`-decorated attacks/defenses land
+    """Import each user file so its `@register`-decorated attacks/verifiers land
     in the registries. The file just needs to import from `ivgym.attacks` /
-    `ivgym.defenses` and register; we exec it for its side effects."""
+    `ivgym.verifiers` and register; we exec it for its side effects."""
     for i, p in enumerate(paths):
         path = Path(p).resolve()
         if not path.exists():
@@ -55,7 +55,7 @@ def parse_args(argv=None):
         description="Attack x defense detection-AUC sweep with pluggable strategies and backend.",
     )
     ap.add_argument("--strategies", nargs="*", default=[],
-                    help="Python files that register custom attacks/defenses.")
+                    help="Python files that register custom attacks/verifiers.")
     ap.add_argument("--backend", default="hf_gpu", choices=BACKENDS,
                     help="Arena to run in (default: hf_gpu, a real model on a GPU).")
     ap.add_argument("--model", default="Qwen/Qwen3-0.6B",
@@ -68,18 +68,22 @@ def parse_args(argv=None):
     ap.add_argument("--attacks", nargs="*", default=None,
                     help="Attack names to evaluate (default: all registered except 'honest').")
     ap.add_argument("--defenses", nargs="*", default=None,
-                    help="Defense names to score with (default: all registered).")
+                    help="Verifier names to score with (default: all registered).")
     ap.add_argument("--prompts", type=int, default=12)
     ap.add_argument("--tokens", type=int, default=64)
     ap.add_argument("--batch", type=int, default=200)
     ap.add_argument("--n-batches", type=int, default=400)
     ap.add_argument("--selective", nargs="*", type=float, default=None, metavar="BUDGET",
-                    help="Also score the proxy-triaged SELECTIVE-recompute tier "
-                         "(ivgym.harness.verify_selective) at each of these recompute-budget "
+                    help="Also score the information-directed SELECTIVE-recompute tier "
+                         "(harness.verify at budget<1) at each of these recompute-budget "
                          "fractions, e.g. --selective 0.125 0.25 0.5. Each budget prints its own "
-                         "AUC table (attack x defense) so the cost-aware tier is directly "
-                         "comparable to full recompute. Assumes divergence-style defenses "
-                         "(non-audited tokens take the 0.0 'no divergence' score).")
+                         "AUC table (attack x verifier) so the cost-aware tier is directly "
+                         "comparable to full recompute. Tier-1 verifiers recompute M only on the "
+                         "top fraction of tokens by --value-fn; Tier-0 verifiers are unaffected.")
+    ap.add_argument("--value-fn", default="entropy",
+                    choices=["entropy", "tie_margin", "surprisal", "uniform"],
+                    help="Cheap proxy-only signal that directs where selective recompute is spent "
+                         "(default: entropy H(q) -- the principled informativeness proxy).")
     ap.add_argument("--list", action="store_true",
                     help="List registered attacks/defenses and exit.")
     return ap.parse_args(argv)
@@ -91,16 +95,16 @@ def main(argv=None):
     load_strategies(args.strategies)
 
     if args.list:
-        print("attacks: ", ", ".join(sorted(attacks.all_attacks())))
-        print("defenses:", ", ".join(sorted(defenses.all_defenses())))
+        print("attacks:  ", ", ".join(sorted(attacks.all_attacks())))
+        print("verifiers:", ", ".join(sorted(verifiers.all_verifiers())))
         return
 
     attack_names = args.attacks
     if attack_names is None:
         attack_names = [n for n in attacks.all_attacks() if n != "honest"]
-    defense_names = args.defenses or list(defenses.all_defenses())
+    defense_names = args.defenses or list(verifiers.all_verifiers())
 
-    defs = [defenses.get(d) for d in defense_names]
+    defs = [verifiers.get(d) for d in defense_names]
     needs_act = any(d.needs_activation for d in defs)
     budgets = args.selective if args.selective is not None else []
 
@@ -125,16 +129,17 @@ def main(argv=None):
     # --- honest reference (full + selective, computed while its cache is live) ---
     honest_seqs = gen(attacks.get("honest"))
     honest = harness.verify(backend, honest_seqs, spec, defs)
-    # (defense_name, budget) -> honest TokenScores under that selective budget.
-    honest_sel: dict[tuple[str, float], harness.TokenScores] = {}
+    # budget -> honest TokenScores (all verifier columns) under that selective budget.
+    honest_sel: dict[float, harness.TokenScores] = {}
     realized_ratio: dict[float, float] = {}
     if budgets:
-        h_tri = harness.proxy_tie_scores(backend, honest_seqs, spec)
+        # One cheap value ranking, reused across budgets so the triage is stable.
+        h_val = harness.token_values(backend, honest_seqs, spec, args.value_fn)
         for b in budgets:
-            for d in defs:
-                ts, ratio = harness.verify_selective(backend, honest_seqs, spec, d, b, triage=h_tri)
-                honest_sel[(d.name, b)] = ts
-                realized_ratio[b] = ratio
+            ts = harness.verify(backend, honest_seqs, spec, defs, budget=b,
+                                value_fn=args.value_fn, values=h_val)
+            honest_sel[b] = ts
+            realized_ratio[b] = ts.recompute_ratio
 
     # --- sweep attacks, accumulating AUCs (keep numbers, not backend reads) ------
     full_rows: dict[str, dict[str, float]] = {}
@@ -143,15 +148,13 @@ def main(argv=None):
         seqs = gen(attacks.get(aname))
         full_rows[aname] = full_auc(honest, harness.verify(backend, seqs, spec, defs))
         if budgets:
-            a_tri = harness.proxy_tie_scores(backend, seqs, spec)
+            a_val = harness.token_values(backend, seqs, spec, args.value_fn)
             for b in budgets:
-                row = {}
-                for d in defs:
-                    a_ts, _ = harness.verify_selective(backend, seqs, spec, d, b, triage=a_tri)
-                    r = harness.evaluate(honest_sel[(d.name, b)], a_ts, [d], [args.batch],
-                                         n_batches=args.n_batches, winsor_pct=99.9)[0]
-                    row[d.name] = r.auc
-                sel_rows[b][aname] = row
+                a_ts = harness.verify(backend, seqs, spec, defs, budget=b,
+                                      value_fn=args.value_fn, values=a_val)
+                res = harness.evaluate(honest_sel[b], a_ts, defs, [args.batch],
+                                       n_batches=args.n_batches, winsor_pct=99.9)
+                sel_rows[b][aname] = {r.defense: r.auc for r in res}
 
     # --- report -----------------------------------------------------------------
     header = f"{'attack':>14} | " + " ".join(f"{d:>16}" for d in defense_names)

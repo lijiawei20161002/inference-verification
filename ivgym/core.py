@@ -41,40 +41,45 @@ class Sequence:
 
 
 @dataclass
-class VerifyContext:
-    """Everything a Defense needs to score one token, computed by the verifier."""
+class VContext:
+    """The single, per-sequence context every `Verifier` scores against.
 
-    claimed_token: int
-    ref_logits: np.ndarray        # verifier's trusted recomputed logits, shape [V]
-    gumbel: np.ndarray            # shared Gumbel noise for this position, shape [V]
-    sampling: SamplingSpec
-    fingerprint: np.ndarray | None = None      # provider's activation fingerprint
-    ref_fingerprint: np.ndarray | None = None  # verifier's recomputed fingerprint
+    This replaces the old `VerifyContext` (per-token, white-box) / `IOContext`
+    (per-sequence, black-box) split. The split was really along ONE axis -- *which
+    distribution the verifier paid to obtain* -- so we keep one context and let
+    each field be present or absent by cost tier:
 
+      Tier-0 (cheap, NO recompute of the reference model M). Always safe for a
+      black-box / I/O verifier:
+        * `proxy_logits`  -- a *different, cheap* proxy LM's logits `q` (never M's
+          own forward pass); the cheap end of the cost/accuracy Pareto. It is also
+          the substrate for the per-token `value` (informativeness) signal that
+          directs where the expensive Tier-1 recompute is spent.
+        * `served_logits` -- the distribution `p` the provider served under (what
+          a provider returning logprobs exposes); drives the acceptance-rate
+          fingerprint (`1 - TV(p, q)`).
+        * `prompt_text`, `fingerprints` -- raw I/O / provider activations.
 
-@dataclass
-class IOContext:
-    """Everything an input-output (black-box) detector may see for one whole
-    `Sequence`. The contrast with `VerifyContext` is the point of the abstraction:
+      Tier-1 (expensive: the verifier re-ran M's forward pass). Filled by the
+      driver ONLY on audited rows (`audit_mask`), so a partial-budget run pays for
+      recompute only where the cheap `value` signal says it matters:
+        * `ref_logits`, `ref_fingerprints`, `gumbel`.
 
-      * `VerifyContext` is *per-token* and is handed `ref_logits` -- the verifier
-        re-ran the reference model M's forward pass (the white-box / recomputation
-        defenses).
-      * `IOContext` is *per-sequence* and carries **no** `ref_logits` and **no**
-        `ref_fingerprint`. An I/O detector decides "is this a faithful sample from
-        M under spec phi?" from the prompt and the claimed tokens alone, *without*
-        recomputing M. That "no recompute of M" boundary is the whole reason this
-        is a separate context.
-
-    `proxy_logits` is the one allowed escape hatch and does NOT break the boundary:
-    it is the output of a *different, cheap* model (a small proxy LM), never M's
-    own forward pass. It is the cheap end of the cost/accuracy Pareto ("a cheap
-    model polices the expensive model"). Detectors that want it set
-    `needs_proxy = True`; the harness fills it by calling `backend.proxy_logits`.
+    Every array is `[T, V]` (or a length-`T` list) aligned to `claimed_tokens`.
+    Tier-1 arrays carry valid rows only where `audit_mask[t]` is True (other rows
+    are never read). A Tier-0 verifier ignores the Tier-1 fields entirely.
     """
 
     prompt_id: int
     claimed_tokens: list[int]
     sampling: SamplingSpec
-    prompt_text: str | None = None             # raw prompt (text backends only)
-    proxy_logits: np.ndarray | None = None     # [T, V] CHEAP-proxy logits, not M's
+    # --- Tier-0: cheap, no recompute of M ---
+    proxy_logits: np.ndarray | None = None       # [T, V] cheap proxy q
+    served_logits: np.ndarray | None = None      # [T, V] provider's served target p
+    prompt_text: str | None = None               # raw prompt (text backends only)
+    fingerprints: list | None = None             # provider activations per token
+    # --- Tier-1: expensive, verifier recomputed M (audited rows only) ---
+    ref_logits: np.ndarray | None = None         # [T, V] recomputed M logits
+    ref_fingerprints: list | None = None         # verifier's recomputed activations
+    gumbel: np.ndarray | None = None             # [T, V] shared Gumbel noise
+    audit_mask: np.ndarray | None = None         # [T] bool: which rows got Tier-1 recompute

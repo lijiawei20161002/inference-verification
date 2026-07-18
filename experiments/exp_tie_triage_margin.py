@@ -16,10 +16,10 @@ Faithful setup (same box constraints as exp_real_quant_triage.py):
     Set IVGYM_QUANT=nf4 to swap the fake-quant for REAL bitsandbytes NF4 4-bit
     weights (needs the optional `bitsandbytes` dep); the bit sweep collapses to a
     single "nf4" panel and the flip-rate is confirmed on true 4-bit.
-  * proxy = Qwen3-0.6B -> tie-ness triage (harness.proxy_tie_scores mechanism).
+  * proxy = Qwen3-0.6B -> tie-ness triage (harness.token_values "tie_margin").
 
 Selection uses `ivgym.harness.select_triaged` -- the SAME primitive the first-class
-`harness.verify_selective` tier uses -- so the figure exercises the shipped path.
+`harness.verify(budget<1)` tier uses -- so the figure exercises the shipped path.
 
     .venv/bin/python -m experiments.exp_tie_triage_margin
     IVGYM_REPLOT=1 .venv/bin/python -m experiments.exp_tie_triage_margin   # re-plot
@@ -38,9 +38,9 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from ivgym.backends.hf_gpu import DEFAULT_PROMPTS
-from ivgym.core import SamplingSpec, TokenStep, VerifyContext
-from ivgym.defenses import TokenDiFR
+from ivgym.core import SamplingSpec
 from ivgym.harness import select_triaged
+from ivgym.verifiers import TokenDiFR
 from ivgym.metrics import roc_auc
 from ivgym.sampling import gumbel_max_sample, gumbel_noise, log_softmax, position_seed
 from experiments import quantlib
@@ -93,9 +93,9 @@ def margin(ref, srv, pid, pos, V):
     g = gumbel_noise(V, position_seed(SPEC.seed, pid, pos))
     claimed = gumbel_max_sample(srv + benign(pid, pos, 1, V), SPEC.temperature, g,
                                 SPEC.top_k, SPEC.top_p)
-    ctx = VerifyContext(claimed_token=claimed, ref_logits=ref + benign(pid, pos, 2, V),
-                        gumbel=g, sampling=SPEC)
-    return _TD.score(ctx)
+    # Token-DiFR is now a Tier-1 verifier; `score_token` is the per-token scorer
+    # the driver calls on audited tokens (was `Defense.score(VerifyContext)`).
+    return _TD.score_token(ref + benign(pid, pos, 2, V), g, claimed, SPEC)
 
 
 # --------------------------------------------------------------------------- GPU
