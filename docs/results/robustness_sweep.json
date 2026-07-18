@@ -1,0 +1,1523 @@
+[
+  {
+    "tag": "qwen3-0.6b",
+    "ref": "Qwen/Qwen3-0.6B",
+    "proxy": null,
+    "params": 596049920,
+    "proxy_params": null,
+    "vocab": 151936,
+    "hidden": 1024,
+    "verifiers": [
+      "token_difr",
+      "cross_entropy",
+      "activation_difr",
+      "token_toploc",
+      "surface_stat",
+      "surface_rank",
+      "surface_tokens",
+      "accept_rate"
+    ],
+    "realized_recompute_ratio": {
+      "0.25": 0.25
+    },
+    "full": {
+      "quant_4bit": {
+        "token_difr": 0.6314,
+        "cross_entropy": 0.38925,
+        "activation_difr": 1.0,
+        "token_toploc": 0.6596875,
+        "surface_stat": 0.32815,
+        "surface_rank": 0.4703375,
+        "surface_tokens": 0.75,
+        "accept_rate": 0.96955
+      },
+      "kv_fp8": {
+        "token_difr": 0.733175,
+        "cross_entropy": 0.849225,
+        "activation_difr": 1.0,
+        "token_toploc": 0.741675,
+        "surface_stat": 0.70895,
+        "surface_rank": 0.884,
+        "surface_tokens": 0.5,
+        "accept_rate": 0.6389
+      },
+      "temp_1.1": {
+        "token_difr": 0.885975,
+        "cross_entropy": 0.983375,
+        "activation_difr": 0.65735,
+        "token_toploc": 0.9864,
+        "surface_stat": 0.9741,
+        "surface_rank": 0.6584375,
+        "surface_tokens": 0.8925,
+        "accept_rate": 0.859925
+      },
+      "seed_43": {
+        "token_difr": 1.0,
+        "cross_entropy": 0.995875,
+        "activation_difr": 0.081225,
+        "token_toploc": 0.9994125,
+        "surface_stat": 0.979925,
+        "surface_rank": 0.99745,
+        "surface_tokens": 0.9775,
+        "accept_rate": 0.9817
+      },
+      "bug_k2": {
+        "token_difr": 0.123125,
+        "cross_entropy": 0.13275,
+        "activation_difr": 0.998425,
+        "token_toploc": 0.096525,
+        "surface_stat": 0.11645,
+        "surface_rank": 0.1018875,
+        "surface_tokens": 0.755,
+        "accept_rate": 0.204275
+      },
+      "bug_k32": {
+        "token_difr": 0.998625,
+        "cross_entropy": 0.879725,
+        "activation_difr": 0.427975,
+        "token_toploc": 0.974075,
+        "surface_stat": 0.82605,
+        "surface_rank": 0.5882,
+        "surface_tokens": 0.5,
+        "accept_rate": 0.5795
+      },
+      "adv_quant_temp": {
+        "token_difr": 0.898725,
+        "cross_entropy": 0.04735,
+        "activation_difr": 1.0,
+        "token_toploc": 0.0363375,
+        "surface_stat": 0.0329,
+        "surface_rank": 0.0517375,
+        "surface_tokens": 0.5,
+        "accept_rate": 0.9097
+      }
+    },
+    "selective": {
+      "0.25": {
+        "quant_4bit": {
+          "token_difr": 1.0,
+          "cross_entropy": 0.713425,
+          "activation_difr": 1.0,
+          "token_toploc": 0.526425,
+          "surface_stat": 0.32815,
+          "surface_rank": 0.4703375,
+          "surface_tokens": 0.75,
+          "accept_rate": 0.96955
+        },
+        "kv_fp8": {
+          "token_difr": 0.942225,
+          "cross_entropy": 0.86355,
+          "activation_difr": 1.0,
+          "token_toploc": 0.8565125,
+          "surface_stat": 0.70895,
+          "surface_rank": 0.884,
+          "surface_tokens": 0.5,
+          "accept_rate": 0.6389
+        },
+        "temp_1.1": {
+          "token_difr": 0.9953,
+          "cross_entropy": 0.9626,
+          "activation_difr": 0.177675,
+          "token_toploc": 0.9822375,
+          "surface_stat": 0.9741,
+          "surface_rank": 0.6584375,
+          "surface_tokens": 0.8925,
+          "accept_rate": 0.859925
+        },
+        "seed_43": {
+          "token_difr": 1.0,
+          "cross_entropy": 0.945875,
+          "activation_difr": 0.17015,
+          "token_toploc": 1.0,
+          "surface_stat": 0.979925,
+          "surface_rank": 0.99745,
+          "surface_tokens": 0.9775,
+          "accept_rate": 0.9817
+        },
+        "bug_k2": {
+          "token_difr": 0.88675,
+          "cross_entropy": 0.540025,
+          "activation_difr": 0.7289,
+          "token_toploc": 0.2836375,
+          "surface_stat": 0.11645,
+          "surface_rank": 0.1018875,
+          "surface_tokens": 0.755,
+          "accept_rate": 0.204275
+        },
+        "bug_k32": {
+          "token_difr": 0.8563625,
+          "cross_entropy": 0.83385,
+          "activation_difr": 0.613275,
+          "token_toploc": 0.908925,
+          "surface_stat": 0.82605,
+          "surface_rank": 0.5882,
+          "surface_tokens": 0.5,
+          "accept_rate": 0.5795
+        },
+        "adv_quant_temp": {
+          "token_difr": 1.0,
+          "cross_entropy": 0.45385,
+          "activation_difr": 1.0,
+          "token_toploc": 0.039225,
+          "surface_stat": 0.0329,
+          "surface_rank": 0.0517375,
+          "surface_tokens": 0.5,
+          "accept_rate": 0.9097
+        }
+      }
+    },
+    "seconds": 947.3332624435425
+  },
+  {
+    "tag": "qwen3-1.7b",
+    "ref": "Qwen/Qwen3-1.7B",
+    "proxy": "Qwen/Qwen3-0.6B",
+    "params": 1720574976,
+    "proxy_params": 596049920,
+    "vocab": 151936,
+    "hidden": 2048,
+    "verifiers": [
+      "token_difr",
+      "cross_entropy",
+      "activation_difr",
+      "token_toploc",
+      "surface_stat",
+      "surface_rank",
+      "surface_tokens",
+      "accept_rate"
+    ],
+    "realized_recompute_ratio": {
+      "0.25": 0.25
+    },
+    "full": {
+      "quant_4bit": {
+        "token_difr": 0.708475,
+        "cross_entropy": 0.04455,
+        "activation_difr": 1.0,
+        "token_toploc": 0.6021375,
+        "surface_stat": 0.0127,
+        "surface_rank": 0.4045625,
+        "surface_tokens": 0.1757,
+        "accept_rate": 0.00355
+      },
+      "kv_fp8": {
+        "token_difr": 0.94735,
+        "cross_entropy": 0.1877,
+        "activation_difr": 1.0,
+        "token_toploc": 0.9534625,
+        "surface_stat": 0.630325,
+        "surface_rank": 0.81905,
+        "surface_tokens": 0.51705,
+        "accept_rate": 0.13995
+      },
+      "temp_1.1": {
+        "token_difr": 0.900525,
+        "cross_entropy": 0.12475,
+        "activation_difr": 0.3356,
+        "token_toploc": 0.7057875,
+        "surface_stat": 0.08535,
+        "surface_rank": 0.4633625,
+        "surface_tokens": 0.163225,
+        "accept_rate": 0.000525
+      },
+      "seed_43": {
+        "token_difr": 1.0,
+        "cross_entropy": 0.000725,
+        "activation_difr": 0.6401,
+        "token_toploc": 0.535225,
+        "surface_stat": 0.008175,
+        "surface_rank": 0.1632125,
+        "surface_tokens": 0.2584125,
+        "accept_rate": 0.000525
+      },
+      "bug_k2": {
+        "token_difr": 0.697375,
+        "cross_entropy": 0.03285,
+        "activation_difr": 0.143575,
+        "token_toploc": 0.733575,
+        "surface_stat": 0.185775,
+        "surface_rank": 0.5271,
+        "surface_tokens": 0.695925,
+        "accept_rate": 0.004475
+      },
+      "bug_k32": {
+        "token_difr": 0.98455,
+        "cross_entropy": 0.53415,
+        "activation_difr": 0.29935,
+        "token_toploc": 0.99075,
+        "surface_stat": 0.7806,
+        "surface_rank": 0.9237875,
+        "surface_tokens": 0.087975,
+        "accept_rate": 0.0217
+      },
+      "adv_quant_temp": {
+        "token_difr": 0.92845,
+        "cross_entropy": 0.076275,
+        "activation_difr": 1.0,
+        "token_toploc": 0.8690375,
+        "surface_stat": 0.51735,
+        "surface_rank": 0.655275,
+        "surface_tokens": 0.376575,
+        "accept_rate": 0.119575
+      }
+    },
+    "selective": {
+      "0.25": {
+        "quant_4bit": {
+          "token_difr": 0.9096,
+          "cross_entropy": 0.379075,
+          "activation_difr": 1.0,
+          "token_toploc": 0.586875,
+          "surface_stat": 0.0127,
+          "surface_rank": 0.4045625,
+          "surface_tokens": 0.1757,
+          "accept_rate": 0.00355
+        },
+        "kv_fp8": {
+          "token_difr": 0.7455,
+          "cross_entropy": 0.486175,
+          "activation_difr": 1.0,
+          "token_toploc": 0.7184625,
+          "surface_stat": 0.630325,
+          "surface_rank": 0.81905,
+          "surface_tokens": 0.51705,
+          "accept_rate": 0.13995
+        },
+        "temp_1.1": {
+          "token_difr": 0.9258,
+          "cross_entropy": 0.53265,
+          "activation_difr": 0.524125,
+          "token_toploc": 0.8917625,
+          "surface_stat": 0.08535,
+          "surface_rank": 0.4633625,
+          "surface_tokens": 0.163225,
+          "accept_rate": 0.000525
+        },
+        "seed_43": {
+          "token_difr": 1.0,
+          "cross_entropy": 0.119975,
+          "activation_difr": 0.4919,
+          "token_toploc": 0.7993,
+          "surface_stat": 0.008175,
+          "surface_rank": 0.1632125,
+          "surface_tokens": 0.2584125,
+          "accept_rate": 0.000525
+        },
+        "bug_k2": {
+          "token_difr": 0.93475,
+          "cross_entropy": 0.19885,
+          "activation_difr": 0.18745,
+          "token_toploc": 0.7221625,
+          "surface_stat": 0.185775,
+          "surface_rank": 0.5271,
+          "surface_tokens": 0.695925,
+          "accept_rate": 0.004475
+        },
+        "bug_k32": {
+          "token_difr": 0.8472375,
+          "cross_entropy": 0.630975,
+          "activation_difr": 0.53485,
+          "token_toploc": 0.96965,
+          "surface_stat": 0.7806,
+          "surface_rank": 0.9237875,
+          "surface_tokens": 0.087975,
+          "accept_rate": 0.0217
+        },
+        "adv_quant_temp": {
+          "token_difr": 1.0,
+          "cross_entropy": 0.473725,
+          "activation_difr": 1.0,
+          "token_toploc": 0.8626,
+          "surface_stat": 0.51735,
+          "surface_rank": 0.655275,
+          "surface_tokens": 0.376575,
+          "accept_rate": 0.119575
+        }
+      }
+    },
+    "seconds": 810.4530832767487
+  },
+  {
+    "tag": "qwen3-4b",
+    "ref": "Qwen/Qwen3-4B",
+    "proxy": "Qwen/Qwen3-0.6B",
+    "params": 4022468096,
+    "proxy_params": 596049920,
+    "vocab": 151936,
+    "hidden": 2560,
+    "verifiers": [
+      "token_difr",
+      "cross_entropy",
+      "activation_difr",
+      "token_toploc",
+      "surface_stat",
+      "surface_rank",
+      "surface_tokens",
+      "accept_rate"
+    ],
+    "realized_recompute_ratio": {
+      "0.25": 0.25
+    },
+    "full": {
+      "quant_4bit": {
+        "token_difr": 0.989125,
+        "cross_entropy": 0.7974,
+        "activation_difr": 1.0,
+        "token_toploc": 0.96725,
+        "surface_stat": 0.628225,
+        "surface_rank": 0.7357625,
+        "surface_tokens": 0.8373375,
+        "accept_rate": 0.952875
+      },
+      "kv_fp8": {
+        "token_difr": 0.871425,
+        "cross_entropy": 0.278775,
+        "activation_difr": 1.0,
+        "token_toploc": 0.5284375,
+        "surface_stat": 0.25075,
+        "surface_rank": 0.224925,
+        "surface_tokens": 0.7002,
+        "accept_rate": 0.6476
+      },
+      "temp_1.1": {
+        "token_difr": 0.86245,
+        "cross_entropy": 0.92625,
+        "activation_difr": 0.26065,
+        "token_toploc": 0.747875,
+        "surface_stat": 0.83815,
+        "surface_rank": 0.7630125,
+        "surface_tokens": 0.89535,
+        "accept_rate": 0.754725
+      },
+      "seed_43": {
+        "token_difr": 1.0,
+        "cross_entropy": 0.0014,
+        "activation_difr": 0.741575,
+        "token_toploc": 0.1148625,
+        "surface_stat": 0.216225,
+        "surface_rank": 0.0772125,
+        "surface_tokens": 0.7024125,
+        "accept_rate": 0.47645
+      },
+      "bug_k2": {
+        "token_difr": 0.7803,
+        "cross_entropy": 0.1184,
+        "activation_difr": 0.73775,
+        "token_toploc": 0.1793,
+        "surface_stat": 0.263425,
+        "surface_rank": 0.2385375,
+        "surface_tokens": 0.7002,
+        "accept_rate": 0.896375
+      },
+      "bug_k32": {
+        "token_difr": 1.0,
+        "cross_entropy": 0.98475,
+        "activation_difr": 0.5983,
+        "token_toploc": 0.9920375,
+        "surface_stat": 0.99975,
+        "surface_rank": 0.958,
+        "surface_tokens": 0.7002,
+        "accept_rate": 0.9037
+      },
+      "adv_quant_temp": {
+        "token_difr": 0.9395,
+        "cross_entropy": 0.011275,
+        "activation_difr": 1.0,
+        "token_toploc": 0.6100375,
+        "surface_stat": 0.151825,
+        "surface_rank": 0.243225,
+        "surface_tokens": 0.905075,
+        "accept_rate": 0.376
+      }
+    },
+    "selective": {
+      "0.25": {
+        "quant_4bit": {
+          "token_difr": 1.0,
+          "cross_entropy": 0.7315,
+          "activation_difr": 1.0,
+          "token_toploc": 0.9347875,
+          "surface_stat": 0.628225,
+          "surface_rank": 0.7357625,
+          "surface_tokens": 0.8373375,
+          "accept_rate": 0.952875
+        },
+        "kv_fp8": {
+          "token_difr": 0.982075,
+          "cross_entropy": 0.438575,
+          "activation_difr": 1.0,
+          "token_toploc": 0.54945,
+          "surface_stat": 0.25075,
+          "surface_rank": 0.224925,
+          "surface_tokens": 0.7002,
+          "accept_rate": 0.6476
+        },
+        "temp_1.1": {
+          "token_difr": 1.0,
+          "cross_entropy": 0.925375,
+          "activation_difr": 0.197475,
+          "token_toploc": 0.9170375,
+          "surface_stat": 0.83815,
+          "surface_rank": 0.7630125,
+          "surface_tokens": 0.89535,
+          "accept_rate": 0.754725
+        },
+        "seed_43": {
+          "token_difr": 1.0,
+          "cross_entropy": 0.010775,
+          "activation_difr": 0.40365,
+          "token_toploc": 0.04465,
+          "surface_stat": 0.216225,
+          "surface_rank": 0.0772125,
+          "surface_tokens": 0.7024125,
+          "accept_rate": 0.47645
+        },
+        "bug_k2": {
+          "token_difr": 0.988825,
+          "cross_entropy": 0.0635,
+          "activation_difr": 0.1813,
+          "token_toploc": 0.0660875,
+          "surface_stat": 0.263425,
+          "surface_rank": 0.2385375,
+          "surface_tokens": 0.7002,
+          "accept_rate": 0.896375
+        },
+        "bug_k32": {
+          "token_difr": 1.0,
+          "cross_entropy": 0.84145,
+          "activation_difr": 0.157825,
+          "token_toploc": 0.9421,
+          "surface_stat": 0.99975,
+          "surface_rank": 0.958,
+          "surface_tokens": 0.7002,
+          "accept_rate": 0.9037
+        },
+        "adv_quant_temp": {
+          "token_difr": 1.0,
+          "cross_entropy": 0.100475,
+          "activation_difr": 1.0,
+          "token_toploc": 0.7176125,
+          "surface_stat": 0.151825,
+          "surface_rank": 0.243225,
+          "surface_tokens": 0.905075,
+          "accept_rate": 0.376
+        }
+      }
+    },
+    "seconds": 886.3070895671844
+  },
+  {
+    "tag": "llama3.2-1b",
+    "ref": "unsloth/Llama-3.2-1B-Instruct",
+    "proxy": null,
+    "params": 1235814400,
+    "proxy_params": null,
+    "vocab": 128256,
+    "hidden": 2048,
+    "verifiers": [
+      "token_difr",
+      "cross_entropy",
+      "activation_difr",
+      "token_toploc",
+      "surface_stat",
+      "surface_rank",
+      "surface_tokens",
+      "accept_rate"
+    ],
+    "realized_recompute_ratio": {
+      "0.25": 0.25
+    },
+    "full": {
+      "quant_4bit": {
+        "token_difr": 0.9994,
+        "cross_entropy": 0.12995,
+        "activation_difr": 1.0,
+        "token_toploc": 0.911025,
+        "surface_stat": 0.12765,
+        "surface_rank": 0.3036,
+        "surface_tokens": 0.5,
+        "accept_rate": 0.4492
+      },
+      "kv_fp8": {
+        "token_difr": 0.362225,
+        "cross_entropy": 0.7378,
+        "activation_difr": 1.0,
+        "token_toploc": 0.9971625,
+        "surface_stat": 0.963125,
+        "surface_rank": 0.793075,
+        "surface_tokens": 0.5,
+        "accept_rate": 0.82865
+      },
+      "temp_1.1": {
+        "token_difr": 0.90195,
+        "cross_entropy": 0.01265,
+        "activation_difr": 0.956925,
+        "token_toploc": 0.8991125,
+        "surface_stat": 0.333775,
+        "surface_rank": 0.184975,
+        "surface_tokens": 0.5,
+        "accept_rate": 0.063475
+      },
+      "seed_43": {
+        "token_difr": 1.0,
+        "cross_entropy": 0.043725,
+        "activation_difr": 0.517825,
+        "token_toploc": 0.751125,
+        "surface_stat": 0.85455,
+        "surface_rank": 0.3575,
+        "surface_tokens": 0.5,
+        "accept_rate": 0.507075
+      },
+      "bug_k2": {
+        "token_difr": 0.68635,
+        "cross_entropy": 0.138,
+        "activation_difr": 0.050525,
+        "token_toploc": 0.930475,
+        "surface_stat": 0.6203,
+        "surface_rank": 0.2462875,
+        "surface_tokens": 0.5,
+        "accept_rate": 0.36485
+      },
+      "bug_k32": {
+        "token_difr": 0.97255,
+        "cross_entropy": 0.514025,
+        "activation_difr": 0.450875,
+        "token_toploc": 0.999825,
+        "surface_stat": 0.98615,
+        "surface_rank": 0.87195,
+        "surface_tokens": 0.5,
+        "accept_rate": 0.91165
+      },
+      "adv_quant_temp": {
+        "token_difr": 0.9999,
+        "cross_entropy": 0.0,
+        "activation_difr": 1.0,
+        "token_toploc": 0.3257875,
+        "surface_stat": 0.007025,
+        "surface_rank": 0.0011875,
+        "surface_tokens": 0.5,
+        "accept_rate": 0.1606
+      }
+    },
+    "selective": {
+      "0.25": {
+        "quant_4bit": {
+          "token_difr": 0.997775,
+          "cross_entropy": 0.468825,
+          "activation_difr": 0.9975,
+          "token_toploc": 0.8079375,
+          "surface_stat": 0.12765,
+          "surface_rank": 0.3036,
+          "surface_tokens": 0.5,
+          "accept_rate": 0.4492
+        },
+        "kv_fp8": {
+          "token_difr": 0.7859875,
+          "cross_entropy": 0.831675,
+          "activation_difr": 0.99995,
+          "token_toploc": 0.994925,
+          "surface_stat": 0.963125,
+          "surface_rank": 0.793075,
+          "surface_tokens": 0.5,
+          "accept_rate": 0.82865
+        },
+        "temp_1.1": {
+          "token_difr": 0.9584125,
+          "cross_entropy": 0.152025,
+          "activation_difr": 0.2377,
+          "token_toploc": 0.804,
+          "surface_stat": 0.333775,
+          "surface_rank": 0.184975,
+          "surface_tokens": 0.5,
+          "accept_rate": 0.063475
+        },
+        "seed_43": {
+          "token_difr": 1.0,
+          "cross_entropy": 0.2824,
+          "activation_difr": 0.262075,
+          "token_toploc": 0.905425,
+          "surface_stat": 0.85455,
+          "surface_rank": 0.3575,
+          "surface_tokens": 0.5,
+          "accept_rate": 0.507075
+        },
+        "bug_k2": {
+          "token_difr": 0.29965,
+          "cross_entropy": 0.191175,
+          "activation_difr": 0.633125,
+          "token_toploc": 0.8623,
+          "surface_stat": 0.6203,
+          "surface_rank": 0.2462875,
+          "surface_tokens": 0.5,
+          "accept_rate": 0.36485
+        },
+        "bug_k32": {
+          "token_difr": 0.66715,
+          "cross_entropy": 0.288825,
+          "activation_difr": 0.2402,
+          "token_toploc": 0.984675,
+          "surface_stat": 0.98615,
+          "surface_rank": 0.87195,
+          "surface_tokens": 0.5,
+          "accept_rate": 0.91165
+        },
+        "adv_quant_temp": {
+          "token_difr": 1.0,
+          "cross_entropy": 0.027875,
+          "activation_difr": 0.995775,
+          "token_toploc": 0.1030875,
+          "surface_stat": 0.007025,
+          "surface_rank": 0.0011875,
+          "surface_tokens": 0.5,
+          "accept_rate": 0.1606
+        }
+      }
+    },
+    "seconds": 721.6312320232391
+  },
+  {
+    "tag": "llama3.2-3b",
+    "ref": "unsloth/Llama-3.2-3B-Instruct",
+    "proxy": "unsloth/Llama-3.2-1B-Instruct",
+    "params": 3212749824,
+    "proxy_params": 1235814400,
+    "vocab": 128256,
+    "hidden": 3072,
+    "verifiers": [
+      "token_difr",
+      "cross_entropy",
+      "activation_difr",
+      "token_toploc",
+      "surface_stat",
+      "surface_rank",
+      "surface_tokens",
+      "accept_rate"
+    ],
+    "realized_recompute_ratio": {
+      "0.25": 0.25
+    },
+    "full": {
+      "quant_4bit": {
+        "token_difr": 0.976225,
+        "cross_entropy": 0.995975,
+        "activation_difr": 1.0,
+        "token_toploc": 0.9350625,
+        "surface_stat": 0.949575,
+        "surface_rank": 0.928325,
+        "surface_tokens": 0.0,
+        "accept_rate": 0.886825
+      },
+      "kv_fp8": {
+        "token_difr": 0.936,
+        "cross_entropy": 0.993475,
+        "activation_difr": 1.0,
+        "token_toploc": 0.5890125,
+        "surface_stat": 0.258,
+        "surface_rank": 0.4533875,
+        "surface_tokens": 0.0,
+        "accept_rate": 0.567175
+      },
+      "temp_1.1": {
+        "token_difr": 0.6831,
+        "cross_entropy": 1.0,
+        "activation_difr": 0.488125,
+        "token_toploc": 0.7906,
+        "surface_stat": 0.98125,
+        "surface_rank": 0.8951875,
+        "surface_tokens": 0.0,
+        "accept_rate": 0.9842
+      },
+      "seed_43": {
+        "token_difr": 1.0,
+        "cross_entropy": 1.0,
+        "activation_difr": 0.869375,
+        "token_toploc": 0.7210625,
+        "surface_stat": 0.974375,
+        "surface_rank": 0.924825,
+        "surface_tokens": 0.0,
+        "accept_rate": 0.997675
+      },
+      "bug_k2": {
+        "token_difr": 0.96375,
+        "cross_entropy": 0.99875,
+        "activation_difr": 0.854475,
+        "token_toploc": 0.5427875,
+        "surface_stat": 0.831075,
+        "surface_rank": 0.9136875,
+        "surface_tokens": 0.0,
+        "accept_rate": 0.965675
+      },
+      "bug_k32": {
+        "token_difr": 1.0,
+        "cross_entropy": 1.0,
+        "activation_difr": 0.484675,
+        "token_toploc": 0.9244125,
+        "surface_stat": 0.999725,
+        "surface_rank": 0.9987875,
+        "surface_tokens": 0.0,
+        "accept_rate": 0.992325
+      },
+      "adv_quant_temp": {
+        "token_difr": 0.99865,
+        "cross_entropy": 0.881725,
+        "activation_difr": 1.0,
+        "token_toploc": 0.734075,
+        "surface_stat": 0.356175,
+        "surface_rank": 0.6893375,
+        "surface_tokens": 0.00075,
+        "accept_rate": 0.413775
+      }
+    },
+    "selective": {
+      "0.25": {
+        "quant_4bit": {
+          "token_difr": 0.5,
+          "cross_entropy": 0.9103,
+          "activation_difr": 1.0,
+          "token_toploc": 0.977325,
+          "surface_stat": 0.949575,
+          "surface_rank": 0.928325,
+          "surface_tokens": 0.0,
+          "accept_rate": 0.886825
+        },
+        "kv_fp8": {
+          "token_difr": 0.5,
+          "cross_entropy": 0.96645,
+          "activation_difr": 0.99985,
+          "token_toploc": 0.6979375,
+          "surface_stat": 0.258,
+          "surface_rank": 0.4533875,
+          "surface_tokens": 0.0,
+          "accept_rate": 0.567175
+        },
+        "temp_1.1": {
+          "token_difr": 0.5,
+          "cross_entropy": 1.0,
+          "activation_difr": 0.285025,
+          "token_toploc": 0.9851375,
+          "surface_stat": 0.98125,
+          "surface_rank": 0.8951875,
+          "surface_tokens": 0.0,
+          "accept_rate": 0.9842
+        },
+        "seed_43": {
+          "token_difr": 0.5,
+          "cross_entropy": 0.99115,
+          "activation_difr": 0.51035,
+          "token_toploc": 0.8634625,
+          "surface_stat": 0.974375,
+          "surface_rank": 0.924825,
+          "surface_tokens": 0.0,
+          "accept_rate": 0.997675
+        },
+        "bug_k2": {
+          "token_difr": 0.5,
+          "cross_entropy": 0.9877,
+          "activation_difr": 0.36615,
+          "token_toploc": 0.37085,
+          "surface_stat": 0.831075,
+          "surface_rank": 0.9136875,
+          "surface_tokens": 0.0,
+          "accept_rate": 0.965675
+        },
+        "bug_k32": {
+          "token_difr": 0.5,
+          "cross_entropy": 0.99985,
+          "activation_difr": 0.610825,
+          "token_toploc": 0.792325,
+          "surface_stat": 0.999725,
+          "surface_rank": 0.9987875,
+          "surface_tokens": 0.0,
+          "accept_rate": 0.992325
+        },
+        "adv_quant_temp": {
+          "token_difr": 0.5,
+          "cross_entropy": 0.7923,
+          "activation_difr": 0.999925,
+          "token_toploc": 0.1834,
+          "surface_stat": 0.356175,
+          "surface_rank": 0.6893375,
+          "surface_tokens": 0.00075,
+          "accept_rate": 0.413775
+        }
+      }
+    },
+    "seconds": 686.011260509491
+  },
+  {
+    "tag": "smollm2-360m",
+    "ref": "HuggingFaceTB/SmolLM2-360M-Instruct",
+    "proxy": "HuggingFaceTB/SmolLM2-135M-Instruct",
+    "params": 361821120,
+    "proxy_params": 134515008,
+    "vocab": 49152,
+    "hidden": 960,
+    "verifiers": [
+      "token_difr",
+      "cross_entropy",
+      "activation_difr",
+      "token_toploc",
+      "surface_stat",
+      "surface_rank",
+      "surface_tokens",
+      "accept_rate"
+    ],
+    "realized_recompute_ratio": {
+      "0.25": 0.25
+    },
+    "full": {
+      "quant_4bit": {
+        "token_difr": 0.99995,
+        "cross_entropy": 0.75475,
+        "activation_difr": 1.0,
+        "token_toploc": 0.998875,
+        "surface_stat": 0.279575,
+        "surface_rank": 0.574775,
+        "surface_tokens": 0.0776,
+        "accept_rate": 0.78035
+      },
+      "kv_fp8": {
+        "token_difr": 0.98425,
+        "cross_entropy": 0.79065,
+        "activation_difr": 1.0,
+        "token_toploc": 0.9989,
+        "surface_stat": 0.00525,
+        "surface_rank": 0.783075,
+        "surface_tokens": 0.2530375,
+        "accept_rate": 0.36325
+      },
+      "temp_1.1": {
+        "token_difr": 0.98655,
+        "cross_entropy": 0.9989,
+        "activation_difr": 0.8842,
+        "token_toploc": 0.9996375,
+        "surface_stat": 0.782,
+        "surface_rank": 0.893575,
+        "surface_tokens": 0.17055,
+        "accept_rate": 0.368575
+      },
+      "seed_43": {
+        "token_difr": 1.0,
+        "cross_entropy": 0.6462,
+        "activation_difr": 0.870325,
+        "token_toploc": 0.9775375,
+        "surface_stat": 0.158625,
+        "surface_rank": 0.3850875,
+        "surface_tokens": 0.01955,
+        "accept_rate": 0.97235
+      },
+      "bug_k2": {
+        "token_difr": 0.99065,
+        "cross_entropy": 0.99765,
+        "activation_difr": 0.940625,
+        "token_toploc": 0.999975,
+        "surface_stat": 0.61045,
+        "surface_rank": 0.98565,
+        "surface_tokens": 0.1576375,
+        "accept_rate": 0.8167
+      },
+      "bug_k32": {
+        "token_difr": 1.0,
+        "cross_entropy": 0.999975,
+        "activation_difr": 0.7345,
+        "token_toploc": 0.998,
+        "surface_stat": 0.857525,
+        "surface_rank": 0.9878,
+        "surface_tokens": 0.0212375,
+        "accept_rate": 0.876675
+      },
+      "adv_quant_temp": {
+        "token_difr": 1.0,
+        "cross_entropy": 0.2803,
+        "activation_difr": 1.0,
+        "token_toploc": 0.9854,
+        "surface_stat": 0.076325,
+        "surface_rank": 0.3714875,
+        "surface_tokens": 0.428675,
+        "accept_rate": 0.8854
+      }
+    },
+    "selective": {
+      "0.25": {
+        "quant_4bit": {
+          "token_difr": 0.99875,
+          "cross_entropy": 0.756875,
+          "activation_difr": 0.99875,
+          "token_toploc": 0.970625,
+          "surface_stat": 0.279575,
+          "surface_rank": 0.574775,
+          "surface_tokens": 0.0776,
+          "accept_rate": 0.78035
+        },
+        "kv_fp8": {
+          "token_difr": 0.71275,
+          "cross_entropy": 0.72175,
+          "activation_difr": 0.991125,
+          "token_toploc": 0.9973375,
+          "surface_stat": 0.00525,
+          "surface_rank": 0.783075,
+          "surface_tokens": 0.2530375,
+          "accept_rate": 0.36325
+        },
+        "temp_1.1": {
+          "token_difr": 0.990325,
+          "cross_entropy": 0.8906,
+          "activation_difr": 0.656075,
+          "token_toploc": 0.9851375,
+          "surface_stat": 0.782,
+          "surface_rank": 0.893575,
+          "surface_tokens": 0.17055,
+          "accept_rate": 0.368575
+        },
+        "seed_43": {
+          "token_difr": 1.0,
+          "cross_entropy": 0.637825,
+          "activation_difr": 0.7825,
+          "token_toploc": 0.9608125,
+          "surface_stat": 0.158625,
+          "surface_rank": 0.3850875,
+          "surface_tokens": 0.01955,
+          "accept_rate": 0.97235
+        },
+        "bug_k2": {
+          "token_difr": 0.7595,
+          "cross_entropy": 0.9578,
+          "activation_difr": 0.1165,
+          "token_toploc": 0.9999,
+          "surface_stat": 0.61045,
+          "surface_rank": 0.98565,
+          "surface_tokens": 0.1576375,
+          "accept_rate": 0.8167
+        },
+        "bug_k32": {
+          "token_difr": 0.6726625,
+          "cross_entropy": 0.76195,
+          "activation_difr": 0.385475,
+          "token_toploc": 0.87755,
+          "surface_stat": 0.857525,
+          "surface_rank": 0.9878,
+          "surface_tokens": 0.0212375,
+          "accept_rate": 0.876675
+        },
+        "adv_quant_temp": {
+          "token_difr": 1.0,
+          "cross_entropy": 0.218125,
+          "activation_difr": 0.9955,
+          "token_toploc": 0.8927,
+          "surface_stat": 0.076325,
+          "surface_rank": 0.3714875,
+          "surface_tokens": 0.428675,
+          "accept_rate": 0.8854
+        }
+      }
+    },
+    "seconds": 362.1927616596222
+  },
+  {
+    "tag": "smollm2-1.7b",
+    "ref": "HuggingFaceTB/SmolLM2-1.7B-Instruct",
+    "proxy": "HuggingFaceTB/SmolLM2-135M-Instruct",
+    "params": 1711376384,
+    "proxy_params": 134515008,
+    "vocab": 49152,
+    "hidden": 2048,
+    "verifiers": [
+      "token_difr",
+      "cross_entropy",
+      "activation_difr",
+      "token_toploc",
+      "surface_stat",
+      "surface_rank",
+      "surface_tokens",
+      "accept_rate"
+    ],
+    "realized_recompute_ratio": {
+      "0.25": 0.25
+    },
+    "full": {
+      "quant_4bit": {
+        "token_difr": 0.973275,
+        "cross_entropy": 0.7242,
+        "activation_difr": 1.0,
+        "token_toploc": 0.7768125,
+        "surface_stat": 0.4342,
+        "surface_rank": 0.7126375,
+        "surface_tokens": 0.4109875,
+        "accept_rate": 0.539225
+      },
+      "kv_fp8": {
+        "token_difr": 0.039975,
+        "cross_entropy": 0.66845,
+        "activation_difr": 1.0,
+        "token_toploc": 0.5355625,
+        "surface_stat": 0.370325,
+        "surface_rank": 0.168175,
+        "surface_tokens": 0.3846375,
+        "accept_rate": 0.629375
+      },
+      "temp_1.1": {
+        "token_difr": 0.6028,
+        "cross_entropy": 0.937875,
+        "activation_difr": 0.819225,
+        "token_toploc": 0.78395,
+        "surface_stat": 0.9591,
+        "surface_rank": 0.9939875,
+        "surface_tokens": 0.795525,
+        "accept_rate": 0.988025
+      },
+      "seed_43": {
+        "token_difr": 1.0,
+        "cross_entropy": 0.3779,
+        "activation_difr": 0.57335,
+        "token_toploc": 0.176325,
+        "surface_stat": 0.32815,
+        "surface_rank": 0.609275,
+        "surface_tokens": 0.8262125,
+        "accept_rate": 0.9165
+      },
+      "bug_k2": {
+        "token_difr": 0.4908,
+        "cross_entropy": 0.421075,
+        "activation_difr": 0.75605,
+        "token_toploc": 0.2127875,
+        "surface_stat": 0.4905,
+        "surface_rank": 0.6284625,
+        "surface_tokens": 0.7269375,
+        "accept_rate": 0.223225
+      },
+      "bug_k32": {
+        "token_difr": 0.984275,
+        "cross_entropy": 1.0,
+        "activation_difr": 0.538775,
+        "token_toploc": 0.9955375,
+        "surface_stat": 0.999575,
+        "surface_rank": 0.98035,
+        "surface_tokens": 0.809075,
+        "accept_rate": 0.96685
+      },
+      "adv_quant_temp": {
+        "token_difr": 0.615425,
+        "cross_entropy": 0.225475,
+        "activation_difr": 1.0,
+        "token_toploc": 0.0533875,
+        "surface_stat": 0.0437,
+        "surface_rank": 0.06095,
+        "surface_tokens": 0.8696125,
+        "accept_rate": 0.398925
+      }
+    },
+    "selective": {
+      "0.25": {
+        "quant_4bit": {
+          "token_difr": 0.933075,
+          "cross_entropy": 0.8032,
+          "activation_difr": 0.99335,
+          "token_toploc": 0.8404,
+          "surface_stat": 0.4342,
+          "surface_rank": 0.7126375,
+          "surface_tokens": 0.4109875,
+          "accept_rate": 0.539225
+        },
+        "kv_fp8": {
+          "token_difr": 0.3464625,
+          "cross_entropy": 0.80815,
+          "activation_difr": 0.997975,
+          "token_toploc": 0.68895,
+          "surface_stat": 0.370325,
+          "surface_rank": 0.168175,
+          "surface_tokens": 0.3846375,
+          "accept_rate": 0.629375
+        },
+        "temp_1.1": {
+          "token_difr": 0.73,
+          "cross_entropy": 0.891175,
+          "activation_difr": 0.445775,
+          "token_toploc": 0.8609,
+          "surface_stat": 0.9591,
+          "surface_rank": 0.9939875,
+          "surface_tokens": 0.795525,
+          "accept_rate": 0.988025
+        },
+        "seed_43": {
+          "token_difr": 1.0,
+          "cross_entropy": 0.4928,
+          "activation_difr": 0.444175,
+          "token_toploc": 0.4751125,
+          "surface_stat": 0.32815,
+          "surface_rank": 0.609275,
+          "surface_tokens": 0.8262125,
+          "accept_rate": 0.9165
+        },
+        "bug_k2": {
+          "token_difr": 0.6485875,
+          "cross_entropy": 0.697875,
+          "activation_difr": 0.5773,
+          "token_toploc": 0.6550875,
+          "surface_stat": 0.4905,
+          "surface_rank": 0.6284625,
+          "surface_tokens": 0.7269375,
+          "accept_rate": 0.223225
+        },
+        "bug_k32": {
+          "token_difr": 0.8992875,
+          "cross_entropy": 0.987825,
+          "activation_difr": 0.611375,
+          "token_toploc": 0.9513625,
+          "surface_stat": 0.999575,
+          "surface_rank": 0.98035,
+          "surface_tokens": 0.809075,
+          "accept_rate": 0.96685
+        },
+        "adv_quant_temp": {
+          "token_difr": 0.4595,
+          "cross_entropy": 0.582375,
+          "activation_difr": 0.9629,
+          "token_toploc": 0.2512625,
+          "surface_stat": 0.0437,
+          "surface_rank": 0.06095,
+          "surface_tokens": 0.8696125,
+          "accept_rate": 0.398925
+        }
+      }
+    },
+    "seconds": 313.68477725982666
+  },
+  {
+    "tag": "pythia-410m",
+    "ref": "EleutherAI/pythia-410m",
+    "proxy": "EleutherAI/pythia-160m",
+    "params": 405334016,
+    "proxy_params": 162322944,
+    "vocab": 50304,
+    "hidden": 1024,
+    "verifiers": [
+      "token_difr",
+      "cross_entropy",
+      "activation_difr",
+      "token_toploc",
+      "surface_stat",
+      "surface_rank",
+      "surface_tokens",
+      "accept_rate"
+    ],
+    "realized_recompute_ratio": {
+      "0.25": 0.25
+    },
+    "full": {
+      "quant_4bit": {
+        "token_difr": 0.14645,
+        "cross_entropy": 0.0259,
+        "activation_difr": 1.0,
+        "token_toploc": 0.014075,
+        "surface_stat": 0.01155,
+        "surface_rank": 0.3927,
+        "surface_tokens": 0.0249,
+        "accept_rate": 0.1009
+      },
+      "kv_fp8": {
+        "token_difr": 0.086325,
+        "cross_entropy": 0.3727,
+        "activation_difr": 0.971925,
+        "token_toploc": 0.0818125,
+        "surface_stat": 0.01715,
+        "surface_rank": 0.630275,
+        "surface_tokens": 0.25235,
+        "accept_rate": 0.27375
+      },
+      "temp_1.1": {
+        "token_difr": 0.8592,
+        "cross_entropy": 0.685875,
+        "activation_difr": 0.993575,
+        "token_toploc": 0.6484875,
+        "surface_stat": 0.170975,
+        "surface_rank": 0.893625,
+        "surface_tokens": 0.1976875,
+        "accept_rate": 0.016275
+      },
+      "seed_43": {
+        "token_difr": 1.0,
+        "cross_entropy": 0.0281,
+        "activation_difr": 0.6509,
+        "token_toploc": 0.0129,
+        "surface_stat": 0.034975,
+        "surface_rank": 0.9228625,
+        "surface_tokens": 0.0128125,
+        "accept_rate": 0.07975
+      },
+      "bug_k2": {
+        "token_difr": 0.263775,
+        "cross_entropy": 0.724075,
+        "activation_difr": 0.431775,
+        "token_toploc": 0.0201,
+        "surface_stat": 0.205025,
+        "surface_rank": 0.929875,
+        "surface_tokens": 0.5730375,
+        "accept_rate": 0.765075
+      },
+      "bug_k32": {
+        "token_difr": 0.88155,
+        "cross_entropy": 0.791825,
+        "activation_difr": 0.40615,
+        "token_toploc": 0.506775,
+        "surface_stat": 0.126525,
+        "surface_rank": 0.905575,
+        "surface_tokens": 0.7620125,
+        "accept_rate": 0.338175
+      },
+      "adv_quant_temp": {
+        "token_difr": 0.42145,
+        "cross_entropy": 0.0268,
+        "activation_difr": 1.0,
+        "token_toploc": 0.0366375,
+        "surface_stat": 0.042875,
+        "surface_rank": 0.837725,
+        "surface_tokens": 0.5562875,
+        "accept_rate": 0.638025
+      }
+    },
+    "selective": {
+      "0.25": {
+        "quant_4bit": {
+          "token_difr": 0.261475,
+          "cross_entropy": 0.349075,
+          "activation_difr": 0.811825,
+          "token_toploc": 0.1701375,
+          "surface_stat": 0.01155,
+          "surface_rank": 0.3927,
+          "surface_tokens": 0.0249,
+          "accept_rate": 0.1009
+        },
+        "kv_fp8": {
+          "token_difr": 0.14595,
+          "cross_entropy": 0.27145,
+          "activation_difr": 0.935025,
+          "token_toploc": 0.1962,
+          "surface_stat": 0.01715,
+          "surface_rank": 0.630275,
+          "surface_tokens": 0.25235,
+          "accept_rate": 0.27375
+        },
+        "temp_1.1": {
+          "token_difr": 0.754725,
+          "cross_entropy": 0.781475,
+          "activation_difr": 0.916825,
+          "token_toploc": 0.6622125,
+          "surface_stat": 0.170975,
+          "surface_rank": 0.893625,
+          "surface_tokens": 0.1976875,
+          "accept_rate": 0.016275
+        },
+        "seed_43": {
+          "token_difr": 0.998725,
+          "cross_entropy": 0.120175,
+          "activation_difr": 0.8566,
+          "token_toploc": 0.0353375,
+          "surface_stat": 0.034975,
+          "surface_rank": 0.9228625,
+          "surface_tokens": 0.0128125,
+          "accept_rate": 0.07975
+        },
+        "bug_k2": {
+          "token_difr": 0.513525,
+          "cross_entropy": 0.52145,
+          "activation_difr": 0.8802,
+          "token_toploc": 0.1270375,
+          "surface_stat": 0.205025,
+          "surface_rank": 0.929875,
+          "surface_tokens": 0.5730375,
+          "accept_rate": 0.765075
+        },
+        "bug_k32": {
+          "token_difr": 0.821675,
+          "cross_entropy": 0.625925,
+          "activation_difr": 0.685975,
+          "token_toploc": 0.63415,
+          "surface_stat": 0.126525,
+          "surface_rank": 0.905575,
+          "surface_tokens": 0.7620125,
+          "accept_rate": 0.338175
+        },
+        "adv_quant_temp": {
+          "token_difr": 0.26335,
+          "cross_entropy": 0.118425,
+          "activation_difr": 0.988925,
+          "token_toploc": 0.1080375,
+          "surface_stat": 0.042875,
+          "surface_rank": 0.837725,
+          "surface_tokens": 0.5562875,
+          "accept_rate": 0.638025
+        }
+      }
+    },
+    "seconds": 285.1908187866211
+  },
+  {
+    "tag": "pythia-1.4b",
+    "ref": "EleutherAI/pythia-1.4b",
+    "proxy": "EleutherAI/pythia-160m",
+    "params": 1414647808,
+    "proxy_params": 162322944,
+    "vocab": 50304,
+    "hidden": 2048,
+    "verifiers": [
+      "token_difr",
+      "cross_entropy",
+      "activation_difr",
+      "token_toploc",
+      "surface_stat",
+      "surface_rank",
+      "surface_tokens",
+      "accept_rate"
+    ],
+    "realized_recompute_ratio": {
+      "0.25": 0.25
+    },
+    "full": {
+      "quant_4bit": {
+        "token_difr": 0.81535,
+        "cross_entropy": 0.995925,
+        "activation_difr": 1.0,
+        "token_toploc": 0.959975,
+        "surface_stat": 0.970675,
+        "surface_rank": 0.81465,
+        "surface_tokens": 0.2279375,
+        "accept_rate": 0.08795
+      },
+      "kv_fp8": {
+        "token_difr": 0.793175,
+        "cross_entropy": 0.529,
+        "activation_difr": 0.9999,
+        "token_toploc": 0.7316125,
+        "surface_stat": 0.375775,
+        "surface_rank": 0.2329625,
+        "surface_tokens": 0.409475,
+        "accept_rate": 0.417825
+      },
+      "temp_1.1": {
+        "token_difr": 0.7463,
+        "cross_entropy": 0.999975,
+        "activation_difr": 0.01595,
+        "token_toploc": 0.9909875,
+        "surface_stat": 0.996075,
+        "surface_rank": 0.81455,
+        "surface_tokens": 0.5058125,
+        "accept_rate": 0.239225
+      },
+      "seed_43": {
+        "token_difr": 1.0,
+        "cross_entropy": 0.9973,
+        "activation_difr": 5e-05,
+        "token_toploc": 0.991975,
+        "surface_stat": 0.837125,
+        "surface_rank": 0.2679375,
+        "surface_tokens": 0.8190625,
+        "accept_rate": 0.044375
+      },
+      "bug_k2": {
+        "token_difr": 0.226225,
+        "cross_entropy": 0.71925,
+        "activation_difr": 0.005675,
+        "token_toploc": 0.3262375,
+        "surface_stat": 0.321875,
+        "surface_rank": 0.3799125,
+        "surface_tokens": 0.834725,
+        "accept_rate": 0.258175
+      },
+      "bug_k32": {
+        "token_difr": 0.882925,
+        "cross_entropy": 0.8241,
+        "activation_difr": 0.320925,
+        "token_toploc": 0.7546625,
+        "surface_stat": 0.6431,
+        "surface_rank": 0.13795,
+        "surface_tokens": 0.2448625,
+        "accept_rate": 0.1642
+      },
+      "adv_quant_temp": {
+        "token_difr": 0.4246,
+        "cross_entropy": 0.0079,
+        "activation_difr": 1.0,
+        "token_toploc": 0.5617,
+        "surface_stat": 0.12565,
+        "surface_rank": 0.177725,
+        "surface_tokens": 0.1678,
+        "accept_rate": 0.011425
+      }
+    },
+    "selective": {
+      "0.25": {
+        "quant_4bit": {
+          "token_difr": 0.8189,
+          "cross_entropy": 0.8076,
+          "activation_difr": 0.9984,
+          "token_toploc": 0.8996125,
+          "surface_stat": 0.970675,
+          "surface_rank": 0.81465,
+          "surface_tokens": 0.2279375,
+          "accept_rate": 0.08795
+        },
+        "kv_fp8": {
+          "token_difr": 0.880975,
+          "cross_entropy": 0.605,
+          "activation_difr": 0.8927,
+          "token_toploc": 0.7224875,
+          "surface_stat": 0.375775,
+          "surface_rank": 0.2329625,
+          "surface_tokens": 0.409475,
+          "accept_rate": 0.417825
+        },
+        "temp_1.1": {
+          "token_difr": 0.583425,
+          "cross_entropy": 0.976975,
+          "activation_difr": 0.656,
+          "token_toploc": 0.969775,
+          "surface_stat": 0.996075,
+          "surface_rank": 0.81455,
+          "surface_tokens": 0.5058125,
+          "accept_rate": 0.239225
+        },
+        "seed_43": {
+          "token_difr": 1.0,
+          "cross_entropy": 0.83955,
+          "activation_difr": 0.942125,
+          "token_toploc": 0.6565,
+          "surface_stat": 0.837125,
+          "surface_rank": 0.2679375,
+          "surface_tokens": 0.8190625,
+          "accept_rate": 0.044375
+        },
+        "bug_k2": {
+          "token_difr": 0.70405,
+          "cross_entropy": 0.873175,
+          "activation_difr": 0.3098,
+          "token_toploc": 0.458925,
+          "surface_stat": 0.321875,
+          "surface_rank": 0.3799125,
+          "surface_tokens": 0.834725,
+          "accept_rate": 0.258175
+        },
+        "bug_k32": {
+          "token_difr": 0.8357,
+          "cross_entropy": 0.5627,
+          "activation_difr": 0.6771,
+          "token_toploc": 0.438475,
+          "surface_stat": 0.6431,
+          "surface_rank": 0.13795,
+          "surface_tokens": 0.2448625,
+          "accept_rate": 0.1642
+        },
+        "adv_quant_temp": {
+          "token_difr": 0.594725,
+          "cross_entropy": 0.211975,
+          "activation_difr": 0.99725,
+          "token_toploc": 0.723925,
+          "surface_stat": 0.12565,
+          "surface_rank": 0.177725,
+          "surface_tokens": 0.1678,
+          "accept_rate": 0.011425
+        }
+      }
+    },
+    "seconds": 289.01404190063477
+  }
+]
