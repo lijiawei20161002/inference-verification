@@ -67,16 +67,16 @@ def main():
     full = harness.evaluate(honest_full, attack_full, [td], [BATCH], seed=7)[0]
     print(f"generated + verified [{time.time()-t0:.0f}s]\n", flush=True)
 
-    print(f"attack = {ATTACK};  full-recompute token_difr AUC = {full.auc:.3f} "
-          f"(TPR@1% {full.tpr_at_1pct:.2f})")
-    print(f"\n  {'budget':>7}{'recompute ratio':>17}{'selective AUC':>15}{'TPR@1%':>9}")
+    print(f"attack = {ATTACK};  full-recompute token_difr AUC@FPR<{full.max_fpr:.1%} = "
+          f"{full.auc:.3f} (TPR@{full.max_fpr:.1%} {full.tpr:.2f})")
+    print(f"\n  {'budget':>7}{'recompute ratio':>17}{'selective AUC':>15}{'TPR@0.5%':>9}")
     print("  " + "-" * 46)
     for bud in BUDGETS:
         h_scores = h_sel[bud]; r_h = h_scores.recompute_ratio
         a_scores = a_sel[bud]; r_a = a_scores.recompute_ratio
         res = harness.evaluate(h_scores, a_scores, [td], [BATCH], seed=7)[0]
         print(f"  {bud*100:>6.0f}%{(0.5*(r_h+r_a))*100:>16.1f}%"
-              f"{res.auc:>15.3f}{res.tpr_at_1pct:>9.2f}", flush=True)
+              f"{res.auc:>15.3f}{res.tpr:>9.2f}", flush=True)
 
     print(f"\n  proxy-triaged recompute recovers the full-recompute AUC at a fraction of the")
     print(f"  M-calls; the ratio column is the measured fraction of tokens re-run on M.")

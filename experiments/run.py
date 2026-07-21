@@ -72,7 +72,7 @@ def parse_args(argv=None):
     ap.add_argument("--prompts", type=int, default=12)
     ap.add_argument("--tokens", type=int, default=64)
     ap.add_argument("--batch", type=int, default=200)
-    ap.add_argument("--n-batches", type=int, default=400)
+    ap.add_argument("--n-batches", type=int, default=2000)
     ap.add_argument("--selective", nargs="*", type=float, default=None, metavar="BUDGET",
                     help="Also score the information-directed SELECTIVE-recompute tier "
                          "(harness.verify at budget<1) at each of these recompute-budget "

@@ -151,13 +151,20 @@ def test_verifier_flags_quant_and_keeps_low_honest_fpr():
 
 
 def test_batched_auc_floor_needs_seed_averaging():
-    """Regression for the exp_spec_verifier_cost floor bug: harness.evaluate does
-    ONE train/test split, then batch_means concentrates each batch mean around its
-    finite subset's sample mean (~1/sqrt(batch)). For two draws of the SAME
-    distribution the accidental subset-mean gap is amplified into an AUC far from
-    0.5 on any single seed -- so the honest-null 'floor' must be AVERAGED over
-    many re-split seeds (the AUC_SEEDS loop) to land at ~0.5. Guards against
-    reverting batched_auc to a single hardcoded seed."""
+    """Regression for the exp_spec_verifier_cost floor bug: harness.evaluate splits
+    the honest tokens ONCE (calibration | eval), then batch_means concentrates each
+    batch mean around its finite subset's sample mean (~1/sqrt(batch)). For two
+    draws of the SAME distribution the accidental subset-mean gap is amplified into
+    a full-range AUC far from 0.5 on any single seed -- so the honest-null 'floor'
+    must be AVERAGED over many re-split seeds (the AUC_SEEDS loop) to land at ~0.5.
+    Guards against reverting batched_auc to a single hardcoded seed.
+
+    This is checked on `auc_full` (the threshold-free full-range AUC), not the
+    headline `auc`: the headline metric is now the standardized partial AUC at
+    FPR<=0.5%, and that extreme low-FPR region is governed by the ROC curve's tail
+    shape, not the bulk subset-mean gap this bug is about -- it does not reliably
+    reproduce the same single-seed bias (see docs/GAME.md's soundness-floor note),
+    so it is not the right field to assert this phenomenon on."""
     rng = np.random.default_rng(123)
     x = np.abs(rng.normal(0.3, 0.08, 24 * 128))          # honest-like per-token signal
     perm = np.random.default_rng(0).permutation(len(x))
@@ -168,7 +175,7 @@ def test_batched_auc_floor_needs_seed_averaging():
         ts_h = harness.TokenScores("h", {"d": A})
         ts_a = harness.TokenScores("a", {"d": B})
         shim = type("D", (), {"name": "d"})()
-        return harness.evaluate(ts_h, ts_a, [shim], [150], seed=seed)[0].auc
+        return harness.evaluate(ts_h, ts_a, [shim], [150], seed=seed)[0].auc_full
 
     single = auc_at(7)
     averaged = float(np.mean([auc_at(s) for s in range(16)]))

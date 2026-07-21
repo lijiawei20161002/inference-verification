@@ -61,7 +61,7 @@ PROXY_MODEL = os.environ.get("IVGYM_PROXY_MODEL") or None
 N_PROMPTS = int(os.environ.get("IVGYM_PROMPTS", 12))
 N_TOKENS = int(os.environ.get("IVGYM_TOKENS", 64))
 BATCH = int(os.environ.get("IVGYM_BATCH", 100))
-N_BATCHES = 400
+N_BATCHES = 2000
 RUN_JUDGE = os.environ.get("IVGYM_JUDGE", "1") != "0"
 JUDGE_MODEL = os.environ.get("IVGYM_JUDGE_MODEL", "claude-sonnet-4-6")
 

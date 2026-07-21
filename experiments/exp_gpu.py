@@ -54,7 +54,7 @@ def main():
             backend, atk, spec, N_PROMPTS, N_TOKENS, record_activations=True
         )
         ascores = harness.verify(backend, seqs, spec, defs)
-        res = harness.evaluate(honest, ascores, defs, [BATCH], n_batches=400, winsor_pct=99.9)
+        res = harness.evaluate(honest, ascores, defs, [BATCH], n_batches=2000, winsor_pct=99.9)
         by_def = {r.defense: r for r in res}
         row = " ".join(f"{by_def[d].auc:>16.4f}" for d in DEFENSES)
         print(f"{aname:>12} | {row}", flush=True)

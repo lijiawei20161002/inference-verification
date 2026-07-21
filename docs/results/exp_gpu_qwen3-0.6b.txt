@@ -1,16 +1,16 @@
 loading Qwen/Qwen3-0.6B ...
-Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 9314.75it/s]
 Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
-loaded in 4.7s | vocab=151936 hidden=1024 | 20 prompts x 128 tokens
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 7762.70it/s]
+loaded in 6.1s | vocab=151936 hidden=1024 | 20 prompts x 128 tokens
 
 Real-model DiFR detection AUC @ batch=1000 tokens
       attack |       token_difr    cross_entropy  activation_difr     token_toploc
 ----------------------------------------------------------------------------------
-  quant_4bit |           1.0000           0.9618           1.0000           0.9998
-      kv_fp8 |           0.9974           0.9830           1.0000           0.9838
-    temp_1.1 |           0.9867           1.0000           0.0122           0.9913
-     seed_43 |           1.0000           1.0000           0.0000           1.0000
-      bug_k2 |           0.9800           0.0164           0.0015           0.8907
-     bug_k32 |           1.0000           0.6838           0.0000           1.0000
+  quant_4bit |           0.9967           0.6555           1.0000           0.9017
+      kv_fp8 |           0.9145           0.7115           1.0000           0.8789
+    temp_1.1 |           0.9205           0.9711           0.5201           0.9451
+     seed_43 |           1.0000           0.9980           0.4987           0.9505
+      bug_k2 |           0.8996           0.4987           0.5064           0.5102
+     bug_k32 |           1.0000           0.6957           0.4987           0.9745
 
-total 876.7s on Qwen/Qwen3-0.6B
+total 1100.7s on Qwen/Qwen3-0.6B

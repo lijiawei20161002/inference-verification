@@ -33,12 +33,27 @@ yet keeps `S` indistinguishable from honest (AUC ≈ 0.5).
 
 DiFR specifies a score for a *single token*; the **aggregation across tokens**
 and the **classification rule** are `ivgym`'s own (specified, not implicit):
-per-token scores are winsorized at the 99.9th honest percentile, a batch of `b`
-tokens is averaged into `S` (`harness.batch_means`), and the decision is
-`S > τ` with **τ fixed by a target false-positive rate** (the `(1−α)` honest
-quantile, `metrics.tpr_at_fpr`). See **[docs/GAME.md](docs/GAME.md)** for the
-full formalization — players, win conditions, the exact per-token→batch→decide
-pipeline, and how this relates to the stego paper's `SAFE`-set security game.
+per-token scores are winsorized at the 99.9th honest-*calibration*-split
+percentile, a batch of `b` tokens is averaged into `S` (`harness.batch_means`),
+and the decision is `S > τ` with **τ fixed by a target false-positive rate**
+(the `(1−α)` quantile of a *held-out* honest calibration split, distinct from the
+honest split `S` is measured on).
+
+**The fixed, headline eval metric is AUC @ FPR ≤ 0.5%** — the standardized
+partial AUC (`metrics.partial_auc`) over the strict low-false-positive region a
+verifier actually has to operate in, McClish-standardized so a random verifier
+still scores 0.5 and a perfect one scores 1.0 (same scale as full AUC, just
+restricted to the region that matters operationally). `harness.evaluate` reports
+it as `EvalResult.auc`, alongside `auc_full` (threshold-free full-range AUC, for
+context) and `tpr` (the out-of-sample catch rate at that same FPR budget). Every
+knob the number depends on — the FPR budget, batch-resampling count,
+winsorization percentile, calibration/eval split — is one `harness.EvalConfig`,
+so every experiment scores under the identical, standardized protocol rather
+than each picking its own settings; `EvalConfig` refuses to run (raises
+`ValueError`) if `n_batches` is too small to resolve the FPR region at all. See
+**[docs/GAME.md](docs/GAME.md)** for the full formalization — players, win
+conditions, the exact per-token→batch→decide pipeline, and how this relates to
+the stego paper's `SAFE`-set security game.
 Two worked *attacker wins* (AUC ≈ 0.5) ship as pluggable example strategies — a
 SAFE-set substitution against the seed-synced verifier
 ([`examples/safe_set_strategies.py`](examples/safe_set_strategies.py)) and a
@@ -70,10 +85,12 @@ ivgym/
                          -- white-box: handed ref_logits (verifier re-ran model M)
   io_detectors.py        IODetector base + registry (surface_stat/rank/tokens, learned, llm_judge)
                          -- black-box: score (prompt, claimed_tokens) WITHOUT recomputing M
-  metrics.py             ROC AUC + TPR@FPR in pure numpy
+  metrics.py             ROC AUC, TPR@FPR, standardized partial AUC (AUC@FPR<=α), pure numpy
   spec_decode.py         client-side proxy verification: speculative accept rate
                          1−TV(p,q), ProxyReference anchor, ProxySpecVerifier (no vLLM changes)
   harness.py             generate_dataset / verify / winsorize / batch_means / evaluate
+                         + EvalConfig: the one standardized eval protocol (FPR budget,
+                           n_batches, winsor_pct, calib split) every experiment scores under
                          + verify_selective: proxy-triaged SELECTIVE recompute tier
                            (recompute M only on the top-budget tokens a cheap proxy
                            flags as near-ties) -- sits between io_verify and verify
@@ -130,39 +147,48 @@ python -m venv --system-site-packages .venv     # reuse system torch if availabl
 .venv/bin/python -m experiments.exp_gpu          # downloads Qwen/Qwen3-0.6B on first run (~3 min at defaults)
 .venv/bin/python tests/test_smoke.py             # backend-agnostic sanity checks (no GPU needed)
 
-# headline numbers below use a larger token pool for clean AUCs (~13 min on an H100):
+# headline numbers below use a larger token pool for clean AUCs (~18 min on an H100):
 IVGYM_PROMPTS=20 IVGYM_TOKENS=128 IVGYM_BATCH=1000 .venv/bin/python -m experiments.exp_gpu
 ```
 
 Override with env vars: `IVGYM_MODEL`, `IVGYM_PROMPTS`, `IVGYM_TOKENS`, `IVGYM_BATCH`.
 
-Real-model output (Qwen3-0.6B, 20 prompts × 128 tokens, batch=1000, ~14.6 min on an H100-80GB;
-full log in `docs/results/exp_gpu_qwen3-0.6b.txt`):
+Real-model output (Qwen3-0.6B, 20 prompts × 128 tokens, batch=1000, ~18.3 min on an
+H100-80GB; full log in `docs/results/exp_gpu_qwen3-0.6b.txt`) — **AUC @ FPR ≤ 0.5%**,
+the standardized partial-AUC headline metric (`EvalResult.auc`):
 
 ```
       attack |       token_difr    cross_entropy  activation_difr     token_toploc
-  quant_4bit |           1.0000           0.9618           1.0000           0.9998
-      kv_fp8 |           0.9974           0.9830           1.0000           0.9838
-    temp_1.1 |           0.9867           1.0000           0.0122           0.9913
-     seed_43 |           1.0000           1.0000           0.0000           1.0000
-      bug_k2 |           0.9800           0.0164           0.0015           0.8907
-     bug_k32 |           1.0000           0.6838           0.0000           1.0000
+  quant_4bit |           0.9967           0.6555           1.0000           0.9017
+      kv_fp8 |           0.9145           0.7115           1.0000           0.8789
+    temp_1.1 |           0.9205           0.9711           0.5201           0.9451
+     seed_43 |           1.0000           0.9980           0.4987           0.9505
+      bug_k2 |           0.8996           0.4987           0.5064           0.5102
+     bug_k32 |           1.0000           0.6957           0.4987           0.9745
 ```
 
-Over a real LLM's logit geometry, with a large enough token pool the picture is crisp:
+Over a real LLM's logit geometry, with a large enough token pool the picture is
+still clear, though this metric — restricted to the strict low-false-positive
+region a verifier actually has to operate in — reads visibly stricter than the
+full-range AUC an earlier version of this table reported:
 
-- **Token-DiFR** catches *every* attack (AUC ≥0.98) — the strong, general
-  detector that sees both forward-pass and sampling deviations.
-- **Activation-DiFR** is sharply bifurcated: ~1.0 on forward-pass attacks
-  (quant/fp8) and ~0.0 on every sampling-only change (temp/seed/bug) — it never
-  sees the sampler.
-- **Cross-entropy** flags most attacks (0.68–1.0) but is nearly blind to the tiny
-  `bug_k2` (1%-rate flip of the top-2 tokens, AUC 0.02).
+- **Token-DiFR** wins or ties every attack (AUC ≥0.90, 1.0 on 2/6) — the strong,
+  general detector that sees both forward-pass and sampling deviations, at the
+  FPR budget that matters.
+- **Activation-DiFR** stays sharply bifurcated: 1.0 on forward-pass attacks
+  (quant/fp8) but collapses to ~chance (0.50) on every sampling-only change
+  (temp/seed/bug) — it never sees the sampler, and at this strict FPR the
+  sampling-only cases show no reliable tail signal in *either* direction (unlike
+  the strong reversed full-range signal these cases show — see the caveat in
+  `harness.EvalConfig`'s docstring on token-pool size vs. tail resolution).
+- **Cross-entropy** is workable on 5/6 (0.66–1.00) but drops to chance on the
+  tiny `bug_k2` (1%-rate flip of the top-2 tokens, AUC 0.50) — it needs the bulk
+  of the distribution to shift to fire, and this attack barely touches it.
 - **Token-TOPLOC** (rank of the claimed token in the verifier's filtered
-  distribution, no seed sync needed) tracks Token-DiFR closely (≥0.89
-  everywhere, 1.0 on 3/6 attacks) — a cheap, seed-free rank check catches
-  almost as much as the seed-synced margin score, and clearly more than
-  cross-entropy on the subtle `bug_k2` case (0.89 vs 0.02).
+  distribution, no seed sync needed) tracks Token-DiFR closely on 5/6 attacks
+  (0.88–0.97) — a cheap, seed-free rank check catches nearly as much as the
+  seed-synced margin score — but is also blind to `bug_k2` (0.51), the one case
+  that needs the seed-synced margin specifically.
 
 At the smaller default pool (12 prompts × 48 tokens, batch=200, ~3 min) the same
 structure is visible but noisier — several AUCs sit near or below 0.5. Push

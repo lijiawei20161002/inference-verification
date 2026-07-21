@@ -145,7 +145,7 @@ def build_proxy_samples(backend, sequences):
 
 
 def batched_auc(honest_scores, attack_scores, name):
-    """Batched AUC / TPR@1%FPR, AVERAGED over ``AUC_SEEDS`` train/test-split and
+    """Batched AUC@FPR<0.5% / TPR@0.5%FPR, AVERAGED over ``AUC_SEEDS`` train/test-split and
     batch-composition seeds. Averaging is essential, not cosmetic: a *single*
     ``harness.evaluate`` split draws the honest-test and attack-test tokens as two
     finite subsets whose sample means differ by chance; ``batch_means`` then
@@ -161,7 +161,7 @@ def batched_auc(honest_scores, attack_scores, name):
     for seed in range(AUC_SEEDS):
         r = harness.evaluate(ts_h, ts_a, [shim], [BATCH], seed=seed)[0]
         aucs.append(r.auc)
-        tprs.append(r.tpr_at_1pct)
+        tprs.append(r.tpr)
     return float(np.mean(aucs)), float(np.mean(tprs))
 
 
@@ -206,7 +206,7 @@ def main():
           f"(mean over served tokens)\n")
 
     # ------------------------------------------------------------------ AUCs
-    print("DETECTION PERFORMANCE  (honest vs attack, batched AUC / TPR@1%FPR)")
+    print("DETECTION PERFORMANCE  (honest vs attack, batched AUC@FPR<0.5% / TPR@0.5%FPR)")
     print(f"  {'config':>16} | {'spec_accept (SpecVerifier)':>27} | "
           f"{'proxy_nll (token-only)':>23} | {'token_difr (recompute)':>23}")
     print("  " + "-" * 96)

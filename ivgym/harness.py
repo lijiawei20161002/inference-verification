@@ -17,14 +17,14 @@ you pass:
 """
 from __future__ import annotations
 
-from dataclasses import dataclass, field
+from dataclasses import dataclass, field, replace
 
 import numpy as np
 
 from . import verifiers as _verifiers
 from .attacks import Attack
 from .core import SamplingSpec, Sequence, VContext
-from .metrics import roc_auc, tpr_at_fpr
+from .metrics import partial_auc, roc_auc, tpr_at_fpr
 from .sampling import gumbel_noise, position_seed, projection
 from .verifiers import Verifier
 
@@ -219,34 +219,123 @@ def batch_means(scores: np.ndarray, batch_size: int, n_batches: int,
 
 
 @dataclass
+class EvalConfig:
+    """The single, standardized evaluation protocol -- one place that fixes every
+    knob the detection numbers depend on, so every experiment scores identically.
+
+    The headline metric is the **standardized partial AUC at FPR <= `max_fpr`**
+    (`metrics.partial_auc`): threshold-free separability restricted to the strict
+    false-positive regime a verifier actually operates in, on the same 0.5..1.0
+    scale as full AUC. The operating-point TPR is calibrated **out of sample** --
+    the threshold tau comes from a held-out honest *calibration* split, never the
+    honest batches TPR/FPR are then measured on.
+
+    Fields
+    ------
+    max_fpr        : false-positive budget defining the region (default 0.5%).
+    n_batches      : batches drawn per split for the null / attack statistics.
+    winsor_pct     : per-token winsorization percentile (honest calib split), or
+                     ``None`` to disable. Caps the rare filtered-out token so it
+                     cannot dominate a batch mean.
+    calib_frac     : fraction of honest tokens reserved for calibration (tau +
+                     winsor cap); the rest are the honest eval null.
+    seed           : RNG seed -- fixed so a matchup's score is reproducible.
+    min_region_pts : soundness floor. Resolving FPR <= `max_fpr` needs about
+                     ``n_batches * max_fpr`` honest eval batches above tau; below
+                     `min_region_pts` the estimate is too coarse and `evaluate`
+                     raises (bump `n_batches`, not the metric).
+
+    Caveat this floor does NOT cover: `n_batches` alone guarantees enough
+    resampled *batches* land in the region, not that those batches are close to
+    independent draws. `batch_means` resamples without replacement from a FIXED,
+    finite token pool, so if `batch_size` is a large fraction of that pool (a
+    small `n_prompts`/`n_tokens` token count), the batches overlap heavily and
+    the extreme low-FPR tail can look artifically diagonal/noisy regardless of
+    `n_batches` -- more independent evidence, i.e. a bigger honest token pool
+    (`n_prompts`/`n_tokens`, not a bigger `n_batches`), is what actually
+    resolves it. As a rule of thumb keep `batch_size` well under ~10% of the
+    honest eval-split token count."""
+
+    max_fpr: float = 0.005
+    n_batches: int = 2000
+    winsor_pct: float | None = 99.9
+    calib_frac: float = 0.5
+    seed: int = 0
+    min_region_pts: int = 10
+
+    def __post_init__(self) -> None:
+        if not 0.0 < self.max_fpr <= 1.0:
+            raise ValueError(f"max_fpr must be in (0, 1], got {self.max_fpr}")
+        if not 0.0 < self.calib_frac < 1.0:
+            raise ValueError(f"calib_frac must be in (0, 1), got {self.calib_frac}")
+        region_pts = self.n_batches * self.max_fpr
+        if region_pts < self.min_region_pts:
+            need = int(np.ceil(self.min_region_pts / self.max_fpr))
+            raise ValueError(
+                f"n_batches={self.n_batches} resolves only ~{region_pts:.1f} honest "
+                f"batches inside FPR<= {self.max_fpr:.3%}; the partial-AUC estimate "
+                f"is too coarse. Use n_batches >= {need} (>= {self.min_region_pts} "
+                f"points in the region).")
+
+
+@dataclass
 class EvalResult:
     defense: str
     attack: str
     batch_size: int
-    auc: float
-    tpr_at_1pct: float
+    auc: float          # HEADLINE: standardized partial AUC at FPR <= max_fpr
+    auc_full: float     # threshold-free full-range ROC AUC (context / legacy)
+    tpr: float          # out-of-sample TPR at the calibrated FPR = max_fpr point
+    max_fpr: float      # the false-positive budget the above are computed at
 
 
 def evaluate(honest: TokenScores, attack: TokenScores, verifiers: list[Verifier],
-             batch_sizes: list[int], n_batches: int = 400, winsor_pct: float | None = 99.9,
-             seed: int = 0) -> list[EvalResult]:
-    """Compare honest vs attack batch statistics across batch sizes."""
-    rng = np.random.default_rng(seed)
+             batch_sizes: list[int], config: EvalConfig | None = None, *,
+             n_batches: int | None = None, winsor_pct: float | None = -1.0,
+             seed: int | None = None) -> list[EvalResult]:
+    """Compare honest vs attack batch statistics across batch sizes under the
+    standardized `EvalConfig` protocol.
+
+    Pass a `config` to override the protocol wholesale; the legacy `n_batches` /
+    `winsor_pct` / `seed` keywords still work and, when given, override the
+    corresponding `config` field (so existing call sites keep their behavior
+    except for the metric definition). `winsor_pct` defaults to a sentinel so
+    that *not passing it* keeps the config value while explicitly passing
+    ``winsor_pct=None`` still disables winsorization.
+
+    For each verifier and batch size the honest tokens are split into a
+    calibration set (winsor cap + threshold tau) and a disjoint eval null; the
+    reported `auc` is the standardized partial AUC at FPR <= `config.max_fpr` of
+    the honest-eval vs attack batch statistics, and `tpr` is the catch rate at
+    tau = the honest-*calibration* ``(1 - max_fpr)`` quantile."""
+    cfg = config or EvalConfig()
+    if n_batches is not None:
+        cfg = replace(cfg, n_batches=n_batches)
+    if winsor_pct != -1.0:
+        cfg = replace(cfg, winsor_pct=winsor_pct)
+    if seed is not None:
+        cfg = replace(cfg, seed=seed)
+
+    rng = np.random.default_rng(cfg.seed)
     results: list[EvalResult] = []
     for d in verifiers:
         h = honest.scores[d.name]
         a = attack.scores[d.name]
-        h_tr, h_te = _split(h, rng)
-        a_tr, a_te = _split(a, rng)
-        if winsor_pct is not None:
-            h_te = winsorize(h_te, h_tr, winsor_pct)
-            a_te = winsorize(a_te, h_tr, winsor_pct)
+        h_cal, h_ev = _split(h, rng, cfg.calib_frac)   # calib (tau/cap) | eval null
+        if cfg.winsor_pct is not None:
+            h_ev = winsorize(h_ev, h_cal, cfg.winsor_pct)
+            a = winsorize(a, h_cal, cfg.winsor_pct)
         for b in batch_sizes:
-            hb = batch_means(h_te, b, n_batches, rng)
-            ab = batch_means(a_te, b, n_batches, rng)
+            cb = batch_means(h_cal, b, cfg.n_batches, rng)   # calibration null -> tau
+            hb = batch_means(h_ev, b, cfg.n_batches, rng)    # eval null (negatives)
+            ab = batch_means(a, b, cfg.n_batches, rng)       # attack (positives)
+            tau = np.quantile(cb, 1.0 - cfg.max_fpr)
             results.append(EvalResult(
                 defense=d.name, attack=attack.config_name, batch_size=b,
-                auc=roc_auc(hb, ab), tpr_at_1pct=tpr_at_fpr(hb, ab, 0.01),
+                auc=partial_auc(hb, ab, cfg.max_fpr),
+                auc_full=roc_auc(hb, ab),
+                tpr=float(np.mean(ab > tau)),
+                max_fpr=cfg.max_fpr,
             ))
     return results
 

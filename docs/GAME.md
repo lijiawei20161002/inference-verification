@@ -104,12 +104,21 @@ per-position seed (`position_seed` in `ivgym/sampling.py`), an honest token give
 
 ### 3b. Aggregation across tokens — the batch statistic `S`
 A single token is far too noisy to classify on. `ivgym` aggregates exactly as
-the paper's batch-size sweep does (`harness.batch_means`, `harness.py:72`):
+the paper's batch-size sweep does (`harness.batch_means`, `harness.py:72`), under
+the single standardized protocol `harness.EvalConfig` fixes for every
+experiment:
 
-1. **Winsorize** each per-token score at the 99.9th percentile of the *honest
-   training* split (`harness.winsorize`, `harness.py:64`) so one filtered-out
-   token (`s_t = Δ_max`) can't dominate a batch mean.
-2. Draw a **batch of `b` tokens** and take the **mean**:
+1. Split the honest tokens into a **calibration** split and a disjoint **eval**
+   split (`EvalConfig.calib_frac`, default 0.5). The calibration split supplies
+   both the winsorization cap and the decision threshold `τ` (3c below); the
+   eval split is the honest null the attack is actually scored against. Keeping
+   these disjoint means `τ` is never fit on the same honest data it is then
+   tested on.
+2. **Winsorize** each per-token score (eval-honest and attack alike) at the
+   99.9th percentile of the *honest calibration* split (`harness.winsorize`,
+   `harness.py:64`) so one filtered-out token (`s_t = Δ_max`) can't dominate a
+   batch mean.
+3. Draw a **batch of `b` tokens** and take the **mean**:
    `S = mean(s_t for t in batch)`.
 
 `S` is the batch-level statistic — the quantity that is actually classified.
@@ -132,17 +141,49 @@ H1: provider deviated
 decide DEVIATION  iff  S > τ
 ```
 
-The threshold **τ is calibrated to a false-positive budget α**, not picked by
-hand: τ = the `(1 − α)` empirical quantile of the *honest* batch statistics
-(this is exactly what `metrics.tpr_at_fpr`, `metrics.py:25`, computes at
-`α = 1%`). So the verifier commits to "I will wrongly flag an honest provider at
-most α of the time," then τ follows.
+The threshold **τ is calibrated to a false-positive budget α = `EvalConfig.max_fpr`
+(fixed at 0.5%)**, not picked by hand: τ = the `(1 − α)` empirical quantile of the
+honest **calibration**-split batch statistics (`metrics.tpr_at_fpr`,
+`metrics.py:25`; the calibration split, not the eval split — see 3b). So the
+verifier commits to "I will wrongly flag an honest provider at most α of the
+time," then τ follows, and it is then tested **out of sample** against the
+disjoint honest eval split.
 
-We report two numbers (`harness.evaluate`, `harness.py:95`):
-- **AUC** — threshold-free separability of honest vs. attacked `S`
-  (`metrics.roc_auc`); sweeps every possible τ.
-- **TPR @ FPR = 1%** — the operationally meaningful one: catch rate at the τ
-  fixed by a 1% honest-flag budget.
+We report three numbers (`harness.evaluate`, `harness.py`; `EvalResult`):
+- **AUC — the headline metric.** The **standardized partial AUC at
+  FPR ≤ 0.5%** (`metrics.partial_auc`, McClish-standardized): threshold-free
+  separability of honest-eval vs. attacked `S`, but restricted to the strict
+  low-false-positive region a verifier actually has to operate in (an inference
+  provider is not a one-shot bet — it is checked continuously, so it cannot
+  tolerate more than a sliver of honest false flags). Standardization keeps the
+  scale identical to full AUC: a random verifier scores 0.5, a perfect one
+  scores 1.0, regardless of the FPR window. Reported as `EvalResult.auc`.
+- **AUC (full-range)** — the threshold-free separability over *all* τ
+  (`metrics.roc_auc`), kept as `EvalResult.auc_full` for context / comparison
+  to legacy numbers; it sweeps FPR regions no real verifier would operate at,
+  so it is not the metric used to declare a win.
+- **TPR @ FPR = 0.5%** — the operationally meaningful catch rate at the τ fixed
+  by the same 0.5% honest-flag budget, evaluated out of sample. `EvalResult.tpr`.
+
+`EvalConfig` (`harness.py`) is the *one* place all of this is fixed — FPR
+budget, batch-resampling count (`n_batches`), winsorization percentile, and the
+calibration/eval split fraction — so every experiment in the repo scores under
+an identical, standardized protocol instead of each picking its own `n_batches`
+or FPR target. Resolving `FPR ≤ 0.5%` at all needs enough resampled honest
+batches to land points inside that thin a slice; `EvalConfig` raises
+`ValueError` rather than silently returning a noisy estimate if `n_batches` is
+too small for the configured `max_fpr` (in practice, `n_batches >= 2000` for the
+default 0.5% budget).
+
+That floor only guarantees enough resampled *batches* fall in the region — it
+does not guarantee those batches are independent evidence. `batch_means`
+resamples without replacement from a fixed, finite token pool; if `batch_size`
+is a large fraction of that pool (a small prompt/token count), the batches
+overlap heavily and the extreme tail can look artificially close to the
+diagonal (i.e. AUC@FPR≤0.5% underestimates true separability) no matter how
+large `n_batches` is. What actually resolves the tail is a bigger honest token
+pool (more prompts / tokens), not more resampling of the same pool — keep
+`batch_size` well under ~10% of the honest eval-split token count.
 
 ---
 
@@ -150,13 +191,13 @@ We report two numbers (`harness.evaluate`, `harness.py:95`):
 
 It is a one-shot hypothesis test with a fixed FPR budget α:
 
-- **Defender (verifier) wins** when, at a threshold τ honoring `FPR ≤ α`, it
-  flags the deviating provider — i.e. **TPR@α → 1** (equivalently AUC → 1). The
-  README grid is exactly the scoreboard: `token_difr` wins every column on the
-  real model (AUC 1.0).
+- **Defender (verifier) wins** when, at a threshold τ honoring `FPR ≤ α`
+  (α = 0.5%), it flags the deviating provider — i.e. **TPR@α → 1** (equivalently
+  AUC@FPR≤α → 1). The README grid is exactly the scoreboard: `token_difr` wins
+  every column on the real model.
 - **Attacker (provider) wins** when it deviates from ϕ (cheaper/different/
   exfiltrated weights) yet keeps `S` statistically indistinguishable from honest
-  at that same τ — **TPR@α ≈ α / AUC ≈ 0.5**. The canonical attacker win in the
+  at that same τ — **TPR@α ≈ α / AUC@FPR≤α ≈ 0.5**. The canonical attacker win in the
   repo is `adv_quant_temp` vs. `cross_entropy`: quantize for the compute saving,
   then retune temperature so mean NLL matches honest, collapsing the
   cross-entropy detector (paper Fig. 2). Both the attack (`adv_quant_temp`) and

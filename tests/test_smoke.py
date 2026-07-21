@@ -17,7 +17,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from ivgym import attacks, verifiers
 from ivgym.core import SamplingSpec
-from ivgym.metrics import roc_auc, tpr_at_fpr
+from ivgym.metrics import partial_auc, roc_auc, tpr_at_fpr
 from ivgym.sampling import gumbel_noise, position_seed, projection
 
 
@@ -225,6 +225,61 @@ def test_metrics():
     pos = np.array([0.4, 0.5, 0.6, 0.7])
     assert roc_auc(neg, pos) == 1.0
     assert tpr_at_fpr(neg, pos, 0.25) > 0.5
+
+
+def test_partial_auc_matches_full_auc_on_perfect_separation():
+    """A perfectly-separated pair scores 1.0 at any FPR window (the ROC hugs the
+    top-left corner), same as full AUC."""
+    rng = np.random.default_rng(0)
+    neg = rng.normal(0, 1, 2000)
+    pos = rng.normal(6, 1, 2000)      # far enough apart to be separable at FPR<=0.5%
+    assert partial_auc(neg, pos, max_fpr=0.005) > 0.999
+    assert roc_auc(neg, pos) > 0.999
+
+
+def test_partial_auc_chance_is_half_regardless_of_max_fpr():
+    """McClish standardization must put a random (same-distribution) verifier at
+    ~0.5 on the standardized scale, whatever the FPR window -- that is the whole
+    point of standardizing (so it's comparable to full AUC's 0.5 chance line)."""
+    rng = np.random.default_rng(1)
+    neg = rng.normal(0, 1, 20000)
+    pos = rng.normal(0, 1, 20000)
+    for max_fpr in (0.005, 0.05, 0.5):
+        assert abs(partial_auc(neg, pos, max_fpr) - 0.5) < 0.05
+
+
+def test_partial_auc_raw_is_not_standardized():
+    """The raw (non-standardized) variant is mean-TPR-in-region. Under the chance
+    diagonal TPR=FPR, that mean over [0, max_fpr] is max_fpr/2, NOT 0.5 -- unlike
+    the McClish-standardized score, it does not sit on a fixed chance line, which
+    is why `standardized=True` (McClish) is the default headline metric."""
+    rng = np.random.default_rng(2)
+    neg = rng.normal(0, 1, 20000)
+    pos = rng.normal(0, 1, 20000)
+    max_fpr = 0.05
+    raw = partial_auc(neg, pos, max_fpr, standardized=False)
+    assert abs(raw - max_fpr / 2) < 0.01
+    std = partial_auc(neg, pos, max_fpr, standardized=True)
+    assert abs(std - 0.5) < 0.05
+
+
+def test_partial_auc_empty_input_is_chance():
+    assert partial_auc(np.array([]), np.array([1.0])) == 0.5
+    assert partial_auc(np.array([1.0]), np.array([])) == 0.5
+
+
+def test_eval_config_rejects_undersized_n_batches():
+    """The soundness floor: at max_fpr=0.005 you need >= ~min_region_pts/max_fpr
+    honest calibration batches to resolve the partial-AUC region at all -- a
+    tiny n_batches must raise loudly rather than silently return a noisy number."""
+    from ivgym.harness import EvalConfig
+
+    EvalConfig(max_fpr=0.005, n_batches=2000)     # fine
+    try:
+        EvalConfig(max_fpr=0.005, n_batches=100)  # only ~0.5 expected pts in-region
+        assert False, "expected ValueError for undersized n_batches"
+    except ValueError:
+        pass
 
 
 if __name__ == "__main__":

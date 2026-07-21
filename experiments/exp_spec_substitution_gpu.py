@@ -140,7 +140,7 @@ def batched_auc(h_scores, a_scores, name):
     aucs, tprs = [], []
     for seed in range(AUC_SEEDS):
         r = harness.evaluate(ts_h, ts_a, [shim], [BATCH], seed=seed, winsor_pct=None)[0]
-        aucs.append(r.auc); tprs.append(r.tpr_at_1pct)
+        aucs.append(r.auc); tprs.append(r.tpr)
     return float(np.mean(aucs)), float(np.mean(tprs))
 
 

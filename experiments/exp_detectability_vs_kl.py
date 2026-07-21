@@ -52,7 +52,7 @@ PROXY = os.environ.get("IVGYM_PROXY", "Qwen/Qwen3-0.6B")
 N = int(os.environ.get("IVGYM_PROMPTS", 16))
 T = int(os.environ.get("IVGYM_TOKENS", 96))
 BATCH = int(os.environ.get("IVGYM_BATCH", 200))
-N_BATCHES = 400
+N_BATCHES = 2000
 ATTACKS = ("quant_4bit", "kv_fp8", "temp_1.1", "seed_43", "bug_k2", "bug_k32")
 
 
