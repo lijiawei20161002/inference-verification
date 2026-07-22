@@ -62,6 +62,8 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from ivgym.backends.hf_gpu import DEFAULT_PROMPTS
+from ivgym.model_registry import identity
+from ivgym.model_taxonomy import relationship
 
 M_NAME = os.environ.get("IVGYM_M", "Qwen/Qwen3-4B")
 N_PROMPTS = int(os.environ.get("IVGYM_PROMPTS", 16))
@@ -72,16 +74,39 @@ PRUNE = os.environ.get("IVGYM_PRUNE", "1") != "0"
 TOPK_OVERLAP = 8
 TOPK_SPEARMAN = 64
 
-# (hf id, short label, family-distance group). Order = increasing distance from M.
-PROXIES = [
-    ("Qwen/Qwen3-1.7B",                       "Qwen3-1.7B",   "same family"),
-    ("Qwen/Qwen3-0.6B",                       "Qwen3-0.6B",   "same family"),
-    ("Qwen/Qwen2.5-1.5B",                     "Qwen2.5-1.5B", "cross gen"),
-    ("Qwen/Qwen2.5-0.5B",                     "Qwen2.5-0.5B", "cross gen"),
-    ("Qwen/Qwen2.5-Coder-1.5B",               "Qwen2.5-Coder-1.5B", "cross domain"),
-    ("deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B", "DS-R1-Qwen-1.5B", "cross post"),
+# Order = increasing distance from M. The CAST is chosen by hand; each proxy's
+# family-distance GROUP is derived below from ivgym.model_registry facts
+# (`generation`, `domain`), via the shared `relationship()` primitive also used
+# by exp_proxy_distance_grid.py -- not typed out per row.
+PROXY_IDS = [
+    "Qwen/Qwen3-1.7B",
+    "Qwen/Qwen3-0.6B",
+    "Qwen/Qwen2.5-1.5B",
+    "Qwen/Qwen2.5-0.5B",
+    "Qwen/Qwen2.5-Coder-1.5B",
+    "deepseek-ai/DeepSeek-R1-Distill-Qwen-1.5B",
 ]
 GROUP_ORDER = ["same family", "cross gen", "cross domain", "cross post"]
+# Same generation as M => a sibling ("same family"); a different generation is
+# split by WHY it differs -- vanilla prior-gen pretrain ("cross gen"), a
+# code-post-trained variant ("cross domain"), or an RL/reasoning distillation
+# ("cross post") -- read straight off the registry's `domain` fact.
+_DOMAIN_GROUP = {"base": "cross gen", "general": "cross gen",
+                  "code": "cross domain", "reasoning-distill": "cross post"}
+
+
+def _proxy_group(m_id, proxy_id):
+    rel = relationship(identity(m_id), identity(proxy_id))
+    if rel.same_generation:
+        return "same family"
+    return _DOMAIN_GROUP[identity(proxy_id).domain]
+
+
+def _short_label(proxy_id):
+    return identity(proxy_id).label
+
+
+PROXIES = [(pid, _short_label(pid), _proxy_group(M_NAME, pid)) for pid in PROXY_IDS]
 
 
 @dataclass

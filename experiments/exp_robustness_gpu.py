@@ -44,6 +44,7 @@ import numpy as np  # noqa: E402
 from ivgym import attacks, harness, verifiers  # noqa: E402
 from ivgym.backends.hf_gpu import HFGPUBackend  # noqa: E402
 from ivgym.core import SamplingSpec  # noqa: E402
+from ivgym.model_registry import REGISTRY  # noqa: E402
 
 # ---------------------------------------------------------------------------
 # The model matrix: families x sizes. All ungated on the HF hub. Within a family
@@ -220,16 +221,23 @@ def synthesize(results: list[dict]) -> str:
                  f"n_batches={N_BATCHES}, value_fn={VALUE_FN}, selective={SELECTIVE}")
     lines.append(f"- models attempted: {len(results)}, succeeded: {len(ok)}\n")
 
-    # model roster
+    # model roster. `family`/`org` are read from ivgym/model_registry.py when the
+    # reference model has a taxonomy entry there (soft lookup: this matrix is
+    # allowed to include models nobody has added facts for yet).
+    def _fam_org(ref):
+        m = REGISTRY.get(ref)
+        return (m.family, m.org) if m else ("?", "?")
+
     lines.append("## Models\n")
-    lines.append("| tag | reference | params | proxy | proxy params | vocab |")
-    lines.append("|---|---|---|---|---|---|")
+    lines.append("| tag | reference | family | org | params | proxy | proxy params | vocab |")
+    lines.append("|---|---|---|---|---|---|---|---|")
     for r in results:
         if "error" in r:
-            lines.append(f"| {r['tag']} | {r['ref']} | - | - | - | FAILED: {r['error'][:60]} |")
+            lines.append(f"| {r['tag']} | {r['ref']} | - | - | - | - | - | FAILED: {r['error'][:60]} |")
             continue
+        fam, org = _fam_org(r["ref"])
         pp = f"{r['proxy_params']/1e9:.2f}B" if r["proxy_params"] else "-"
-        lines.append(f"| {r['tag']} | {r['ref']} | {r['params']/1e9:.2f}B | "
+        lines.append(f"| {r['tag']} | {r['ref']} | {fam} | {org} | {r['params']/1e9:.2f}B | "
                      f"{r['proxy'] or '(noised-M)'} | {pp} | {r['vocab']} |")
     lines.append("")
 

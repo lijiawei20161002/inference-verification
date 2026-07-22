@@ -102,58 +102,82 @@ SEED = 0
 LADDER = os.environ.get("IVGYM_LADDER", "qwen").lower()
 
 # ---------------------------------------------------------------------------
-# Two parallel ladders. Each entry is (hf_id, label, distance_rank, group).
-# distance_rank orders the x-axis: quantization sub-ladder first (rank 1..k, same
-# weights, increasing lossiness), then model substitutions (increasing distance).
+# Two parallel ladders. Only the CAST of models is chosen by hand below; the
+# distance_rank and group label each provider/proxy gets are DERIVED from the
+# taxonomy facts in ivgym/model_registry.py (ivgym/model_taxonomy.py), not
+# picked per row -- see that module for what "distance" means and why.
+#
 # A "::nf4" / "::fp4" / "::int8" suffix loads the BASE id under bitsandbytes; official
 # GPTQ/AWQ checkpoints (separate repos) load normally (transformers reads their config).
-#
+from ivgym.model_registry import identity  # noqa: E402
+from ivgym.model_taxonomy import describe, distance  # noqa: E402
+
+
+def _build_ladder(claimed_id, provider_ids, proxy_ids):
+    """(claimed_id, providers, proxies) with dist/group derived against the
+    claimed model's taxonomy identity. List order here is just for readability
+    -- `report()`/`render()` sort by the derived `dist`, not by this order."""
+    ref = identity(claimed_id)
+    providers = [
+        (pid,
+         identity(pid).label + (" (self)" if pid == claimed_id else ""),
+         distance(ref, identity(pid)), describe(ref, identity(pid)))
+        for pid in provider_ids
+    ]
+    proxies = [
+        (pid, identity(pid).label, describe(ref, identity(pid)))
+        for pid in proxy_ids
+    ]
+    return dict(claimed=claimed_id, providers=providers, proxies=proxies)
+
+
 # (c) the quant sub-ladder isolates "where does quantization become detectable?":
 #   int8(bnb) -> GPTQ-Int8 -> AWQ(int4) -> GPTQ-Int4 -> NF4(bnb) -> FP4(bnb),
-# all of the SAME 7B weights, roughly increasing lossiness.
+# all of the SAME 7B weights, roughly increasing lossiness. Model substitutions
+# (increasing taxonomy distance from M) follow.
 QWEN = "Qwen/Qwen2.5-7B-Instruct"
-LADDER_QWEN = dict(
-    claimed=QWEN,
-    providers=[
-        (QWEN,                                        "Qwen2.5-7B (self)",   0,  "identical"),
-        (QWEN + "::int8",                             "Qwen2.5-7B int8",     1,  "quant: bnb-int8"),
-        ("Qwen/Qwen2.5-7B-Instruct-GPTQ-Int8",        "Qwen2.5-7B GPTQ-i8",  2,  "quant: gptq-int8"),
-        ("Qwen/Qwen2.5-7B-Instruct-AWQ",              "Qwen2.5-7B AWQ",      3,  "quant: awq-int4"),
-        ("Qwen/Qwen2.5-7B-Instruct-GPTQ-Int4",        "Qwen2.5-7B GPTQ-i4",  4,  "quant: gptq-int4"),
-        (QWEN + "::nf4",                              "Qwen2.5-7B NF4",      5,  "quant: bnb-nf4"),
-        (QWEN + "::fp4",                              "Qwen2.5-7B FP4",      6,  "quant: bnb-fp4"),
-        ("Qwen/Qwen2.5-3B-Instruct",                  "Qwen2.5-3B",          7,  "same family, smaller"),
-        ("Qwen/Qwen2.5-Coder-7B-Instruct",            "Qwen2.5-Coder-7B",    8,  "same fam+size, diff domain"),
-        ("Qwen/Qwen3-8B",                             "Qwen3-8B",            9,  "same company, next gen"),
-        ("deepseek-ai/DeepSeek-R1-Distill-Qwen-7B",   "DS-R1-Distill-Qwen",  10, "same base, RL-distill"),
-        ("unsloth/Meta-Llama-3.1-8B-Instruct",        "Llama-3.1-8B",        11, "different family"),
+LADDER_QWEN = _build_ladder(
+    claimed_id=QWEN,
+    provider_ids=[
+        QWEN,
+        QWEN + "::int8",
+        "Qwen/Qwen2.5-7B-Instruct-GPTQ-Int8",
+        "Qwen/Qwen2.5-7B-Instruct-AWQ",
+        "Qwen/Qwen2.5-7B-Instruct-GPTQ-Int4",
+        QWEN + "::nf4",
+        QWEN + "::fp4",
+        "Qwen/Qwen2.5-3B-Instruct",
+        "Qwen/Qwen2.5-Coder-7B-Instruct",
+        "Qwen/Qwen3-8B",
+        "deepseek-ai/DeepSeek-R1-Distill-Qwen-7B",
+        "unsloth/Meta-Llama-3.1-8B-Instruct",
     ],
-    proxies=[
-        ("Qwen/Qwen2.5-0.5B",                   "Qwen2.5-0.5B", "same family as M"),
-        ("Qwen/Qwen2.5-1.5B",                   "Qwen2.5-1.5B", "same family as M"),
-        ("HuggingFaceTB/SmolLM2-1.7B-Instruct", "SmolLM2-1.7B", "different family"),
+    proxy_ids=[
+        "Qwen/Qwen2.5-0.5B",
+        "Qwen/Qwen2.5-1.5B",
+        "HuggingFaceTB/SmolLM2-1.7B-Instruct",
     ],
 )
 
 # (b) does the ladder replicate with a NON-Qwen honest model? M = Llama-3.1-8B-Instruct.
 LLAMA = "unsloth/Meta-Llama-3.1-8B-Instruct"
-LADDER_LLAMA = dict(
-    claimed=LLAMA,
-    providers=[
-        (LLAMA,                                       "Llama-3.1-8B (self)", 0,  "identical"),
-        (LLAMA + "::int8",                            "Llama-3.1-8B int8",   1,  "quant: bnb-int8"),
-        (LLAMA + "::nf4",                             "Llama-3.1-8B NF4",    2,  "quant: bnb-nf4"),
-        (LLAMA + "::fp4",                             "Llama-3.1-8B FP4",    3,  "quant: bnb-fp4"),
-        ("unsloth/Meta-Llama-3.1-8B",                 "Llama-3.1-8B base",   4,  "same fam+size, base (no instruct)"),
-        ("unsloth/llama-3-8b-Instruct",               "Llama-3-8B",          5,  "same fam+size, prior gen (3.0)"),
-        ("unsloth/Llama-3.2-3B-Instruct",             "Llama-3.2-3B",        6,  "same family, smaller+newer"),
-        ("deepseek-ai/DeepSeek-R1-Distill-Llama-8B",  "DS-R1-Distill-Llama", 7,  "same base, RL-distill"),
-        ("Qwen/Qwen2.5-7B-Instruct",                  "Qwen2.5-7B",          8,  "different family"),
+LADDER_LLAMA = _build_ladder(
+    claimed_id=LLAMA,
+    provider_ids=[
+        LLAMA,
+        LLAMA + "::int8",
+        LLAMA + "::nf4",
+        LLAMA + "::fp4",
+        "unsloth/Meta-Llama-3.1-8B",
+        "unsloth/llama-3-8b-Instruct",
+        "unsloth/Llama-3.2-3B-Instruct",
+        "deepseek-ai/DeepSeek-R1-Distill-Llama-8B",
+        "Qwen/Qwen2.5-7B-Instruct",
     ],
-    proxies=[
-        ("unsloth/Llama-3.2-1B-Instruct",       "Llama-3.2-1B", "same family as M"),
-        ("Qwen/Qwen2.5-0.5B",                   "Qwen2.5-0.5B", "different family"),
-        ("HuggingFaceTB/SmolLM2-1.7B-Instruct", "SmolLM2-1.7B", "different family"),
+    proxy_ids=[
+        "unsloth/Llama-3.2-1B-Instruct",
+        "Qwen/Qwen2.5-0.5B",
+        "HuggingFaceTB/SmolLM2-1.7B-Instruct",
     ],
 )
 

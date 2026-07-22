@@ -88,6 +88,10 @@ ivgym/
   metrics.py             ROC AUC, TPR@FPR, standardized partial AUC (AUC@FPR<=α), pure numpy
   spec_decode.py         client-side proxy verification: speculative accept rate
                          1−TV(p,q), ProxyReference anchor, ProxySpecVerifier (no vLLM changes)
+  model_taxonomy.py      model-relationship taxonomy: independent axes (family/size/base/
+                         org/generation/domain/tokenizer) + a distance() DERIVED from them,
+                         shared by every model-distance-ladder experiment below
+  model_registry.py      one ModelIdentity (taxonomy facts) per HF id used by those experiments
   harness.py             generate_dataset / verify / winsorize / batch_means / evaluate
                          + EvalConfig: the one standardized eval protocol (FPR budget,
                            n_batches, winsor_pct, calib split) every experiment scores under
@@ -118,7 +122,8 @@ experiments/
   exp_tie_triage_margin.py  GPU: same, sparse Token-DiFR flip signal (sharper win) ->
                             docs/figures/fig_tie_triage_margin.png
   exp_selective_verify_gpu.py GPU: verify_selective end-to-end on the real backend
-  exp_proxy_distance_grid.py GPU: 2-D model-distance ladder (quant/family/domain/tokenizer) ->
+  exp_proxy_distance_grid.py GPU: 2-D model-distance ladder, rank/group DERIVED by
+                            ivgym/model_taxonomy.py (quant/family/domain/tokenizer) ->
                             docs/figures/fig_proxy_distance_grid_{qwen,llama}.png
   exp_robustness_gpu.py     GPU: unified algorithm vs every attack on a MATRIX of real
                             families/sizes -> docs/results/robustness_sweep.{json,md}

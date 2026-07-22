@@ -65,6 +65,14 @@ import numpy as np
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
 from ivgym.backends.hf_gpu import DEFAULT_PROMPTS
+from ivgym.model_registry import REGISTRY
+
+# PROXIES is env-overridable to an arbitrary HF id, so registry lookups here
+# are soft (fall back to "?") -- unlike the ladder experiments, this file
+# doesn't require every model to have a taxonomy entry, only annotates when one exists.
+def _family(hf_id):
+    m = REGISTRY.get(hf_id)
+    return m.family if m else "?"
 
 M_NAME = os.environ.get("IVGYM_M", "Qwen/Qwen3-4B")
 PROXIES = [s for s in os.environ.get(
@@ -231,16 +239,16 @@ def run():
 def main():
     m_params, V, T, res, elapsed = run()
 
-    print(f"\nWITHIN-FAMILY conditional agreement  (reference M = {M_NAME}, "
-          f"{m_params/1e9:.2f}B; {T} honest tokens)")
+    print(f"\nWITHIN-FAMILY conditional agreement  (reference M = {M_NAME} "
+          f"[family={_family(M_NAME)}], {m_params/1e9:.2f}B; {T} honest tokens)")
     print("Each proxy's CONDITIONAL next-token distribution vs M's, on tokens M actually sampled.\n"
           "'null' = same distributions, shuffled position (conditional relationship destroyed).\n")
-    h = (f"{'proxy':>16} {'params':>8} | {'top1':>6} {'top8_jac':>9} {'spear':>6} "
+    h = (f"{'proxy':>16} {'family':>8} {'params':>8} | {'top1':>6} {'top8_jac':>9} {'spear':>6} "
          f"{'accept':>7} {'KL(M||p)':>9} {'surp_r':>7} |  null: {'top1':>5} {'jac':>5} "
          f"{'accept':>7} {'KL':>6}")
     print(h + "\n" + "-" * len(h))
     for r in res:
-        print(f"{SHORT.get(r.name, r.name):>16} {r.n_params/1e9:>7.2f}B | "
+        print(f"{SHORT.get(r.name, r.name):>16} {_family(r.name):>8} {r.n_params/1e9:>7.2f}B | "
               f"{r.top1_agree:>6.3f} {r.top8_jaccard:>9.3f} {r.spearman_topk:>6.3f} "
               f"{r.accept_rate:>7.3f} {r.kl_m_proxy:>9.3f} {r.surprisal_r:>7.3f} |  "
               f"      {r.null_top1:>5.3f} {r.null_jaccard:>5.3f} {r.null_accept:>7.3f} "
