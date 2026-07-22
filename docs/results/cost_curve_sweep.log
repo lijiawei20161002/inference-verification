@@ -1,0 +1,63 @@
+
+========================================================================
+>>> Qwen/Qwen3-0.6B  (no proxy)   [disk free 31.6 GB]
+========================================================================
+loading M=Qwen/Qwen3-0.6B ...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 7811.14it/s]
+loaded in 14.9s | vocab=151936 hidden=1024 | M=0.596B | 16 prompts x 96 tok, T=128
+  honest pool scored (90.9s)
+  null floor scored (164.3s)
+    quant_4bit scored (243.4s)
+        kv_fp8 scored (321.8s)
+      temp_1.1 scored (394.9s)
+       seed_43 scored (467.8s)
+        bug_k2 scored (540.4s)
+       bug_k32 scored (613.2s)
+
+=== Qwen3-0.6B  (qwen, 0.600B) ===
+  full recompute (token_difr): mean AUC=0.629  cost=112.8 GFLOPs/seq
+  wrote /root/inference-verification/docs/results/cost_curve/qwen3-0.6b.json  (613.2s)
+<<< Qwen/Qwen3-0.6B  (no proxy)  ->  OK  (615s)
+
+========================================================================
+>>> Qwen/Qwen3-1.7B  (proxy Qwen/Qwen3-0.6B)   [disk free 31.6 GB]
+========================================================================
+loading M=Qwen/Qwen3-1.7B  + proxy=Qwen/Qwen3-0.6B ...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Fetching 2 files:   0%|          | 0/2 [00:00<?, ?it/s]Fetching 2 files:  50%|█████     | 1/2 [00:28<00:28, 28.04s/it]Fetching 2 files: 100%|██████████| 2/2 [00:28<00:00, 14.02s/it]
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 12423.72it/s]
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights:   2%|▏         | 6/311 [00:00<00:12, 24.57it/s]Loading weights:  58%|█████▊    | 180/311 [00:00<00:00, 594.02it/s]Loading weights:  84%|████████▍ | 261/311 [00:00<00:00, 662.33it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 650.28it/s]
+loaded in 40.9s | vocab=151936 hidden=2048 | M=1.721B  proxy=0.596B (2.9x fewer) | 16 prompts x 96 tok, T=128
+  honest pool scored (120.3s)
+  null floor scored (199.2s)
+    quant_4bit scored (283.3s)
+        kv_fp8 scored (367.1s)
+      temp_1.1 scored (446.1s)
+       seed_43 scored (525.5s)
+        bug_k2 scored (604.0s)
+       bug_k32 scored (683.2s)
+
+=== Qwen3-1.7B  (qwen, 1.700B) ===
+  full recompute (token_difr): mean AUC=0.783  cost=360.8 GFLOPs/seq
+  cheap proxy  (Qwen3-0.6B, surface_stat): mean AUC=0.508  cost=112.8 GFLOPs/seq  (3.2x cheaper)
+  wrote /root/inference-verification/docs/results/cost_curve/qwen3-1.7b.json  (683.2s)
+<<< Qwen/Qwen3-1.7B  (proxy Qwen/Qwen3-0.6B)  ->  OK  (684s)
+  [disk] pruned models--Qwen--Qwen3-1.7B
+
+========================================================================
+>>> Qwen/Qwen3-4B  (proxy Qwen/Qwen3-0.6B)   [disk free 31.6 GB]
+========================================================================
+loading M=Qwen/Qwen3-4B  + proxy=Qwen/Qwen3-0.6B ...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Fetching 3 files:   0%|          | 0/3 [00:00<?, ?it/s]Fetching 3 files:  33%|███▎      | 1/3 [00:55<01:50, 55.36s/it]Fetching 3 files: 100%|██████████| 3/3 [00:55<00:00, 18.45s/it]
+Loading weights:   0%|          | 0/398 [00:00<?, ?it/s]Loading weights: 100%|██████████| 398/398 [00:00<00:00, 8986.75it/s]
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights:   5%|▍         | 14/311 [00:00<00:02, 129.77it/s]Loading weights:   9%|▊         | 27/311 [00:00<00:02, 120.32it/s]Loading weights:  16%|█▌        | 50/311 [00:00<00:02, 104.28it/s]Loading weights:  20%|█▉        | 61/311 [00:00<00:02, 98.78it/s] Loading weights: 100%|██████████| 311/311 [00:00<00:00, 464.64it/s]
+loaded in 72.0s | vocab=151936 hidden=2560 | M=4.022B  proxy=0.596B (6.7x fewer) | 16 prompts x 96 tok, T=128
+  honest pool scored (158.8s)
+  null floor scored (244.5s)
+    quant_4bit scored (335.7s)
+        kv_fp8 scored (426.5s)
+      temp_1.1 scored (511.9s)
+       seed_43 scored (597.3s)
+        bug_k2 scored (682.8s)

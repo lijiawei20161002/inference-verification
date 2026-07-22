@@ -1,0 +1,81 @@
+{
+  "tag": "qwen3-0.6b",
+  "family": "qwen",
+  "label": "Qwen3-0.6B",
+  "org": "Qwen",
+  "params": 600000000.0,
+  "generation": "3",
+  "vocab": 151936,
+  "hidden": 1024,
+  "T": 128,
+  "recompute_flops": 112759668736.0,
+  "recompute_seconds": 0.018796478310832754,
+  "proxy": null,
+  "null_floor": {
+    "token_difr": {
+      "auc": 0.5027568922305764,
+      "auc_full": 0.3245595,
+      "tpr": 0.35
+    }
+  },
+  "attacks": {
+    "quant_4bit": {
+      "token_difr": {
+        "auc": 0.5150375939849624,
+        "auc_full": 0.47147525,
+        "tpr": 0.6395
+      }
+    },
+    "kv_fp8": {
+      "token_difr": {
+        "auc": 0.5013533834586467,
+        "auc_full": 0.3320305,
+        "tpr": 0.3485
+      }
+    },
+    "temp_1.1": {
+      "token_difr": {
+        "auc": 0.524937343358396,
+        "auc_full": 0.5569345,
+        "tpr": 0.6025
+      }
+    },
+    "seed_43": {
+      "token_difr": {
+        "auc": 1.0,
+        "auc_full": 1.0,
+        "tpr": 1.0
+      }
+    },
+    "bug_k2": {
+      "token_difr": {
+        "auc": 0.4992481203007519,
+        "auc_full": 0.251581,
+        "tpr": 0.3015
+      }
+    },
+    "bug_k32": {
+      "token_difr": {
+        "auc": 0.732531328320802,
+        "auc_full": 0.8743165,
+        "tpr": 0.9495
+      }
+    }
+  },
+  "config": {
+    "n_prompts": 16,
+    "n_tokens": 96,
+    "batch": 400,
+    "n_batches": 2000,
+    "max_fpr": 0.005,
+    "core_attacks": [
+      "quant_4bit",
+      "kv_fp8",
+      "temp_1.1",
+      "seed_43",
+      "bug_k2",
+      "bug_k32"
+    ]
+  },
+  "elapsed_s": 613.2387635707855
+}

@@ -128,6 +128,26 @@ _PYTHIA_1_4B = ModelIdentity(
     tokenizer="neox", params=1.4e9)
 
 # ---------------------------------------------------------------------------
+# GPT-2 (OpenAI): a fifth family and a clean, ungated size ladder (124M ->
+# 355M -> 774M) that all share one tokenizer/vocab, so any smaller sibling is a
+# valid same-family cheap proxy for a larger one -- exactly what the cost-curve
+# sweep (exp_cost_curve_gpu) needs. A pre-instruct base-LM architecture, which
+# is the point: it shows the verification method is architecture-agnostic, not a
+# quirk of modern instruct models.
+_GPT2_124M = ModelIdentity(
+    id="gpt2", label="GPT2-124M", org="OpenAI",
+    family="gpt2", base="gpt2-124m", generation="1", domain="base",
+    tokenizer="gpt2", params=0.124e9)
+_GPT2_355M = ModelIdentity(
+    id="gpt2-medium", label="GPT2-355M", org="OpenAI",
+    family="gpt2", base="gpt2-355m", generation="1", domain="base",
+    tokenizer="gpt2", params=0.355e9)
+_GPT2_774M = ModelIdentity(
+    id="gpt2-large", label="GPT2-774M", org="OpenAI",
+    family="gpt2", base="gpt2-774m", generation="1", domain="base",
+    tokenizer="gpt2", params=0.774e9)
+
+# ---------------------------------------------------------------------------
 # Quantized copies. bnb variants use a "base_id::method" id (loaded via
 # bitsandbytes off the base repo, see exp_proxy_distance_grid._parse_id) via
 # `quantized()`; official GPTQ/AWQ checkpoints are separate HF repos with
@@ -158,6 +178,7 @@ _ENTRIES = [
     _DS_DISTILL_LLAMA_8B,
     _SMOLLM2_1_7B, _SMOLLM2_360M, _SMOLLM2_135M,
     _PYTHIA_410M, _PYTHIA_160M, _PYTHIA_1_4B,
+    _GPT2_124M, _GPT2_355M, _GPT2_774M,
     *_QUANTIZED,
 ]
 

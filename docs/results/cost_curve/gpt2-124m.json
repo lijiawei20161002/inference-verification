@@ -1,0 +1,81 @@
+{
+  "tag": "gpt2-124m",
+  "family": "gpt2",
+  "label": "GPT2-124M",
+  "org": "OpenAI",
+  "params": 124000000.0,
+  "generation": "1",
+  "vocab": 50257,
+  "hidden": 768,
+  "T": 128,
+  "recompute_flops": 21975662592.0,
+  "recompute_seconds": 0.005162723595276475,
+  "proxy": null,
+  "null_floor": {
+    "token_difr": {
+      "auc": 0.5114786967418546,
+      "auc_full": 0.506569,
+      "tpr": 0.002
+    }
+  },
+  "attacks": {
+    "quant_4bit": {
+      "token_difr": {
+        "auc": 0.5264912280701755,
+        "auc_full": 0.62908875,
+        "tpr": 0.004
+      }
+    },
+    "kv_fp8": {
+      "token_difr": {
+        "auc": 0.5036591478696741,
+        "auc_full": 0.414777,
+        "tpr": 0.0
+      }
+    },
+    "temp_1.1": {
+      "token_difr": {
+        "auc": 0.6252380952380953,
+        "auc_full": 0.82844575,
+        "tpr": 0.07
+      }
+    },
+    "seed_43": {
+      "token_difr": {
+        "auc": 1.0,
+        "auc_full": 1.0,
+        "tpr": 1.0
+      }
+    },
+    "bug_k2": {
+      "token_difr": {
+        "auc": 0.5163157894736842,
+        "auc_full": 0.594055,
+        "tpr": 0.002
+      }
+    },
+    "bug_k32": {
+      "token_difr": {
+        "auc": 0.6629573934837093,
+        "auc_full": 0.87964675,
+        "tpr": 0.085
+      }
+    }
+  },
+  "config": {
+    "n_prompts": 16,
+    "n_tokens": 96,
+    "batch": 400,
+    "n_batches": 2000,
+    "max_fpr": 0.005,
+    "core_attacks": [
+      "quant_4bit",
+      "kv_fp8",
+      "temp_1.1",
+      "seed_43",
+      "bug_k2",
+      "bug_k32"
+    ]
+  },
+  "elapsed_s": 172.12001490592957
+}
