@@ -35,6 +35,7 @@ import time
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[1]
+RESULTS_DIR = ROOT / "docs" / "results" / "cost_curve"
 
 # (family, [HF ids smallest -> largest]). Smallest = the shared cheap proxy.
 FAMILIES: list[tuple[str, list[str]]] = [
@@ -53,6 +54,13 @@ FAMILIES: list[tuple[str, list[str]]] = [
 # docs/results/robustness_sweep.json (e.g. qwen3-0.6b token_difr quant ~ 0.63).
 DEFAULTS = {"IVGYM_PROMPTS": "16", "IVGYM_TOKENS": "96", "IVGYM_BATCH": "400",
             "IVGYM_NBATCH": "2000"}
+
+
+def result_path(hf_id: str) -> Path:
+    """Where exp_cost_curve_gpu writes this model's result (tag = lowercased
+    registry label), so the sweep can resume by skipping models already done."""
+    from ivgym.model_registry import identity
+    return RESULTS_DIR / (identity(hf_id).label.lower().replace(" ", "-") + ".json")
 
 
 def hf_cache_dir(hf_id: str) -> Path:
@@ -99,11 +107,20 @@ def run_one(hf_id: str, proxy: str | None) -> bool:
 
 def main():
     t0 = time.time()
-    done, failed = [], []
+    force = os.environ.get("IVGYM_FORCE") == "1"
+    done, failed, skipped = [], [], []
     for family, ladder in FAMILIES:
         proxy = ladder[0]  # smallest = shared same-family cheap proxy
         for i, hf_id in enumerate(ladder):
             use_proxy = None if i == 0 else proxy
+            if not force and result_path(hf_id).exists():
+                print(f"\n=== skip {hf_id}: {result_path(hf_id).name} already exists "
+                      "(set IVGYM_FORCE=1 to re-run) ===", flush=True)
+                skipped.append(hf_id)
+                # never on disk after a skip unless it's this family's proxy
+                if hf_id != proxy:
+                    prune(hf_id)
+                continue
             ok = run_one(hf_id, use_proxy)
             (done if ok else failed).append(hf_id)
             # prune the reference model right away unless it's this family's proxy
@@ -112,7 +129,7 @@ def main():
         prune(proxy)  # family finished -> drop its shared proxy too
 
     print(f"\n{'#'*72}\nSWEEP DONE in {time.time()-t0:.0f}s  |  "
-          f"{len(done)} ok, {len(failed)} failed")
+          f"{len(done)} ok, {len(failed)} failed, {len(skipped)} skipped (already done)")
     if failed:
         print("FAILED:", failed)
     print(f"results in docs/results/cost_curve/  |  disk free {disk_free_gb():.1f} GB")

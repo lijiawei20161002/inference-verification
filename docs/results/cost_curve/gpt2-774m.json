@@ -1,0 +1,122 @@
+{
+  "tag": "gpt2-774m",
+  "family": "gpt2",
+  "label": "GPT2-774M",
+  "org": "OpenAI",
+  "params": 774000000.0,
+  "generation": "1",
+  "vocab": 50257,
+  "hidden": 1280,
+  "T": 128,
+  "recompute_flops": 181683486720.0,
+  "recompute_seconds": 0.008566963209887035,
+  "proxy": {
+    "tag": "gpt2-124m",
+    "label": "GPT2-124M",
+    "params": 124000000.0,
+    "flops": 21975662592.0,
+    "seconds": 0.0041463251545792446
+  },
+  "null_floor": {
+    "token_difr": {
+      "auc": 0.49974937343358394,
+      "auc_full": 0.239445625,
+      "tpr": 0.2585
+    },
+    "surface_stat": {
+      "auc": 0.5604260651629073,
+      "auc_full": 0.81479125,
+      "tpr": 0.203
+    }
+  },
+  "attacks": {
+    "quant_4bit": {
+      "token_difr": {
+        "auc": 0.6145363408521304,
+        "auc_full": 0.75129,
+        "tpr": 0.8925
+      },
+      "surface_stat": {
+        "auc": 0.49874686716791977,
+        "auc_full": 0.10366525,
+        "tpr": 0.0
+      }
+    },
+    "kv_fp8": {
+      "token_difr": {
+        "auc": 0.5205263157894737,
+        "auc_full": 0.5284035,
+        "tpr": 0.6705
+      },
+      "surface_stat": {
+        "auc": 0.5188471177944862,
+        "auc_full": 0.60618275,
+        "tpr": 0.071
+      }
+    },
+    "temp_1.1": {
+      "token_difr": {
+        "auc": 0.505764411027569,
+        "auc_full": 0.4336195,
+        "tpr": 0.5535
+      },
+      "surface_stat": {
+        "auc": 0.6493483709273183,
+        "auc_full": 0.91403075,
+        "tpr": 0.416
+      }
+    },
+    "seed_43": {
+      "token_difr": {
+        "auc": 1.0,
+        "auc_full": 1.0,
+        "tpr": 1.0
+      },
+      "surface_stat": {
+        "auc": 0.5595989974937343,
+        "auc_full": 0.81269475,
+        "tpr": 0.203
+      }
+    },
+    "bug_k2": {
+      "token_difr": {
+        "auc": 0.49874686716791977,
+        "auc_full": 0.05808775,
+        "tpr": 0.0
+      },
+      "surface_stat": {
+        "auc": 0.5020551378446115,
+        "auc_full": 0.38798225,
+        "tpr": 0.0115
+      }
+    },
+    "bug_k32": {
+      "token_difr": {
+        "auc": 0.5614035087719298,
+        "auc_full": 0.638800125,
+        "tpr": 0.794
+      },
+      "surface_stat": {
+        "auc": 0.6027819548872181,
+        "auc_full": 0.85894625,
+        "tpr": 0.308
+      }
+    }
+  },
+  "config": {
+    "n_prompts": 16,
+    "n_tokens": 96,
+    "batch": 400,
+    "n_batches": 2000,
+    "max_fpr": 0.005,
+    "core_attacks": [
+      "quant_4bit",
+      "kv_fp8",
+      "temp_1.1",
+      "seed_43",
+      "bug_k2",
+      "bug_k32"
+    ]
+  },
+  "elapsed_s": 195.5259997844696
+}

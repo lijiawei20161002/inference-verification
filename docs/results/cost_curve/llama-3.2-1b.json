@@ -1,0 +1,81 @@
+{
+  "tag": "llama-3.2-1b",
+  "family": "llama",
+  "label": "Llama-3.2-1B",
+  "org": "Meta",
+  "params": 1200000000.0,
+  "generation": "3.2",
+  "vocab": 128256,
+  "hidden": 2048,
+  "T": 128,
+  "recompute_flops": 249125404672.0,
+  "recompute_seconds": 0.007785066409269348,
+  "proxy": null,
+  "null_floor": {
+    "token_difr": {
+      "auc": 0.5339097744360902,
+      "auc_full": 0.634239625,
+      "tpr": 0.7095
+    }
+  },
+  "attacks": {
+    "quant_4bit": {
+      "token_difr": {
+        "auc": 0.9980952380952381,
+        "auc_full": 0.99980175,
+        "tpr": 1.0
+      }
+    },
+    "kv_fp8": {
+      "token_difr": {
+        "auc": 0.6988471177944862,
+        "auc_full": 0.8916945,
+        "tpr": 0.9525
+      }
+    },
+    "temp_1.1": {
+      "token_difr": {
+        "auc": 0.7611278195488722,
+        "auc_full": 0.9210355,
+        "tpr": 0.962
+      }
+    },
+    "seed_43": {
+      "token_difr": {
+        "auc": 1.0,
+        "auc_full": 1.0,
+        "tpr": 1.0
+      }
+    },
+    "bug_k2": {
+      "token_difr": {
+        "auc": 0.6541353383458647,
+        "auc_full": 0.852377375,
+        "tpr": 0.9155
+      }
+    },
+    "bug_k32": {
+      "token_difr": {
+        "auc": 0.6930325814536341,
+        "auc_full": 0.880198625,
+        "tpr": 0.9335
+      }
+    }
+  },
+  "config": {
+    "n_prompts": 16,
+    "n_tokens": 96,
+    "batch": 400,
+    "n_batches": 2000,
+    "max_fpr": 0.005,
+    "core_attacks": [
+      "quant_4bit",
+      "kv_fp8",
+      "temp_1.1",
+      "seed_43",
+      "bug_k2",
+      "bug_k32"
+    ]
+  },
+  "elapsed_s": 328.20606541633606
+}

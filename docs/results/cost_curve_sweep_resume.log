@@ -1,0 +1,275 @@
+
+=== skip Qwen/Qwen3-0.6B: qwen3-0.6b.json already exists (set IVGYM_FORCE=1 to re-run) ===
+
+=== skip Qwen/Qwen3-1.7B: qwen3-1.7b.json already exists (set IVGYM_FORCE=1 to re-run) ===
+
+========================================================================
+>>> Qwen/Qwen3-4B  (proxy Qwen/Qwen3-0.6B)   [disk free 31.6 GB]
+========================================================================
+loading M=Qwen/Qwen3-4B  + proxy=Qwen/Qwen3-0.6B ...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Fetching 3 files:   0%|          | 0/3 [00:00<?, ?it/s]Fetching 3 files:  67%|██████▋   | 2/3 [00:06<00:03,  3.49s/it]Fetching 3 files: 100%|██████████| 3/3 [00:06<00:00,  2.33s/it]
+Loading weights:   0%|          | 0/398 [00:00<?, ?it/s]Loading weights: 100%|██████████| 398/398 [00:00<00:00, 15207.28it/s]
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 11430.12it/s]
+loaded in 37.2s | vocab=151936 hidden=2560 | M=4.022B  proxy=0.596B (6.7x fewer) | 16 prompts x 96 tok, T=128
+  honest pool scored (99.0s)
+  null floor scored (159.7s)
+    quant_4bit scored (224.7s)
+        kv_fp8 scored (290.0s)
+      temp_1.1 scored (350.9s)
+       seed_43 scored (412.1s)
+        bug_k2 scored (473.1s)
+       bug_k32 scored (533.9s)
+
+=== Qwen3-4B  (qwen, 4.000B) ===
+  full recompute (token_difr): mean AUC=0.990  cost=930.2 GFLOPs/seq
+  cheap proxy  (Qwen3-0.6B, surface_stat): mean AUC=0.516  cost=112.8 GFLOPs/seq  (8.2x cheaper)
+  wrote /root/inference-verification/docs/results/cost_curve/qwen3-4b.json  (533.9s)
+<<< Qwen/Qwen3-4B  (proxy Qwen/Qwen3-0.6B)  ->  OK  (535s)
+  [disk] pruned models--Qwen--Qwen3-4B
+  [disk] pruned models--Qwen--Qwen3-0.6B
+
+========================================================================
+>>> unsloth/Llama-3.2-1B-Instruct  (no proxy)   [disk free 31.6 GB]
+========================================================================
+loading M=unsloth/Llama-3.2-1B-Instruct ...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/146 [00:00<?, ?it/s]Loading weights: 100%|██████████| 146/146 [00:00<00:00, 31424.46it/s]
+loaded in 17.6s | vocab=128256 hidden=2048 | M=1.236B | 16 prompts x 96 tok, T=128
+  honest pool scored (55.9s)
+  null floor scored (93.8s)
+    quant_4bit scored (135.3s)
+        kv_fp8 scored (176.8s)
+      temp_1.1 scored (214.7s)
+       seed_43 scored (252.5s)
+        bug_k2 scored (290.4s)
+       bug_k32 scored (328.2s)
+
+=== Llama-3.2-1B  (llama, 1.200B) ===
+  full recompute (token_difr): mean AUC=0.801  cost=249.1 GFLOPs/seq
+  wrote /root/inference-verification/docs/results/cost_curve/llama-3.2-1b.json  (328.2s)
+<<< unsloth/Llama-3.2-1B-Instruct  (no proxy)  ->  OK  (330s)
+
+========================================================================
+>>> unsloth/Llama-3.2-3B-Instruct  (proxy unsloth/Llama-3.2-1B-Instruct)   [disk free 31.6 GB]
+========================================================================
+loading M=unsloth/Llama-3.2-3B-Instruct  + proxy=unsloth/Llama-3.2-1B-Instruct ...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Fetching 2 files:   0%|          | 0/2 [00:00<?, ?it/s]Fetching 2 files:  50%|█████     | 1/2 [09:25<09:25, 565.32s/it]Fetching 2 files: 100%|██████████| 2/2 [09:25<00:00, 282.66s/it]
+Loading weights:   0%|          | 0/254 [00:00<?, ?it/s]Loading weights: 100%|██████████| 254/254 [00:00<00:00, 14994.20it/s]
+Loading weights:   0%|          | 0/146 [00:00<?, ?it/s]Loading weights: 100%|██████████| 146/146 [00:00<00:00, 12971.71it/s]
+loaded in 574.3s | vocab=128256 hidden=3072 | M=3.213B  proxy=1.236B (2.6x fewer) | 16 prompts x 96 tok, T=128
+  honest pool scored (622.9s)
+  null floor scored (672.0s)
+    quant_4bit scored (724.2s)
+        kv_fp8 scored (776.4s)
+      temp_1.1 scored (825.1s)
+       seed_43 scored (873.6s)
+        bug_k2 scored (922.0s)
+       bug_k32 scored (967.6s)
+
+=== Llama-3.2-3B  (llama, 3.200B) ===
+  full recompute (token_difr): mean AUC=0.873  cost=721.6 GFLOPs/seq
+  cheap proxy  (Llama-3.2-1B, surface_stat): mean AUC=0.727  cost=249.1 GFLOPs/seq  (2.9x cheaper)
+  wrote /root/inference-verification/docs/results/cost_curve/llama-3.2-3b.json  (967.6s)
+<<< unsloth/Llama-3.2-3B-Instruct  (proxy unsloth/Llama-3.2-1B-Instruct)  ->  OK  (969s)
+  [disk] pruned models--unsloth--Llama-3.2-3B-Instruct
+
+========================================================================
+>>> unsloth/Meta-Llama-3.1-8B-Instruct  (proxy unsloth/Llama-3.2-1B-Instruct)   [disk free 31.6 GB]
+========================================================================
+loading M=unsloth/Meta-Llama-3.1-8B-Instruct  + proxy=unsloth/Llama-3.2-1B-Instruct ...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Fetching 4 files:   0%|          | 0/4 [00:00<?, ?it/s]Fetching 4 files:  25%|██▌       | 1/4 [01:02<03:07, 62.59s/it]Fetching 4 files:  75%|███████▌  | 3/4 [09:32<03:25, 205.21s/it]Fetching 4 files: 100%|██████████| 4/4 [09:32<00:00, 143.21s/it]
+Loading weights:   0%|          | 0/291 [00:00<?, ?it/s]Loading weights: 100%|██████████| 291/291 [00:00<00:00, 9147.03it/s]
+Loading weights:   0%|          | 0/146 [00:00<?, ?it/s]Loading weights: 100%|██████████| 146/146 [00:00<00:00, 14765.83it/s]
+loaded in 616.5s | vocab=128256 hidden=4096 | M=8.030B  proxy=1.236B (6.5x fewer) | 16 prompts x 96 tok, T=128
+  honest pool scored (667.7s)
+  null floor scored (718.6s)
+    quant_4bit scored (773.8s)
+        kv_fp8 scored (828.9s)
+      temp_1.1 scored (879.9s)
+       seed_43 scored (930.9s)
+        bug_k2 scored (981.7s)
+       bug_k32 scored (1032.7s)
+
+=== Llama-3.1-8B  (llama, 8.000B) ===
+  full recompute (token_difr): mean AUC=0.931  cost=1921.3 GFLOPs/seq
+  cheap proxy  (Llama-3.2-1B, surface_stat): mean AUC=0.591  cost=249.1 GFLOPs/seq  (7.7x cheaper)
+  wrote /root/inference-verification/docs/results/cost_curve/llama-3.1-8b.json  (1032.7s)
+<<< unsloth/Meta-Llama-3.1-8B-Instruct  (proxy unsloth/Llama-3.2-1B-Instruct)  ->  OK  (1034s)
+  [disk] pruned models--unsloth--Meta-Llama-3.1-8B-Instruct
+  [disk] pruned models--unsloth--Llama-3.2-1B-Instruct
+
+========================================================================
+>>> HuggingFaceTB/SmolLM2-135M-Instruct  (no proxy)   [disk free 31.6 GB]
+========================================================================
+loading M=HuggingFaceTB/SmolLM2-135M-Instruct ...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/272 [00:00<?, ?it/s]Loading weights: 100%|██████████| 272/272 [00:00<00:00, 18669.42it/s]
+loaded in 39.2s | vocab=49152 hidden=576 | M=0.135B | 16 prompts x 96 tok, T=128
+  honest pool scored (67.3s)
+  null floor scored (95.5s)
+    quant_4bit scored (124.3s)
+        kv_fp8 scored (151.5s)
+      temp_1.1 scored (177.1s)
+       seed_43 scored (202.9s)
+        bug_k2 scored (229.3s)
+       bug_k32 scored (256.7s)
+
+=== SmolLM2-135M  (smollm2, 0.135B) ===
+  full recompute (token_difr): mean AUC=0.824  cost=27.2 GFLOPs/seq
+  wrote /root/inference-verification/docs/results/cost_curve/smollm2-135m.json  (256.7s)
+<<< HuggingFaceTB/SmolLM2-135M-Instruct  (no proxy)  ->  OK  (258s)
+
+========================================================================
+>>> HuggingFaceTB/SmolLM2-360M-Instruct  (proxy HuggingFaceTB/SmolLM2-135M-Instruct)   [disk free 31.6 GB]
+========================================================================
+loading M=HuggingFaceTB/SmolLM2-360M-Instruct  + proxy=HuggingFaceTB/SmolLM2-135M-Instruct ...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/290 [00:00<?, ?it/s]Loading weights: 100%|██████████| 290/290 [00:00<00:00, 14093.60it/s]
+Loading weights:   0%|          | 0/272 [00:00<?, ?it/s]Loading weights: 100%|██████████| 272/272 [00:00<00:00, 13649.48it/s]
+loaded in 37.0s | vocab=49152 hidden=960 | M=0.362B  proxy=0.135B (2.7x fewer) | 16 prompts x 96 tok, T=128
+  honest pool scored (66.9s)
+  null floor scored (96.8s)
+    quant_4bit scored (128.0s)
+        kv_fp8 scored (158.8s)
+      temp_1.1 scored (188.3s)
+       seed_43 scored (218.1s)
+        bug_k2 scored (247.9s)
+       bug_k32 scored (277.5s)
+
+=== SmolLM2-360M  (smollm2, 0.360B) ===
+  full recompute (token_difr): mean AUC=0.967  cost=80.5 GFLOPs/seq
+  cheap proxy  (SmolLM2-135M, surface_stat): mean AUC=0.663  cost=27.2 GFLOPs/seq  (3.0x cheaper)
+  wrote /root/inference-verification/docs/results/cost_curve/smollm2-360m.json  (277.5s)
+<<< HuggingFaceTB/SmolLM2-360M-Instruct  (proxy HuggingFaceTB/SmolLM2-135M-Instruct)  ->  OK  (279s)
+  [disk] pruned models--HuggingFaceTB--SmolLM2-360M-Instruct
+
+========================================================================
+>>> HuggingFaceTB/SmolLM2-1.7B-Instruct  (proxy HuggingFaceTB/SmolLM2-135M-Instruct)   [disk free 31.6 GB]
+========================================================================
+loading M=HuggingFaceTB/SmolLM2-1.7B-Instruct  + proxy=HuggingFaceTB/SmolLM2-135M-Instruct ...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/218 [00:00<?, ?it/s]Loading weights: 100%|██████████| 218/218 [00:00<00:00, 6201.02it/s]
+Loading weights:   0%|          | 0/272 [00:00<?, ?it/s]Loading weights: 100%|██████████| 272/272 [00:00<00:00, 15307.06it/s]
+loaded in 607.7s | vocab=49152 hidden=2048 | M=1.711B  proxy=0.135B (12.7x fewer) | 16 prompts x 96 tok, T=128
+  honest pool scored (632.7s)
+  null floor scored (657.3s)
+    quant_4bit scored (683.2s)
+        kv_fp8 scored (709.0s)
+      temp_1.1 scored (733.5s)
+       seed_43 scored (758.0s)
+        bug_k2 scored (782.3s)
+       bug_k32 scored (806.5s)
+
+=== SmolLM2-1.7B  (smollm2, 1.700B) ===
+  full recompute (token_difr): mean AUC=0.999  cost=412.3 GFLOPs/seq
+  cheap proxy  (SmolLM2-135M, surface_stat): mean AUC=0.647  cost=27.2 GFLOPs/seq  (15.2x cheaper)
+  wrote /root/inference-verification/docs/results/cost_curve/smollm2-1.7b.json  (806.5s)
+<<< HuggingFaceTB/SmolLM2-1.7B-Instruct  (proxy HuggingFaceTB/SmolLM2-135M-Instruct)  ->  OK  (808s)
+  [disk] pruned models--HuggingFaceTB--SmolLM2-1.7B-Instruct
+  [disk] pruned models--HuggingFaceTB--SmolLM2-135M-Instruct
+
+========================================================================
+>>> EleutherAI/pythia-160m  (no proxy)   [disk free 31.6 GB]
+========================================================================
+loading M=EleutherAI/pythia-160m ...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 7595.03it/s]
+loaded in 38.9s | vocab=50304 hidden=768 | M=0.162B | 16 prompts x 96 tok, T=128
+  honest pool scored (56.8s)
+  null floor scored (74.0s)
+    quant_4bit scored (93.1s)
+        kv_fp8 scored (111.7s)
+      temp_1.1 scored (128.3s)
+       seed_43 scored (144.6s)
+        bug_k2 scored (160.9s)
+       bug_k32 scored (177.2s)
+
+=== Pythia-160M  (pythia, 0.160B) ===
+  full recompute (token_difr): mean AUC=0.580  cost=31.7 GFLOPs/seq
+  wrote /root/inference-verification/docs/results/cost_curve/pythia-160m.json  (177.2s)
+<<< EleutherAI/pythia-160m  (no proxy)  ->  OK  (178s)
+
+========================================================================
+>>> EleutherAI/pythia-410m  (proxy EleutherAI/pythia-160m)   [disk free 31.6 GB]
+========================================================================
+loading M=EleutherAI/pythia-410m  + proxy=EleutherAI/pythia-160m ...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights:  82%|████████▏ | 240/292 [00:00<00:00, 2395.23it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 2755.27it/s]
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 7795.91it/s]
+loaded in 557.7s | vocab=50304 hidden=1024 | M=0.405B  proxy=0.162B (2.5x fewer) | 16 prompts x 96 tok, T=128
+  honest pool scored (578.7s)
+  null floor scored (599.5s)
+    quant_4bit scored (621.5s)
+        kv_fp8 scored (643.6s)
+      temp_1.1 scored (664.2s)
+       seed_43 scored (684.9s)
+        bug_k2 scored (706.2s)
+       bug_k32 scored (727.4s)
+
+=== Pythia-410M  (pythia, 0.410B) ===
+  full recompute (token_difr): mean AUC=0.759  cost=90.6 GFLOPs/seq
+  cheap proxy  (Pythia-160M, surface_stat): mean AUC=0.584  cost=31.7 GFLOPs/seq  (2.9x cheaper)
+  wrote /root/inference-verification/docs/results/cost_curve/pythia-410m.json  (727.4s)
+<<< EleutherAI/pythia-410m  (proxy EleutherAI/pythia-160m)  ->  OK  (729s)
+  [disk] pruned models--EleutherAI--pythia-410m
+
+========================================================================
+>>> EleutherAI/pythia-1.4b  (proxy EleutherAI/pythia-160m)   [disk free 31.6 GB]
+========================================================================
+loading M=EleutherAI/pythia-1.4b  + proxy=EleutherAI/pythia-160m ...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/292 [00:00<?, ?it/s]Loading weights:  29%|██▉       | 86/292 [00:00<00:00, 858.29it/s]Loading weights:  59%|█████▉    | 172/292 [00:00<00:00, 853.42it/s]Loading weights:  88%|████████▊ | 258/292 [00:00<00:00, 852.37it/s]Loading weights: 100%|██████████| 292/292 [00:00<00:00, 940.83it/s]
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 6583.49it/s]
+loaded in 584.9s | vocab=50304 hidden=2048 | M=1.415B  proxy=0.162B (8.7x fewer) | 16 prompts x 96 tok, T=128
+  honest pool scored (606.2s)
+  null floor scored (626.9s)
+    quant_4bit scored (648.8s)
+        kv_fp8 scored (670.7s)
+      temp_1.1 scored (691.4s)
+       seed_43 scored (712.1s)
+        bug_k2 scored (732.5s)
+       bug_k32 scored (752.9s)
+
+=== Pythia-1.4B  (pythia, 1.400B) ===
+  full recompute (token_difr): mean AUC=0.588  cost=335.8 GFLOPs/seq
+  cheap proxy  (Pythia-160M, surface_stat): mean AUC=0.565  cost=31.7 GFLOPs/seq  (10.6x cheaper)
+  wrote /root/inference-verification/docs/results/cost_curve/pythia-1.4b.json  (752.9s)
+<<< EleutherAI/pythia-1.4b  (proxy EleutherAI/pythia-160m)  ->  OK  (754s)
+  [disk] pruned models--EleutherAI--pythia-1.4b
+  [disk] pruned models--EleutherAI--pythia-160m
+
+=== skip gpt2: gpt2-124m.json already exists (set IVGYM_FORCE=1 to re-run) ===
+
+=== skip gpt2-medium: gpt2-355m.json already exists (set IVGYM_FORCE=1 to re-run) ===
+
+========================================================================
+>>> gpt2-large  (proxy gpt2)   [disk free 31.6 GB]
+========================================================================
+loading M=gpt2-large  + proxy=gpt2 ...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/436 [00:00<?, ?it/s]Loading weights:  50%|████▉     | 216/436 [00:00<00:00, 2120.58it/s]Loading weights:  98%|█████████▊| 429/436 [00:00<00:00, 2121.86it/s]Loading weights: 100%|██████████| 436/436 [00:00<00:00, 2102.82it/s]
+Loading weights:   0%|          | 0/148 [00:00<?, ?it/s]Loading weights: 100%|██████████| 148/148 [00:00<00:00, 7204.87it/s]
+loaded in 15.9s | vocab=50257 hidden=1280 | M=0.774B  proxy=0.124B (6.2x fewer) | 16 prompts x 96 tok, T=128
+  honest pool scored (38.5s)
+  null floor scored (60.7s)
+    quant_4bit scored (84.1s)
+        kv_fp8 scored (107.4s)
+      temp_1.1 scored (129.4s)
+       seed_43 scored (151.4s)
+        bug_k2 scored (173.5s)
+       bug_k32 scored (195.5s)
+
+=== GPT2-774M  (gpt2, 0.774B) ===
+  full recompute (token_difr): mean AUC=0.617  cost=181.7 GFLOPs/seq
+  cheap proxy  (GPT2-124M, surface_stat): mean AUC=0.555  cost=22.0 GFLOPs/seq  (8.3x cheaper)
+  wrote /root/inference-verification/docs/results/cost_curve/gpt2-774m.json  (195.5s)
+<<< gpt2-large  (proxy gpt2)  ->  OK  (197s)
+  [disk] pruned models--gpt2-large
+  [disk] pruned models--gpt2
+
+########################################################################
+SWEEP DONE in 6074s  |  11 ok, 0 failed, 4 skipped (already done)
+results in docs/results/cost_curve/  |  disk free 31.6 GB

@@ -1,0 +1,81 @@
+{
+  "tag": "smollm2-135m",
+  "family": "smollm2",
+  "label": "SmolLM2-135M",
+  "org": "HuggingFace",
+  "params": 135000000.0,
+  "generation": "2",
+  "vocab": 49152,
+  "hidden": 576,
+  "T": 128,
+  "recompute_flops": 27188084736.0,
+  "recompute_seconds": 0.011347220919560641,
+  "proxy": null,
+  "null_floor": {
+    "token_difr": {
+      "auc": 0.5518796992481203,
+      "auc_full": 0.49804875,
+      "tpr": 0.161
+    }
+  },
+  "attacks": {
+    "quant_4bit": {
+      "token_difr": {
+        "auc": 0.927593984962406,
+        "auc_full": 0.955259,
+        "tpr": 0.874
+      }
+    },
+    "kv_fp8": {
+      "token_difr": {
+        "auc": 0.7074185463659147,
+        "auc_full": 0.760996,
+        "tpr": 0.519
+      }
+    },
+    "temp_1.1": {
+      "token_difr": {
+        "auc": 0.6970676691729324,
+        "auc_full": 0.76462425,
+        "tpr": 0.499
+      }
+    },
+    "seed_43": {
+      "token_difr": {
+        "auc": 1.0,
+        "auc_full": 1.0,
+        "tpr": 1.0
+      }
+    },
+    "bug_k2": {
+      "token_difr": {
+        "auc": 0.65265664160401,
+        "auc_full": 0.6889945,
+        "tpr": 0.3445
+      }
+    },
+    "bug_k32": {
+      "token_difr": {
+        "auc": 0.956390977443609,
+        "auc_full": 0.971431,
+        "tpr": 0.9165
+      }
+    }
+  },
+  "config": {
+    "n_prompts": 16,
+    "n_tokens": 96,
+    "batch": 400,
+    "n_batches": 2000,
+    "max_fpr": 0.005,
+    "core_attacks": [
+      "quant_4bit",
+      "kv_fp8",
+      "temp_1.1",
+      "seed_43",
+      "bug_k2",
+      "bug_k32"
+    ]
+  },
+  "elapsed_s": 256.68544006347656
+}
