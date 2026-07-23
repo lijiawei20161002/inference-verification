@@ -72,6 +72,20 @@ def attack_aucs(d: dict, verifier: str) -> list[float]:
     return out
 
 
+# The cheap verifier we advocate: information-directed selective recompute of M on
+# just the top-25% highest-entropy tokens (entropy read off the free proxy). The
+# old dashed line (`surface_stat`, a pure cheap-proxy statistic) is kept faint for
+# contrast -- it is the one the figure used to show collapsing to chance.
+SELECTIVE = "sel_difr_b25"
+SEL_LABEL = "selective recompute @25% (info-directed)"
+SEL_COLOR = "#111111"
+
+
+def _sel_flops(d: dict) -> float | None:
+    info = (d.get("selective") or {}).get(SELECTIVE)
+    return info["flops"] if info else None
+
+
 def _panel(ax, fam: str, models: list[dict]):
     color = FAM_COLORS.get(fam, "#333")
     xs = np.arange(len(models))                       # one slot per claimed model
@@ -90,20 +104,30 @@ def _panel(ax, fam: str, models: list[dict]):
                     textcoords="offset points", xytext=(0, 10), ha="center",
                     fontsize=7.5, color=color, fontweight="bold")
 
-    # -- cheap same-family proxy, plotted at the CLAIMED model's slot --
-    px, py, pflops = [], [], []
+    # -- WINNER: selective recompute @25%, plotted at the CLAIMED model's slot --
+    sx, sy, sflops = [], [], []
     for x, d in zip(xs, models):
-        if not d.get("proxy"):
-            continue
-        a = attack_aucs(d, "surface_stat")
-        if a:
-            px.append(x); py.append(np.mean(a)); pflops.append(d["proxy"]["flops"])
-    if px:
-        ax.plot(px, py, "--x", color="#666", ms=9, lw=1.6, zorder=2,
-                label="cheap proxy (surface_stat)")
-        for x, y, fl in zip(px, py, pflops):     # proxy FLOPs below each point
+        a = attack_aucs(d, SELECTIVE)
+        fl = _sel_flops(d)
+        if a and fl:
+            sx.append(x); sy.append(np.mean(a)); sflops.append(fl)
+    if sx:
+        ax.plot(sx, sy, "--D", color=SEL_COLOR, ms=6.5, lw=2.0, zorder=4,
+                label=SEL_LABEL)
+        for x, y, fl in zip(sx, sy, sflops):     # selective FLOPs below each point
             ax.annotate(_flops_label(fl), (x, y), textcoords="offset points",
-                        xytext=(0, -14), ha="center", fontsize=7, color="#666")
+                        xytext=(0, -14), ha="center", fontsize=7,
+                        color=SEL_COLOR)
+
+    # -- the OLD cheap proxy (surface_stat), faint, for contrast --
+    px, py = [], []
+    for x, d in zip(xs, models):
+        a = attack_aucs(d, "surface_stat")
+        if d.get("proxy") and a:
+            px.append(x); py.append(np.mean(a))
+    if px:
+        ax.plot(px, py, ":x", color="#999", ms=7, lw=1.3, zorder=2,
+                label="cheap proxy (surface_stat)")
 
     ax.axhline(0.5, ls=":", color="0.5", lw=1.1)
     ax.set_xticks(xs)
@@ -117,23 +141,43 @@ def _panel(ax, fam: str, models: list[dict]):
 
 
 def _summary(ax, by_fam: dict[str, list[dict]]):
-    rank_labels = ["small", "mid", "large"]
+    """Parity scatter: how well each CHEAP verifier reproduces the full-recompute
+    detection AUC. x = full recompute AUC, y = cheap-verifier AUC, one point per
+    (family, size) that has a proxy. Points on the dashed y=x line perfectly match
+    full recompute. Selective recompute (coloured, per family) hugs the diagonal;
+    the old surface_stat proxy (grey) collapses toward the 0.5 chance floor."""
+    ax.plot([0.45, 1.03], [0.45, 1.03], ls="--", color="0.6", lw=1.2, zorder=1,
+            label="parity with full recompute")
+    ax.axhline(0.5, ls=":", color="0.7", lw=1.0)
+    sel_pts, surf_pts = [], []
     for fam in FAM_ORDER:
-        models = by_fam.get(fam)
-        if not models:
-            continue
-        ys = [np.mean(attack_aucs(d, "token_difr")) for d in models]
-        xs = np.arange(len(models))
-        ax.plot(xs, ys, "-o", color=FAM_COLORS[fam], ms=6, lw=2,
-                label=FAM_TITLE.get(fam, fam))
-    ax.axhline(0.5, ls=":", color="0.5", lw=1.1)
-    ax.set_xticks(range(len(rank_labels)))
-    ax.set_xticklabels(rank_labels)
+        for d in by_fam.get(fam, []):
+            if not d.get("proxy"):
+                continue
+            rec = np.mean(attack_aucs(d, "token_difr"))
+            sel = attack_aucs(d, SELECTIVE)
+            surf = attack_aucs(d, "surface_stat")
+            if sel:
+                sel_pts.append((rec, np.mean(sel)))
+                ax.scatter(rec, np.mean(sel), s=70, color=FAM_COLORS[fam],
+                           edgecolor="k", lw=0.6, zorder=4)
+            if surf:
+                surf_pts.append((rec, np.mean(surf)))
+                ax.scatter(rec, np.mean(surf), s=45, marker="x", color="#999",
+                           lw=1.4, zorder=3)
+    # proxy legend handles (family colours are labelled in the family panels)
+    ax.scatter([], [], s=70, color="#444", edgecolor="k", lw=0.6,
+               label="selective @25% (by family)")
+    ax.scatter([], [], s=45, marker="x", color="#999", lw=1.4,
+               label="surface_stat proxy")
+    ax.set_xlim(0.45, 1.03)
     ax.set_ylim(0.45, 1.03)
-    ax.set_title("all families: recompute detection vs size rank", fontsize=11,
+    ax.set_xlabel("full-recompute detection AUC", fontsize=9)
+    ax.set_ylabel("cheap-verifier detection AUC", fontsize=9)
+    ax.set_title("cheap verifier vs full recompute (parity)", fontsize=11,
                  fontweight="bold")
-    ax.grid(alpha=0.25, axis="y")
-    ax.legend(fontsize=8, loc="lower right", framealpha=0.9)
+    ax.grid(alpha=0.25)
+    ax.legend(fontsize=7.5, loc="upper left", framealpha=0.9)
 
 
 def build():
@@ -156,17 +200,19 @@ def build():
             ax.axis("off")
     _summary(axes[5], by_fam)
 
-    for ax in axes:
+    for ax in axes[:5]:                              # family panels share the ladder axes
         ax.set_xlabel("claimed model  (size ladder, small → large) · labels = verifier FLOPs/seq",
                       fontsize=8.5)
         ax.set_ylabel("detection AUC  (partial AUC @ FPR≤0.5%)", fontsize=9)
 
     fig.suptitle(
-        "Performance of inference verification, across model families and sizes\n"
-        f"{n_models} models × {len(by_fam)} families × 6 canonical attacks (H100). "
-        "x-axis = the claimed model itself (size ladder). Each panel: full recompute "
-        "(solid) vs a cheap same-family proxy (dashed), both plotted at the claimed "
-        "model's slot. Band = spread across attacks; line = mean.",
+        "Inference verification: a cheap verifier that stays good across families and sizes\n"
+        f"{n_models} models × {len(by_fam)} families × 6 canonical attacks (H100). x-axis = the "
+        "claimed model (size ladder); labels = verifier FLOPs/seq. Full recompute (solid) vs "
+        "information-directed SELECTIVE recompute of M on the top-25% highest-entropy tokens "
+        "(black dashed) vs the old cheap proxy (faint grey, ≈chance). Band = spread across "
+        "attacks; line = mean. Selective tracks full recompute at ~1.7-2.7x lower cost; "
+        "the pure cheap proxy stays at chance.",
         fontsize=12.5)
     fig.tight_layout(rect=(0, 0, 1, 0.94))
     FIG_DIR.mkdir(parents=True, exist_ok=True)

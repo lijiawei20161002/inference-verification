@@ -41,6 +41,9 @@ import os
 import sys
 import time
 from pathlib import Path
+from types import SimpleNamespace
+
+import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
@@ -103,23 +106,53 @@ def run() -> dict:
     spec = SamplingSpec()
     td = verifiers.get("token_difr")           # the full recompute of M
     have_proxy = backend.proxy_model is not None
-    ss = verifiers.get("surface_stat") if have_proxy else None
-    dets = [td] + ([ss] if ss else [])
+
+    # Cheap Tier-0 candidates (all read only the small proxy / served logits, never
+    # recompute M) -- the field of "cheap proxies" we compare against full recompute.
+    tier0 = ([verifiers.get("surface_stat"),        # proxy NLL of the claimed token
+              verifiers.get("surface_rank"),        # proxy rank of the claimed token
+              verifiers.get("accept_rate")]         # TV(served p, proxy q) fingerprint
+             if have_proxy else [])
+    full_dets = [td] + tier0
+
+    # Information-directed SELECTIVE recompute: recompute M (token_difr) on only the
+    # top-`b` fraction of tokens, ranked by cheap proxy entropy H(q) -- the middle
+    # tier that keeps M's trusted anchor but spends it where it carries evidence.
+    # Only available when a real same-family proxy supplies the entropy ranking.
+    SEL_BUDGETS = [0.10, 0.25] if have_proxy else []
+
+    def sel_name(b: float) -> str:
+        return f"sel_difr_b{int(round(b * 100))}"
 
     def score_pool(seqs):
-        return harness.verify(backend, seqs, spec, dets)
+        """Per-token scores for every verifier, keyed by name (Tier-0 candidates +
+        full-recompute token_difr + selective token_difr at each budget), plus the
+        realized recompute ratio of each Tier-1 pass."""
+        full = harness.verify(backend, seqs, spec, full_dets, budget=1.0)
+        scores = dict(full.scores)
+        ratios = {"token_difr": full.recompute_ratio}
+        if SEL_BUDGETS:
+            vals = harness.token_values(backend, seqs, spec, "entropy")  # shared ranking
+            for b in SEL_BUDGETS:
+                sel = harness.verify(backend, seqs, spec, [td], budget=b, values=vals)
+                scores[sel_name(b)] = sel.scores["token_difr"]
+                ratios[sel_name(b)] = sel.recompute_ratio
+        return harness.TokenScores(seqs[0].config_name if seqs else "?", scores,
+                                   recompute_ratio=full.recompute_ratio), ratios
 
-    def aucs(honest_scores, attack_scores):
-        """Headline partial AUC @ FPR<=0.5% (+ full-range AUC) per verifier."""
+    def aucs(honest_ts, attack_ts):
+        """Headline partial AUC @ FPR<=0.5% (+ full-range AUC) per verifier name."""
+        names = list(honest_ts.scores)
+        dets_ns = [SimpleNamespace(name=n) for n in names]
         res = {r.defense: r for r in harness.evaluate(
-            honest_scores, attack_scores, dets, [BATCH], n_batches=N_BATCHES,
+            honest_ts, attack_ts, dets_ns, [BATCH], n_batches=N_BATCHES,
             winsor_pct=99.9, seed=7)}
         return {name: {"auc": res[name].auc, "auc_full": res[name].auc_full,
                        "tpr": res[name].tpr}
                 for name in res}
 
     # honest reference pool
-    honest = score_pool(harness.generate_dataset(
+    honest, _ = score_pool(harness.generate_dataset(
         backend, attacks.get("honest"), spec, N_PROMPTS, N_TOKENS))
     print(f"  honest pool scored ({time.time()-t0:.1f}s)", flush=True)
 
@@ -127,20 +160,36 @@ def run() -> dict:
     # range -- both verifiers must sit near 0.5 here.
     null_seqs = [backend.generate(p, N_TOKENS, spec, attacks.get("honest"), False, 123, 32)
                  for p in range(N_PROMPTS, 2 * N_PROMPTS)]
-    null_floor = aucs(honest, score_pool(null_seqs))
+    null_ts, _ = score_pool(null_seqs)
+    null_floor = aucs(honest, null_ts)
     print(f"  null floor scored ({time.time()-t0:.1f}s)", flush=True)
 
     per_attack = {}
+    sel_ratios: dict[str, list[float]] = {}
     for name in CORE_ATTACKS:
-        a = score_pool(harness.generate_dataset(
+        a_ts, ratios = score_pool(harness.generate_dataset(
             backend, attacks.get(name), spec, N_PROMPTS, N_TOKENS))
-        per_attack[name] = aucs(honest, a)
+        per_attack[name] = aucs(honest, a_ts)
+        for k, v in ratios.items():
+            sel_ratios.setdefault(k, []).append(v)
         print(f"  {name:>12} scored ({time.time()-t0:.1f}s)", flush=True)
 
     recompute_flops = flops_2nt(backend.n_params, backend.vocab, backend.hidden_dim, T)
     proxy_flops = (flops_2nt(backend.proxy_n_params, backend.vocab,
                              int(backend.proxy_model.config.hidden_size), T)
                    if have_proxy else None)
+
+    # Verifier FLOPs/seq for each selective budget: recompute M on `ratio` of the T
+    # tokens (mean realized ratio across attacks) + one cheap proxy prefill for the
+    # entropy triage ranking.
+    selective = None
+    if SEL_BUDGETS:
+        selective = {}
+        for b in SEL_BUDGETS:
+            nm = sel_name(b)
+            ratio = float(np.mean(sel_ratios[nm])) if sel_ratios.get(nm) else b
+            selective[nm] = {"budget": b, "recompute_ratio": ratio,
+                             "flops": ratio * recompute_flops + (proxy_flops or 0.0)}
 
     sec, n = backend.timed_seconds, backend.timed_calls
     meas = {k: (sec[k] / n[k] if n[k] else None) for k in sec}
@@ -154,6 +203,7 @@ def run() -> dict:
         "proxy": (None if not have_proxy else {
             "tag": _tag(proxy_id), "label": proxy_id.label, "params": proxy_id.params,
             "flops": proxy_flops, "seconds": meas["proxy"]}),
+        "selective": selective,
         "null_floor": null_floor,
         "attacks": per_attack,
         "config": {"n_prompts": N_PROMPTS, "n_tokens": N_TOKENS, "batch": BATCH,
@@ -181,10 +231,16 @@ def main():
     print(f"  full recompute (token_difr): mean AUC={mean_auc('token_difr'):.3f}  "
           f"cost={result['recompute_flops']/1e9:.1f} GFLOPs/seq")
     if result["proxy"]:
-        print(f"  cheap proxy  ({result['proxy']['label']}, surface_stat): "
-              f"mean AUC={mean_auc('surface_stat'):.3f}  "
-              f"cost={result['proxy']['flops']/1e9:.1f} GFLOPs/seq  "
-              f"({result['recompute_flops']/result['proxy']['flops']:.1f}x cheaper)")
+        for cand in ("surface_stat", "surface_rank", "accept_rate"):
+            print(f"  cheap proxy  ({result['proxy']['label']}, {cand}): "
+                  f"mean AUC={mean_auc(cand):.3f}  "
+                  f"cost={result['proxy']['flops']/1e9:.1f} GFLOPs/seq  "
+                  f"({result['recompute_flops']/result['proxy']['flops']:.1f}x cheaper)")
+        for nm, info in (result.get("selective") or {}).items():
+            print(f"  selective    ({nm}, {info['recompute_ratio']*100:.0f}% recompute): "
+                  f"mean AUC={mean_auc(nm):.3f}  "
+                  f"cost={info['flops']/1e9:.1f} GFLOPs/seq  "
+                  f"({result['recompute_flops']/info['flops']:.1f}x cheaper)")
     print(f"  wrote {out}  ({result['elapsed_s']:.1f}s)")
 
 

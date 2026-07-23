@@ -9,35 +9,36 @@
   "hidden": 2048,
   "T": 128,
   "recompute_flops": 249125404672.0,
-  "recompute_seconds": 0.007785066409269348,
+  "recompute_seconds": 0.007677159446757287,
   "proxy": null,
+  "selective": null,
   "null_floor": {
     "token_difr": {
-      "auc": 0.5339097744360902,
-      "auc_full": 0.634239625,
-      "tpr": 0.7095
+      "auc": 0.5013189223057644,
+      "auc_full": 0.5615280625,
+      "tpr": 0.076
     }
   },
   "attacks": {
     "quant_4bit": {
       "token_difr": {
-        "auc": 0.9980952380952381,
-        "auc_full": 0.99980175,
-        "tpr": 1.0
+        "auc": 0.6861810776942356,
+        "auc_full": 0.9357399375,
+        "tpr": 0.71125
       }
     },
     "kv_fp8": {
       "token_difr": {
-        "auc": 0.6988471177944862,
-        "auc_full": 0.8916945,
-        "tpr": 0.9525
+        "auc": 0.5095895989974938,
+        "auc_full": 0.6945635,
+        "tpr": 0.1935
       }
     },
     "temp_1.1": {
       "token_difr": {
-        "auc": 0.7611278195488722,
-        "auc_full": 0.9210355,
-        "tpr": 0.962
+        "auc": 0.5211372180451128,
+        "auc_full": 0.7209433125,
+        "tpr": 0.2275
       }
     },
     "seed_43": {
@@ -49,24 +50,24 @@
     },
     "bug_k2": {
       "token_difr": {
-        "auc": 0.6541353383458647,
-        "auc_full": 0.852377375,
-        "tpr": 0.9155
+        "auc": 0.5089317042606516,
+        "auc_full": 0.66931528125,
+        "tpr": 0.17625
       }
     },
     "bug_k32": {
       "token_difr": {
-        "auc": 0.6930325814536341,
-        "auc_full": 0.880198625,
-        "tpr": 0.9335
+        "auc": 0.5125814536340852,
+        "auc_full": 0.68710675,
+        "tpr": 0.18775
       }
     }
   },
   "config": {
     "n_prompts": 16,
     "n_tokens": 96,
-    "batch": 400,
-    "n_batches": 2000,
+    "batch": 96,
+    "n_batches": 4000,
     "max_fpr": 0.005,
     "core_attacks": [
       "quant_4bit",
@@ -77,5 +78,5 @@
       "bug_k32"
     ]
   },
-  "elapsed_s": 328.20606541633606
+  "elapsed_s": 368.8118214607239
 }

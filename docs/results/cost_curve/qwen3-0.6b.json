@@ -9,64 +9,65 @@
   "hidden": 1024,
   "T": 128,
   "recompute_flops": 112759668736.0,
-  "recompute_seconds": 0.018796478310832754,
+  "recompute_seconds": 0.015002498315880075,
   "proxy": null,
+  "selective": null,
   "null_floor": {
     "token_difr": {
-      "auc": 0.5027568922305764,
-      "auc_full": 0.3245595,
-      "tpr": 0.35
+      "auc": 0.4996021303258145,
+      "auc_full": 0.42396234375,
+      "tpr": 0.0255
     }
   },
   "attacks": {
     "quant_4bit": {
       "token_difr": {
-        "auc": 0.5150375939849624,
-        "auc_full": 0.47147525,
-        "tpr": 0.6395
+        "auc": 0.5010213032581453,
+        "auc_full": 0.6036266875,
+        "tpr": 0.08475
       }
     },
     "kv_fp8": {
       "token_difr": {
-        "auc": 0.5013533834586467,
-        "auc_full": 0.3320305,
-        "tpr": 0.3485
+        "auc": 0.4992543859649123,
+        "auc_full": 0.474111125,
+        "tpr": 0.046
       }
     },
     "temp_1.1": {
       "token_difr": {
-        "auc": 0.524937343358396,
-        "auc_full": 0.5569345,
-        "tpr": 0.6025
+        "auc": 0.5021303258145363,
+        "auc_full": 0.59945796875,
+        "tpr": 0.11825
       }
     },
     "seed_43": {
       "token_difr": {
-        "auc": 1.0,
-        "auc_full": 1.0,
+        "auc": 0.9210714285714285,
+        "auc_full": 0.9986949375,
         "tpr": 1.0
       }
     },
     "bug_k2": {
       "token_difr": {
-        "auc": 0.4992481203007519,
-        "auc_full": 0.251581,
-        "tpr": 0.3015
+        "auc": 0.49914160401002505,
+        "auc_full": 0.44562128125,
+        "tpr": 0.019
       }
     },
     "bug_k32": {
       "token_difr": {
-        "auc": 0.732531328320802,
-        "auc_full": 0.8743165,
-        "tpr": 0.9495
+        "auc": 0.5191008771929825,
+        "auc_full": 0.6762201875,
+        "tpr": 0.204
       }
     }
   },
   "config": {
     "n_prompts": 16,
     "n_tokens": 96,
-    "batch": 400,
-    "n_batches": 2000,
+    "batch": 96,
+    "n_batches": 4000,
     "max_fpr": 0.005,
     "core_attacks": [
       "quant_4bit",
@@ -77,5 +78,5 @@
       "bug_k32"
     ]
   },
-  "elapsed_s": 613.2387635707855
+  "elapsed_s": 450.4269711971283
 }

@@ -9,64 +9,65 @@
   "hidden": 768,
   "T": 128,
   "recompute_flops": 31664504832.0,
-  "recompute_seconds": 0.004772749045514502,
+  "recompute_seconds": 0.004267022362910211,
   "proxy": null,
+  "selective": null,
   "null_floor": {
     "token_difr": {
-      "auc": 0.5055388471177945,
-      "auc_full": 0.51705225,
-      "tpr": 0.1985
+      "auc": 0.5009210526315789,
+      "auc_full": 0.5004275,
+      "tpr": 0.02525
     }
   },
   "attacks": {
     "quant_4bit": {
       "token_difr": {
-        "auc": 0.5039849624060151,
-        "auc_full": 0.4694825,
-        "tpr": 0.1545
+        "auc": 0.500093984962406,
+        "auc_full": 0.479578375,
+        "tpr": 0.0235
       }
     },
     "kv_fp8": {
       "token_difr": {
-        "auc": 0.5035338345864662,
-        "auc_full": 0.5245215,
-        "tpr": 0.2025
+        "auc": 0.5007268170426065,
+        "auc_full": 0.50222725,
+        "tpr": 0.02275
       }
     },
     "temp_1.1": {
       "token_difr": {
-        "auc": 0.6160651629072682,
-        "auc_full": 0.87772375,
-        "tpr": 0.7265
+        "auc": 0.5110588972431078,
+        "auc_full": 0.6772995625,
+        "tpr": 0.08975
       }
     },
     "seed_43": {
       "token_difr": {
-        "auc": 0.806641604010025,
-        "auc_full": 0.98151575,
-        "tpr": 0.971
+        "auc": 0.5160651629072681,
+        "auc_full": 0.7904491875,
+        "tpr": 0.1455
       }
     },
     "bug_k2": {
       "token_difr": {
-        "auc": 0.5093984962406015,
-        "auc_full": 0.565389,
-        "tpr": 0.242
+        "auc": 0.5011591478696742,
+        "auc_full": 0.5162095625,
+        "tpr": 0.0275
       }
     },
     "bug_k32": {
       "token_difr": {
-        "auc": 0.5383458646616541,
-        "auc_full": 0.73949425,
-        "tpr": 0.465
+        "auc": 0.503546365914787,
+        "auc_full": 0.5931936875,
+        "tpr": 0.047
       }
     }
   },
   "config": {
     "n_prompts": 16,
     "n_tokens": 96,
-    "batch": 400,
-    "n_batches": 2000,
+    "batch": 96,
+    "n_batches": 4000,
     "max_fpr": 0.005,
     "core_attacks": [
       "quant_4bit",
@@ -77,5 +78,5 @@
       "bug_k32"
     ]
   },
-  "elapsed_s": 177.20871019363403
+  "elapsed_s": 153.79659509658813
 }
