@@ -1,0 +1,39 @@
+==============================================================================
+Prefill-cost accounting + prefix scheduler   M=Qwen/Qwen3-1.7B  proxy=Qwen/Qwen3-0.6B
+==============================================================================
+loaded  M=1.72B  proxy=0.60B (lazy reference: nothing prefilled during generation) [26s]
+full-audit prefill cost = 3303 reference-forward tokens (32 prompts x (prompt 8.2 avg + 95 generated))
+honest priced [272s]
+attack priced [526s]
+
+attack=quant_4bit  value_fn=tie_margin
+
+  scheduler = topk
+   budget  tokens audited  PREFILL cost  prefills     sec     AUC
+  ---------------------------------------------------------------
+       5%            5.0%         75.2%        32    0.73   0.547
+      10%           10.0%         84.2%        32    0.66   0.586
+      20%           20.0%         94.1%        32    0.65   0.557
+      35%           35.0%         97.0%        32    0.64   0.539
+      50%           50.0%         97.8%        32    0.63   0.533
+      75%           75.0%         99.5%        32    0.66   0.644
+     100%          100.0%        100.0%        32    0.63   0.614
+
+  scheduler = prefix
+   budget  tokens audited  PREFILL cost  prefills     sec     AUC
+  ---------------------------------------------------------------
+       5%            4.9%          5.0%         2    0.06   0.616
+      10%            9.9%         10.0%         4    0.09   0.749
+      20%           19.5%         20.0%        10    0.20   0.664
+      35%           34.2%         35.0%        15    0.31   0.628
+      50%           48.7%         50.0%        21    0.41   0.656
+      75%           73.7%         75.0%        30    0.58   0.617
+     100%          100.0%        100.0%        32    0.63   0.614
+
+  At nominal budget 10%, top-k really costs 84.2% of a full audit; the prefix schedule at the SAME real cost is the comparison panel B makes.
+
+wrote /root/inference-verification/docs/results/prefix_cost.json
+wrote /root/inference-verification/docs/figures/fig_confidence_head_pareto.png
+wrote /root/inference-verification/docs/figures/fig_confidence_head_diagnostics.png
+wrote /root/inference-verification/docs/figures/fig_prefix_cost.png
+total 528s

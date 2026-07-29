@@ -88,6 +88,11 @@ ivgym/
   metrics.py             ROC AUC, TPR@FPR, standardized partial AUC (AUC@FPR<=α), pure numpy
   spec_decode.py         client-side proxy verification: speculative accept rate
                          1−TV(p,q), ProxyReference anchor, ProxySpecVerifier (no vLLM changes)
+  triage.py              LEARNED triage: a calibrated confidence head (DSpark port,
+                         arXiv:2607.05147) over proxy-only features, trained with BCE
+                         on surrogate-sensitivity labels from HONEST data only, then
+                         Sequential-Temperature-Scaled; drops into the value registry
+                         via head_value_fn -- replaces guessing which tokens to audit
   model_taxonomy.py      model-relationship taxonomy: independent axes (family/size/base/
                          org/generation/domain/tokenizer) + a distance() DERIVED from them,
                          shared by every model-distance-ladder experiment below
@@ -98,9 +103,16 @@ ivgym/
                          + verify_selective: proxy-triaged SELECTIVE recompute tier
                            (recompute M only on the top-budget tokens a cheap proxy
                            flags as near-ties) -- sits between io_verify and verify
+                         + prefill_cost / select_prefix_scheduled: the PHYSICAL audit
+                           cost (a Tier-1 row needs M prefilled over its whole prefix,
+                           so cost is prompt+deepest-audited-position per sequence, not
+                           a token count) and DSpark's prefix scheduler against it
   backends/
     base.py              Backend protocol
     hf_gpu.py            REAL model on a GPU (transformers) — the arena
+                         + lazy_reference=True: prefill nothing during generation and
+                           RAISE on an unpaid reference row, so a selective budget's
+                           cost is measured instead of assumed
     vllm_adapter.py      contract + skeleton for the vLLM production path
 experiments/
   run.py                    pluggable CLI: --strategies <file> --attacks/--defenses (no edits)
@@ -122,6 +134,15 @@ experiments/
   exp_tie_triage_margin.py  GPU: same, sparse Token-DiFR flip signal (sharper win) ->
                             docs/figures/fig_tie_triage_margin.png
   exp_selective_verify_gpu.py GPU: verify_selective end-to-end on the real backend
+  exp_confidence_head_gpu.py GPU: the LEARNED triage head vs all four hand-crafted
+                            value signals + an oracle-labeled upper bound; calibration
+                            and cross-deviation transfer (docs/TRIAGE_AND_AUDIT_COST.md)
+  exp_prefix_cost_gpu.py    GPU: what a selective audit really costs on a lazy-prefill
+                            backend -- top-k's token ratio vs measured prefill cost --
+                            and the prefix scheduler on the honest Pareto
+  plot_triage.py            figures for both of the above from cached JSON (no GPU) ->
+                            docs/figures/fig_confidence_head_{pareto,diagnostics}.png,
+                            docs/figures/fig_prefix_cost.png
   exp_proxy_distance_grid.py GPU: 2-D model-distance ladder, rank/group DERIVED by
                             ivgym/model_taxonomy.py (quant/family/domain/tokenizer) ->
                             docs/figures/fig_proxy_distance_grid_{qwen,llama}.png

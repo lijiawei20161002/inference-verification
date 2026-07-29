@@ -31,13 +31,30 @@ from .verifiers import Verifier
 
 @dataclass
 class TokenScores:
-    """Per-token scores for one config, keyed by verifier name. `recompute_ratio`
-    is the realized fraction of tokens on which a Tier-1 verifier recomputed M
-    (1.0 for a full audit, 0.0 for a purely Tier-0 run)."""
+    """Per-token scores for one config, keyed by verifier name.
+
+    Two cost numbers, and the difference between them is the point:
+
+    `recompute_ratio` is the realized fraction of *tokens* a Tier-1 verifier
+    scored (1.0 for a full audit, 0.0 for a purely Tier-0 run). It is what the
+    selective tier has always reported -- and it is **notional**: recompute is not
+    billed per token. `reference_logits` at position `j` needs M run over the
+    whole prefix `[prompt + claimed[:j]]`, so the physical unit is prefill tokens,
+    and a top-k audit that touches one token in every sequence pays for nearly
+    every sequence's prefill.
+
+    `prefill_ratio` is that physical cost: reference-forward input tokens actually
+    spent, divided by what a full (`budget=1.0`) audit of the same dataset would
+    spend. It is measured, not assumed -- `verify` reads it off the backend's
+    counter -- and equals `recompute_ratio` only when the audit happens to be
+    prefix-shaped. `None` when the backend cannot report it (eager prefill).
+    """
 
     config_name: str
     scores: dict[str, np.ndarray] = field(default_factory=dict)
     recompute_ratio: float = 1.0
+    prefill_ratio: float | None = None
+    prefill_tokens: int = 0
 
 
 def generate_dataset(backend, attack: Attack, spec: SamplingSpec, n_prompts: int,
@@ -73,15 +90,127 @@ def token_values(backend, sequences: list[Sequence], spec: SamplingSpec,
     return np.concatenate(out) if out else np.array([])
 
 
-def select_triaged(value: np.ndarray, budget: float) -> np.ndarray:
+def select_triaged(value: np.ndarray, budget: float, tie_seed: int = 20240) -> np.ndarray:
     """Boolean mask of the top-`budget` fraction of tokens by `value` (highest
-    audited first). Always audits at least one token."""
+    audited first). Always audits at least one token.
+
+    Ties are broken by a fixed-seed random permutation, not by array order. That
+    matters for the `uniform` value signal, whose whole point is to be the
+    equal-cost RANDOM-subsample control: under a stable sort every value ties and
+    the mask degenerates to "audit the first k tokens of the first sequences",
+    which is a much worse control than random (it concentrates the audit in a
+    handful of sequences and starves the rest). The seed is fixed so a matchup's
+    score stays reproducible.
+    """
     n = len(value)
     if n == 0:
         return np.zeros(0, bool)
     k = int(np.clip(round(budget * n), 1, n))
     mask = np.zeros(n, bool)
-    mask[np.argsort(-value, kind="mergesort")[:k]] = True
+    order = np.random.default_rng(tie_seed).permutation(n)
+    mask[order[np.argsort(-value[order], kind="stable")[:k]]] = True
+    return mask
+
+
+# ---------------------------------------------------------------------------
+# The PHYSICAL cost model for a Tier-1 audit, and a scheduler that respects it.
+#
+# `select_triaged` above ranks tokens globally and takes the top `budget`
+# fraction. That is the right rule if recompute were billed per token. It is not:
+# reading M's logits at generated position `j` of a sequence requires a prefill of
+# `[prompt + claimed[:j]]`, so the cost of auditing a sequence is set by the
+# DEEPEST position audited in it, and every sequence touched at all pays its
+# prompt again. A scattered top-k audit therefore costs almost as much as a full
+# one, however small the token fraction looks.
+#
+# `select_prefix_scheduled` is the port of DSpark's hardware-aware prefix
+# scheduler (arXiv:2607.05147 sec. "Hardware-Aware Prefix Scheduler"): admission
+# is greedy over a globally sorted pool, but the sort key is marginal value per
+# unit of marginal COST, and admitting a request commits to a contiguous prefix --
+# their causality/early-stopping constraint, which here is not a choice but a
+# physical fact about prefills.
+# ---------------------------------------------------------------------------
+def prefill_cost(mask: np.ndarray, seq_lens: list[int], prompt_lens: list[int]) -> int:
+    """Reference-forward input tokens a given audit mask actually costs.
+
+    A sequence with no audited token costs 0. Otherwise it costs
+    `prompt_len + deepest_audited_index` -- the minimal prefill that makes that
+    row readable (see `HFGPUBackend.prefill_reference`)."""
+    total, i0 = 0, 0
+    for n, plen in zip(seq_lens, prompt_lens):
+        m = mask[i0:i0 + n]
+        i0 += n
+        if m.any():
+            total += plen + int(np.nonzero(m)[0].max())
+    return int(total)
+
+
+def full_prefill_cost(seq_lens: list[int], prompt_lens: list[int]) -> int:
+    """What `budget=1.0` costs: every sequence prefilled to its last token."""
+    return int(sum(p + max(n - 1, 0) for n, p in zip(seq_lens, prompt_lens)))
+
+
+def select_prefix_scheduled(value: np.ndarray, seq_lens: list[int],
+                            prompt_lens: list[int], cost_budget: float,
+                            max_rounds: int | None = None) -> np.ndarray:
+    """Audit mask spending at most `cost_budget` x the full prefill cost.
+
+    Greedy admission over (sequence, depth) increments by value density. Admitting
+    sequence `i` to depth `d` costs `prompt_len_i + d - 1` and makes ALL of its
+    first `d` tokens auditable for free -- so the value of a depth is the *sum* of
+    the token values inside it, and the prompt is a startup cost paid once.
+    Extending an already-admitted sequence costs one token per extra position, so
+    depth is cheap and breadth is expensive; the schedule concentrates the audit
+    into few sequences, which is exactly the behaviour a per-token top-k cannot
+    express.
+
+    Values are shifted to be non-negative (densities are only meaningful on a
+    non-negative scale; `tie_margin` is natively negative).
+    """
+    n_tot = len(value)
+    mask = np.zeros(n_tot, bool)
+    if n_tot == 0 or not seq_lens:
+        return mask
+    v = value - value.min()
+    budget = cost_budget * full_prefill_cost(seq_lens, prompt_lens)
+
+    # per-sequence cumulative value: cum[i][d] = sum of the first d token values
+    offs, cum = [], []
+    i0 = 0
+    for n in seq_lens:
+        offs.append(i0)
+        cum.append(np.concatenate([[0.0], np.cumsum(v[i0:i0 + n])]))
+        i0 += n
+    depth = [0] * len(seq_lens)
+    spent = 0
+    rounds = max_rounds if max_rounds is not None else 4 * len(seq_lens) + 8
+
+    for _ in range(rounds):
+        best = None                                  # (density, i, d, cost)
+        for i, n in enumerate(seq_lens):
+            d0 = depth[i]
+            if d0 >= n:
+                continue
+            ds = np.arange(d0 + 1, n + 1)
+            if d0 == 0:
+                costs = prompt_lens[i] + ds - 1      # prompt startup paid once
+                gains = cum[i][ds]
+            else:
+                costs = ds - d0                      # extend: one token per position
+                gains = cum[i][ds] - cum[i][d0]
+            dens = np.where(spent + costs <= budget, gains / costs, -np.inf)
+            j = int(np.argmax(dens))
+            if dens[j] > (-np.inf if best is None else best[0]):
+                best = (float(dens[j]), i, int(ds[j]), int(costs[j]))
+        if best is None or best[0] <= 0:
+            break
+        _, i, d, cost = best
+        depth[i] = d
+        spent += cost
+
+    for i, d in enumerate(depth):
+        if d:
+            mask[offs[i]:offs[i] + d] = True
     return mask
 
 
@@ -99,8 +228,8 @@ def _seq_text(backend, seq: Sequence) -> str | None:
 
 def verify(backend, sequences: list[Sequence], spec: SamplingSpec,
            verifiers: list[Verifier], *, budget: float = 1.0, value_fn: str = "entropy",
-           values: np.ndarray | None = None, proj_seed: int = 123, proj_dim: int = 32
-           ) -> TokenScores:
+           values: np.ndarray | None = None, proj_seed: int = 123, proj_dim: int = 32,
+           scheduler: str = "topk") -> TokenScores:
     """Score every token of every sequence with every verifier.
 
     `budget` in (0, 1] controls the Tier-1 recompute fraction (ignored by Tier-0
@@ -108,15 +237,31 @@ def verify(backend, sequences: list[Sequence], spec: SamplingSpec,
     signal (proxy entropy by default) and recomputes M only on the top fraction;
     unaudited tokens take each Tier-1 verifier's `neutral` score. Pass a
     precomputed `values` array (from `token_values`) to reuse a triage ranking
-    across budgets. Returns a `TokenScores` whose per-verifier arrays are the flat
-    per-token scores (concatenated across sequences) plus the realized
-    `recompute_ratio`."""
+    across budgets.
+
+    `scheduler` picks how the budget is spent:
+
+      * `"topk"`   -- the historical rule: global top-`budget` fraction of tokens
+                      by value. `budget` is a TOKEN fraction.
+      * `"prefix"` -- `select_prefix_scheduled`: `budget` is a fraction of the real
+                      PREFILL cost, and the audit is scheduled as contiguous
+                      per-sequence prefixes by value density. Needs the backend to
+                      answer `prompt_len`.
+
+    Returns a `TokenScores` carrying both the notional `recompute_ratio` (token
+    fraction) and, when the backend exposes `prefill_reference`/`prompt_len`, the
+    measured `prefill_ratio` -- the physical cost. See `TokenScores`."""
     tier1 = [v for v in verifiers if v.tier == 1]
     need_proxy = any(v.needs_proxy for v in verifiers)
     need_served = any(v.needs_served for v in verifiers)
     need_text = any(v.needs_text for v in verifiers)
     need_act = any(v.needs_activation for v in verifiers)
     proj = projection(proj_seed, proj_dim, backend.hidden_dim) if need_act else None
+
+    seq_lens = [len(s.steps) for s in sequences]
+    can_cost = hasattr(backend, "prompt_len") and hasattr(backend, "prefill_reference")
+    prompt_lens = ([backend.prompt_len(s.prompt_id) for s in sequences]
+                   if can_cost else [0] * len(sequences))
 
     # Selective recompute: build the global audit mask from a cheap value signal.
     selective = bool(tier1) and budget < 1.0
@@ -125,9 +270,28 @@ def verify(backend, sequences: list[Sequence], spec: SamplingSpec,
         # above governs only whether the *scoring* context needs proxy logits.
         if values is None:
             values = token_values(backend, sequences, spec, value_fn)
-        mask_flat = select_triaged(values, budget)
+        if scheduler == "prefix":
+            if not can_cost:
+                raise ValueError("scheduler='prefix' needs a backend exposing "
+                                 "prompt_len() (see HFGPUBackend)")
+            mask_flat = select_prefix_scheduled(values, seq_lens, prompt_lens, budget)
+        elif scheduler == "topk":
+            mask_flat = select_triaged(values, budget)
+        else:
+            raise ValueError(f"unknown scheduler {scheduler!r}; use 'topk' or 'prefix'")
     else:
         mask_flat = None
+
+    # Pay for the prefixes this audit needs (lazy backends only; an eager backend
+    # already prefilled everything during generation and this is a no-op).
+    spent0 = getattr(backend, "prefill_tokens", 0)
+    if tier1 and can_cost:
+        i0 = 0
+        for seq, n in zip(sequences, seq_lens):
+            m = mask_flat[i0:i0 + n] if mask_flat is not None else np.ones(n, bool)
+            i0 += n
+            if n and m.any():
+                backend.prefill_reference(seq.prompt_id, int(np.nonzero(m)[0].max()) + 1)
 
     out = {v.name: [] for v in verifiers}
     cfg = sequences[0].config_name if sequences else "?"
@@ -177,8 +341,56 @@ def verify(backend, sequences: list[Sequence], spec: SamplingSpec,
             out[v.name].append(np.asarray(v.evidence(ctx), float))
 
     ratio = (audited / total) if (tier1 and total) else 0.0
+    spent = getattr(backend, "prefill_tokens", 0) - spent0
+    denom = full_prefill_cost(seq_lens, prompt_lens) if can_cost else 0
+    pratio = (spent / denom) if (tier1 and can_cost and denom) else None
     return TokenScores(cfg, {k: (np.concatenate(v) if v else np.array([]))
-                             for k, v in out.items()}, recompute_ratio=ratio)
+                             for k, v in out.items()}, recompute_ratio=ratio,
+                       prefill_ratio=pratio, prefill_tokens=int(spent))
+
+
+def rescore_at_budget(full: TokenScores, verifiers: list[Verifier], values: np.ndarray,
+                      budget: float, *, scheduler: str = "topk",
+                      seq_lens: list[int] | None = None,
+                      prompt_lens: list[int] | None = None) -> TokenScores:
+    """Derive a selective-budget `TokenScores` from a FULL-budget one, exactly.
+
+    A Tier-1 per-token score depends only on that token's own
+    `(ref_logits, gumbel, claimed_token, spec)` -- never on which other tokens were
+    audited (see `Tier1Verifier.evidence`, which writes `score_token` into audited
+    rows and `neutral` elsewhere). So a budget-`b` audit's score array is just the
+    full-budget array masked to the admitted tokens, with `neutral` elsewhere. No
+    recompute, no re-verification, bit-identical to calling
+    `verify(..., budget=b, values=values)`.
+
+    That equivalence is what makes a budget SWEEP affordable: verify once at
+    budget 1.0, then derive every budget and every value signal in numpy. It is
+    asserted against the real driver in
+    `tests/test_triage_and_cost.py::test_rescore_matches_verify`.
+
+    It says nothing about COST -- deriving a mask does not pay a prefill. To
+    measure what a budget costs, run the real driver against a lazy-prefill
+    backend (`exp_prefix_cost_gpu.py`). Pass `seq_lens`/`prompt_lens` to have the
+    physical `prefill_ratio` of the derived mask reported here too.
+    """
+    if scheduler == "prefix":
+        if seq_lens is None or prompt_lens is None:
+            raise ValueError("scheduler='prefix' needs seq_lens and prompt_lens")
+        mask = select_prefix_scheduled(values, seq_lens, prompt_lens, budget)
+    elif scheduler == "topk":
+        mask = select_triaged(values, budget) if budget < 1.0 else np.ones(len(values), bool)
+    else:
+        raise ValueError(f"unknown scheduler {scheduler!r}; use 'topk' or 'prefix'")
+
+    scores = {v.name: (np.where(mask, full.scores[v.name], float(v.neutral))
+                       if v.tier == 1 else full.scores[v.name])
+              for v in verifiers}
+    pratio = None
+    if seq_lens is not None and prompt_lens is not None:
+        denom = full_prefill_cost(seq_lens, prompt_lens)
+        pratio = (prefill_cost(mask, seq_lens, prompt_lens) / denom) if denom else None
+    return TokenScores(full.config_name, scores, recompute_ratio=float(mask.mean()),
+                       prefill_ratio=pratio)
 
 
 def io_contexts(backend, sequences: list[Sequence], spec: SamplingSpec,

@@ -1,0 +1,27 @@
+==============================================================================
+Learned triage head (DSpark confidence head, ported)  M=Qwen/Qwen3-1.7B  proxy=Qwen/Qwen3-0.6B
+==============================================================================
+loaded  M=1.72B  proxy=0.60B [26s]
+head fit on 2048 honest tokens (disjoint prompts 0..15); BCE 0.6931 -> 0.3073 [145s]
+oracle head fit on the same features with quant_4bit labels; BCE 0.6931 -> 0.2345 [216s]
+STS: temperature 0.975  ECE 0.0108 -> 0.0114 [327s]
+honest eval materialized (8192 tokens) [616s]
+  quant_4bit: @20% entropy 0.645  tie_margin 0.517  learned 0.534  oracle 0.523  full 0.570 [936s]
+  kv_fp8: @20% entropy 0.516  tie_margin 0.506  learned 0.504  oracle 0.507  full 0.513 [1259s]
+  bug_k2: @20% entropy 0.523  tie_margin 0.501  learned 0.522  oracle 0.528  full 0.523 [1546s]
+
+  budget      uniform      entropy   tie_margin    surprisal      learned       oracle
+  ------------------------------------------------------------------------------------
+      5%        0.500        0.520        0.531        0.548        0.553        0.531
+     10%        0.628        0.573        0.528        0.549        0.566        0.536
+     20%        0.600        0.645        0.517        0.539        0.534        0.523
+     35%        0.555        0.579        0.546        0.546        0.532        0.536
+     50%        0.531        0.565        0.532        0.553        0.549        0.551
+     75%        0.564        0.561        0.562        0.567        0.567        0.566
+    100%        0.570        0.570        0.570        0.570        0.570        0.570
+
+wrote /root/inference-verification/docs/results/confidence_head.json
+wrote /root/inference-verification/docs/figures/fig_confidence_head_pareto.png
+wrote /root/inference-verification/docs/figures/fig_confidence_head_diagnostics.png
+wrote /root/inference-verification/docs/figures/fig_prefix_cost.png
+total 1547s

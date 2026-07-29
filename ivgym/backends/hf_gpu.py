@@ -197,6 +197,7 @@ class HFGPUBackend:
         max_prompt_tokens: int = 32,
         proxy_model_name: str | None = None,
         proxy_sigma: float = 0.6,
+        lazy_reference: bool = False,
     ):
         import torch
         from transformers import AutoModelForCausalLM, AutoTokenizer
@@ -232,6 +233,23 @@ class HFGPUBackend:
         # reads it as `p` and pairs it with its own cheap proxy `q`; see
         # `served_logits` and `experiments/exp_spec_verifier_cost.py`.
         self._served_cache: dict[int, np.ndarray] = {}
+
+        # --- lazy reference prefill: making the recompute cost REAL ------------
+        # By default `generate` eagerly prefills M over the whole
+        # [prompt + claimed] sequence for every prompt, so `reference_logits` is a
+        # cache read and a selective (budget<1) audit saves nothing measurable --
+        # `TokenScores.recompute_ratio` is then a *notional* token fraction, not a
+        # cost. With `lazy_reference=True` nothing is prefilled during generation;
+        # the verifier must call `prefill_reference(prompt_id, depth)` itself, and
+        # pays the real prefill for the prefix it asks for. That turns the audit
+        # budget into what it physically is -- reference-forward TOKENS -- which is
+        # the cost model `harness.select_prefix_scheduled` schedules against.
+        self.lazy_reference = bool(lazy_reference)
+        self._claimed: dict[int, list[int]] = {}
+        self._prompt_len: dict[int, int] = {}
+        self._ref_depth: dict[int, int] = {}      # prompt_id -> rows currently valid
+        self.prefill_tokens = 0                   # M-forward input tokens spent verifying
+        self.prefill_calls = 0                    # number of reference prefills issued
 
         # --- MEASURED verifier cost (real wall-clock, not a param-count proxy) ---
         # Each detector's cost is the GPU-synchronised forward pass that produces its
@@ -295,10 +313,83 @@ class HFGPUBackend:
 
     # --------------------------------------------------- trusted reference side
     def reference_logits(self, prompt_id: int, position: int) -> np.ndarray:
+        if self.lazy_reference and position >= self._ref_depth.get(prompt_id, 0):
+            raise RuntimeError(
+                f"reference_logits(prompt {prompt_id}, pos {position}) not prefilled "
+                f"(depth={self._ref_depth.get(prompt_id, 0)}). In lazy_reference mode the "
+                f"verifier must call prefill_reference(prompt_id, depth) for the prefix "
+                f"it intends to audit -- that call IS the cost being measured.")
         return self._ref_cache[prompt_id]["logits"][position]
 
     def reference_activation(self, prompt_id: int, position: int) -> np.ndarray:
         return self._ref_cache[prompt_id]["act"][position]
+
+    def prompt_len(self, prompt_id: int) -> int:
+        """Prompt token count -- the fixed part of a reference prefill's cost."""
+        if prompt_id not in self._prompt_len:
+            self._prompt_len[prompt_id] = int(self._prompt_ids(prompt_id).shape[1])
+        return self._prompt_len[prompt_id]
+
+    def prefill_reference(self, prompt_id: int, depth: int) -> int:
+        """Prefill M over `[prompt + claimed[:depth-1]]` so reference rows
+        `0..depth-1` become readable, and return the input tokens it cost.
+
+        Scoring generated position `j` needs M's prediction at input index
+        `L-1+j`, which needs the input to contain `claimed[0..j-1]`. So `depth`
+        readable rows require an input of `L + depth - 1` tokens -- the honest
+        minimal prefill, not a padded one. Monotone and incremental: asking for a
+        depth already covered costs nothing, and a deeper ask re-prefills (a real
+        serving verifier would extend the KV cache instead; the cost accounting is
+        the same either way because we count the tokens of the deepest prefill,
+        see `_ref_depth`).
+        """
+        torch = self._torch
+        have = self._ref_depth.get(prompt_id, 0)
+        if depth <= have:
+            return 0
+        claimed = self._claimed[prompt_id][: max(depth - 1, 0)]
+        prompt_ids = self._prompt_ids(prompt_id)
+        L = int(prompt_ids.shape[1])
+        claimed_t = torch.tensor([claimed], device=self.device, dtype=prompt_ids.dtype)
+        full = torch.cat([prompt_ids, claimed_t], dim=1) if claimed else prompt_ids
+        with torch.no_grad(), self._timed("reference"):
+            out = self.model(full, output_hidden_states=True)
+        idx = slice(L - 1, L - 1 + depth)
+        logits = out.logits[0, idx].float().cpu().numpy()
+        acts = out.hidden_states[-1][0, idx].float().cpu().numpy()
+        nrng = np.random.default_rng((self.model_seed, prompt_id, 7))
+        n_full = len(self._claimed[prompt_id])
+        # Draw the benign verifier noise for the FULL length and slice, so a
+        # position's noise does not depend on how deep the audit happened to go
+        # (otherwise the cost model would leak into the scores).
+        full_noise = nrng.normal(0.0, self.verifier_sigma, (n_full, logits.shape[1]))
+        full_act_noise = nrng.normal(0.0, self.act_benign_sigma, (n_full, acts.shape[1]))
+        logits = logits + full_noise[:depth]
+        acts = acts + full_act_noise[:depth]
+        self._ref_cache[prompt_id] = {"logits": logits.astype(np.float32),
+                                      "act": acts.astype(np.float32)}
+        self._ref_depth[prompt_id] = depth
+        # Charge the MARGINAL tokens: a first prefill costs the whole input; a
+        # deeper ask costs only the extra generated positions, because a real
+        # serving verifier extends the KV cache rather than re-prefilling. (We
+        # re-prefill here for simplicity; charging for that would be billing an
+        # implementation detail.)
+        cost = int(full.shape[1]) if not have else (depth - have)
+        self.prefill_tokens += max(cost, 0)
+        self.prefill_calls += 1
+        return max(cost, 0)
+
+    def reset_cost(self) -> None:
+        """Zero the measured verification cost counters (per-experiment scoping)."""
+        self.prefill_tokens = 0
+        self.prefill_calls = 0
+        self.timed_seconds = {k: 0.0 for k in self.timed_seconds}
+        self.timed_calls = {k: 0 for k in self.timed_calls}
+
+    def drop_reference_cache(self) -> None:
+        """Forget every prefilled reference row (so the next budget pays again)."""
+        self._ref_cache.clear()
+        self._ref_depth.clear()
 
     def served_logits(self, prompt_id: int, position: int) -> np.ndarray:
         """The logits the provider SERVED UNDER at this position (M's logits with
@@ -448,7 +539,16 @@ class HFGPUBackend:
                 hidden_last = out.hidden_states[-1][0, -1] if record_activations else None
 
         self._served_cache[prompt_id] = np.stack(served) if served else np.empty((0, self.vocab), np.float32)
-        self._populate_ref_cache(prompt_id, prompt_ids, claimed, n_tokens)
+        # Record what a lazy reference prefill would need to replay.
+        self._claimed[prompt_id] = list(claimed)
+        self._prompt_len[prompt_id] = int(prompt_ids.shape[1])
+        if self.lazy_reference:
+            # Deliberately DO NOT prefill M here. The verifier pays for the prefix
+            # it actually audits, via `prefill_reference`.
+            self._ref_depth[prompt_id] = 0
+        else:
+            self._populate_ref_cache(prompt_id, prompt_ids, claimed, n_tokens)
+            self._ref_depth[prompt_id] = n_tokens
         if self.proxy_model is not None:
             self._populate_proxy_cache(prompt_id, prompt_ids, claimed, n_tokens)
         return seq

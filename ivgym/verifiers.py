@@ -163,6 +163,18 @@ def value_of(name: str, ctx: VContext) -> np.ndarray:
         raise ValueError(f"unknown value fn {name!r}; choose from {sorted(_VALUE_FNS)}")
 
 
+def register_value_fn(name: str, fn) -> None:
+    """Add a per-token value signal to the registry, so `harness.verify(value_fn=)`
+    reaches it like a built-in. The extension point a *learned* triage head plugs
+    into: `ivgym.triage.head_value_fn(head)` returns exactly such a callable
+    (`VContext -> [T] float`), and it must read only Tier-0 context fields."""
+    _VALUE_FNS[name] = fn
+
+
+def value_fn_names() -> list[str]:
+    return sorted(_VALUE_FNS)
+
+
 # ---------------------------------------------------------------------------
 # Verifier base
 # ---------------------------------------------------------------------------
