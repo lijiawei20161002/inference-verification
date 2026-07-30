@@ -119,6 +119,50 @@ def test_head_plugs_into_the_value_registry():
     del verifiers._VALUE_FNS["_test_head"]
 
 
+def test_head_round_trips_through_a_json_snapshot():
+    """A fitted+calibrated head must survive `to_dict`/`from_dict` EXACTLY.
+
+    Fitting needs the offline surrogate-probe run over `ref_logits`, so the fitted
+    head is the expensive artifact -- `exp_prefix_cost_gpu.py` loads the one
+    `exp_confidence_head_gpu.py` fit rather than refitting it. If the round trip
+    were lossy, the scheduler would be scheduling against a different signal than
+    the Pareto figure reports, which is exactly the comparison being made."""
+    import json
+
+    rng = np.random.default_rng(11)
+    x = np.concatenate([triage.feature_matrix(_ctx(rng)) for _ in range(20)])
+    i = triage.FEATURE_NAMES.index("tie_margin")
+    sens = 2.0 * x[:, i] + rng.normal(0, 0.2, len(x))
+    pos = x[:, triage.FEATURE_NAMES.index("rel_position")]
+    head = triage.ConfidenceHead(n_steps=500).fit(x, sens).calibrate(x, sens, pos)
+
+    clone = triage.ConfidenceHead.from_dict(json.loads(json.dumps(head.to_dict())))
+    np.testing.assert_array_equal(head.score(x, pos), clone.score(x, pos))
+    assert clone.calibrator is not None
+    assert clone.calibrator.temperature() == head.calibrator.temperature()
+
+    # An uncalibrated head round-trips too (calibrator stays None, not a stub).
+    plain = triage.ConfidenceHead.from_dict(
+        triage.ConfidenceHead(n_steps=50).fit(x, sens).to_dict())
+    assert plain.calibrator is None
+
+    # A snapshot from a different feature layout must be REFUSED, not scored
+    # positionally against the wrong columns.
+    bad = head.to_dict()
+    bad["feature_names"] = list(reversed(bad["feature_names"]))
+    try:
+        triage.ConfidenceHead.from_dict(bad)
+        assert False, "expected ValueError on a mismatched feature layout"
+    except ValueError:
+        pass
+
+    try:
+        triage.ConfidenceHead().to_dict()
+        assert False, "expected RuntimeError serializing an unfitted head"
+    except RuntimeError:
+        pass
+
+
 def test_paired_effect_size_marks_the_divergent_tokens():
     """The oracle label is large exactly where the attack score moved."""
     h = np.zeros(100)
@@ -233,6 +277,113 @@ def test_rescore_matches_verify():
         derived = harness.rescore_at_budget(full, [td], vals, b)
         assert np.array_equal(direct.scores["token_difr"], derived.scores["token_difr"]), b
         assert abs(direct.recompute_ratio - derived.recompute_ratio) < 1e-12, b
+
+
+def test_winsor_cap_ignores_the_unaudited_padding():
+    """At a small budget the winsorization cap must be taken over the AUDITED
+    honest tokens, not over the array padded with `neutral`.
+
+    This is the bug the 2026-07-30 triage rerun surfaced. `token_difr` is exactly
+    0 wherever the sampled token agrees with the verifier's argmax -- the common
+    case -- so at a 5% budget over 98%-agreeing honest data, ~99.9% of the padded
+    honest calibration split is exactly 0.0. The 99.9th percentile of THAT is 0.0,
+    `winsorize`'s `np.minimum(scores, 0)` flattens the honest and attack arrays
+    alike to a constant, every batch mean ties, and `partial_auc` returns exactly
+    0.5000 -- reported as "no signal" when in fact the metric deleted a signal
+    that is plainly there (the unwinsorized AUC on this same data is ~0.57).
+
+    It bit `uniform` hardest, i.e. exactly the equal-cost random control the
+    triage comparison is measured against: a concentrating value signal audits
+    tokens likelier to be nonzero, so its cap survives. The artifact therefore
+    INFLATED the apparent advantage of triage over random allocation.
+
+    A full audit has no padding, so the fix must leave `audited=None` runs -- every
+    non-selective number in the repo -- bit-identical. Both halves are asserted.
+    """
+    rng = np.random.default_rng(3)
+    n = 8192
+    td = verifiers.get("token_difr")
+    assert td.neutral == 0.0
+
+    def draw(p_nonzero):
+        x = np.zeros(n)
+        m = rng.random(n) < p_nonzero
+        x[m] = rng.exponential(7.0, int(m.sum()))
+        return x
+
+    h_full, a_full = draw(0.02), draw(0.05)
+    mask = np.zeros(n, bool)
+    mask[rng.choice(n, int(0.05 * n), replace=False)] = True
+    h = harness.TokenScores("honest", {td.name: np.where(mask, h_full, td.neutral)},
+                            recompute_ratio=0.05, audited=mask)
+    a = harness.TokenScores("attack", {td.name: np.where(mask, a_full, td.neutral)},
+                            recompute_ratio=0.05, audited=mask)
+
+    auc = harness.evaluate(h, a, [td], [400], seed=7)[0].auc
+    raw = harness.evaluate(h, a, [td], [400], seed=7, winsor_pct=None)[0].auc
+    assert auc != 0.5, "winsorization annihilated the signal again"
+    assert auc > 0.52, auc
+    # The cap still BITES -- taken over only ~205 audited calibration tokens it
+    # cannot resolve a 1-in-1000 outlier, so it sits low and clips real attack
+    # tail mass (0.553 vs 0.641 unwinsorized here). That is winsorization doing
+    # its documented job with little data, not signal deletion; what the fix has
+    # to buy is that the number is a measurement at all, i.e. much nearer the
+    # unwinsorized AUC than the degenerate 0.5 is.
+    assert abs(auc - raw) < abs(0.5 - raw), (auc, raw)
+
+    # Reproduce the bug with the mask withheld, to pin that the mask is what fixes
+    # it (and that the degenerate value really is exactly 0.5, not merely small).
+    blind_h = harness.TokenScores("honest", h.scores, recompute_ratio=0.05)
+    blind_a = harness.TokenScores("attack", a.scores, recompute_ratio=0.05)
+    assert harness.evaluate(blind_h, blind_a, [td], [400], seed=7)[0].auc == 0.5
+
+    # A full audit (audited=None) must be untouched by any of this.
+    fh = harness.TokenScores("honest", {td.name: h_full})
+    fa = harness.TokenScores("attack", {td.name: a_full})
+    with_mask = harness.TokenScores("honest", {td.name: h_full},
+                                    audited=np.ones(n, bool))
+    assert (harness.evaluate(fh, fa, [td], [400], seed=7)[0].auc
+            == harness.evaluate(with_mask, fa, [td], [400], seed=7)[0].auc)
+
+
+def test_verify_and_rescore_record_the_audit_mask():
+    """The mask `evaluate` needs must come out of BOTH selective paths, agree
+    between them, and be `None` for a full audit -- otherwise the winsor fix above
+    silently does nothing in the experiments that need it."""
+    from ivgym.core import Sequence, TokenStep
+
+    n, t, v = 4, 10, 32
+    rng = np.random.default_rng(5)
+
+    class StubBackend:
+        vocab, hidden_dim = v, 8
+
+        def __init__(self):
+            self.ref = {p: rng.standard_normal((t, v)) * 3 for p in range(n)}
+            self.prox = {p: rng.standard_normal((t, v)) * 3 for p in range(n)}
+
+        def reference_logits(self, p, pos): return self.ref[p][pos]
+        def proxy_logits(self, p, pos): return self.prox[p][pos]
+
+    backend = StubBackend()
+    seqs = [Sequence(prompt_id=p, config_name="honest",
+                     steps=[TokenStep(position=i, claimed_token=int(rng.integers(v)),
+                                      sampling=SPEC) for i in range(t)])
+            for p in range(n)]
+    td = verifiers.get("token_difr")
+    full = harness.verify(backend, seqs, SPEC, [td])
+    assert full.audited is None                      # full audit: no padding
+    vals = harness.token_values(backend, seqs, SPEC, "entropy")
+
+    for b in (0.2, 0.5):
+        direct = harness.verify(backend, seqs, SPEC, [td], budget=b, values=vals)
+        derived = harness.rescore_at_budget(full, [td], vals, b)
+        assert direct.audited is not None and derived.audited is not None
+        assert np.array_equal(direct.audited, derived.audited), b
+        assert direct.audited.sum() == round(b * n * t)
+        # The mask is exactly "where a Tier-1 score is not the neutral filler",
+        # up to audited tokens that legitimately score neutral.
+        assert np.all(derived.scores["token_difr"][~derived.audited] == td.neutral)
 
 
 def test_select_triaged_breaks_ties_randomly():

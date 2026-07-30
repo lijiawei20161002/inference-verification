@@ -291,6 +291,52 @@ class ConfidenceHead:
         readout in the experiment: which cheap signals the head actually uses."""
         return dict(zip(FEATURE_NAMES, self.w.tolist())) if self.w is not None else {}
 
+    # -- persistence -------------------------------------------------------
+    # Fitting the head needs `ref_logits` (the one-time offline surrogate-probe
+    # run), so a fitted head is the expensive artifact -- not the scoring. Being
+    # able to save one and load it into a DIFFERENT experiment is what lets the
+    # prefix scheduler in `exp_prefix_cost_gpu.py` schedule against the calibrated
+    # head without refitting it (and keeps there being exactly one fit on record).
+    def to_dict(self) -> dict:
+        """JSON-safe snapshot of everything `score` needs. Raises if unfitted."""
+        if self.w is None:
+            raise RuntimeError("cannot serialize an unfitted ConfidenceHead")
+        out = {
+            "feature_names": list(FEATURE_NAMES),
+            "w": self.w.tolist(), "b": float(self.b),
+            "mu": self.mu.tolist(), "sd": self.sd.tolist(),
+            "label_quantile": self.label_quantile, "calibrator": None,
+        }
+        if self.calibrator is not None:
+            out["calibrator"] = {"n_buckets": self.calibrator.n_buckets,
+                                 "log_t": float(self.calibrator.log_t),
+                                 "bias": self.calibrator.bias.tolist()}
+        return out
+
+    @classmethod
+    def from_dict(cls, d: dict) -> "ConfidenceHead":
+        """Rebuild a fitted head. Refuses a snapshot whose feature layout differs
+        from this module's -- the weights are positional, so a reordered or
+        extended `FEATURE_NAMES` would silently score against the wrong columns."""
+        names = tuple(d.get("feature_names", ()))
+        if names != FEATURE_NAMES:
+            raise ValueError(
+                f"head was fit on features {names} but this build uses "
+                f"{FEATURE_NAMES}; refusing to score positionally against a "
+                f"different layout")
+        head = cls(label_quantile=d.get("label_quantile", 0.70))
+        head.w = np.asarray(d["w"], float)
+        head.b = float(d["b"])
+        head.mu = np.asarray(d["mu"], float)
+        head.sd = np.asarray(d["sd"], float)
+        cal = d.get("calibrator")
+        if cal:
+            sts = SequentialTemperatureScaling(n_buckets=int(cal["n_buckets"]))
+            sts.log_t = float(cal["log_t"])
+            sts.bias = np.asarray(cal["bias"], float)
+            head.calibrator = sts
+        return head
+
 
 # ---------------------------------------------------------------------------
 # DSpark's post-hoc calibration, ported.

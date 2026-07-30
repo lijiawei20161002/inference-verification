@@ -92,7 +92,11 @@ ivgym/
                          arXiv:2607.05147) over proxy-only features, trained with BCE
                          on surrogate-sensitivity labels from HONEST data only, then
                          Sequential-Temperature-Scaled; drops into the value registry
-                         via head_value_fn -- replaces guessing which tokens to audit
+                         via head_value_fn -- MEASURED, and it does NOT beat the
+                         hand-crafted `entropy` signal it was meant to replace
+                         (docs/TRIAGE_AND_AUDIT_COST.md Part 1); kept because the
+                         negative is load-bearing and the fit/calibration code is
+                         what makes it reproducible
   model_taxonomy.py      model-relationship taxonomy: independent axes (family/size/base/
                          org/generation/domain/tokenizer) + a distance() DERIVED from them,
                          shared by every model-distance-ladder experiment below
@@ -139,10 +143,17 @@ experiments/
                             and cross-deviation transfer (docs/TRIAGE_AND_AUDIT_COST.md)
   exp_prefix_cost_gpu.py    GPU: what a selective audit really costs on a lazy-prefill
                             backend -- top-k's token ratio vs measured prefill cost --
-                            and the prefix scheduler on the honest Pareto
+                            and the prefix scheduler on the honest Pareto, crossed with
+                            the value signal it admits against (tie_margin/entropy/head)
   plot_triage.py            figures for both of the above from cached JSON (no GPU) ->
                             docs/figures/fig_confidence_head_{pareto,diagnostics}.png,
                             docs/figures/fig_prefix_cost.png
+  exp_baseline_headroom_gpu.py GPU: WHY a detection AUC is what it is -- separates the
+                            batch/pool ratio artifact from legitimate batch power, model
+                            choice and attack strength, on shared per-token scores; the
+                            source of the warning above (docs/TRIAGE_AND_AUDIT_COST.md §3)
+  plot_headroom.py          that sweep as a figure from cached JSON (no GPU) ->
+                            docs/figures/fig_baseline_headroom.png
   exp_proxy_distance_grid.py GPU: 2-D model-distance ladder, rank/group DERIVED by
                             ivgym/model_taxonomy.py (quant/family/domain/tokenizer) ->
                             docs/figures/fig_proxy_distance_grid_{qwen,llama}.png
@@ -217,9 +228,31 @@ full-range AUC an earlier version of this table reported:
   that needs the seed-synced margin specifically.
 
 At the smaller default pool (12 prompts × 48 tokens, batch=200, ~3 min) the same
-structure is visible but noisier — several AUCs sit near or below 0.5. Push
-`IVGYM_PROMPTS` / `IVGYM_TOKENS` / `IVGYM_BATCH` up to sharpen them, exactly as
-the paper's batch-size sweep predicts.
+structure is visible but noisier — several AUCs sit near or below 0.5.
+
+> **⚠️ Both of those configurations are above the batch/pool ceiling, and these
+> numbers are inflated by it (measured 2026-07-30).** `harness.batch_means`
+> resamples the batch *without replacement from a fixed token pool*, so as the
+> batch approaches the pool size the batches overlap, honest variance collapses,
+> and the AUC measures whether these two particular pools differ rather than
+> whether a fresh batch would be flagged — which is why `EvalConfig`'s docstring
+> asks for a batch well under ~10% of the honest eval split. The table above runs
+> at **78%** (20 × 128 tokens, batch 1000); `exp_gpu.py`'s default runs at **69%**.
+> `experiments/exp_baseline_headroom_gpu.py` sweeps the pool size at a fixed batch
+> with the same model, the same attack and the same per-token scores, and finds
+> `token_difr` vs `quant_4bit` moving from **0.977 ± 0.010 at a 69% ratio to
+> 0.530 ± 0.011 at 1.8%** — the same measurement, at two ratios. The properly
+> ratioed per-token effect size is d' = 0.072, which needs a batch of ~2 800 (and
+> hence a ≥ 55 000-token pool) to reach AUC 0.90 honestly. Do **not** raise
+> `IVGYM_BATCH` alone to sharpen a number: that buys ratio, not evidence. Raise
+> `IVGYM_PROMPTS` / `IVGYM_TOKENS` with it, or use a stronger deviation. Details,
+> tables and the figure: **[docs/TRIAGE_AND_AUDIT_COST.md](docs/TRIAGE_AND_AUDIT_COST.md)**
+> § "Where the detection baseline went", `docs/figures/fig_baseline_headroom.png`.
+> The relative ordering of the four detectors is not what is in question here —
+> the ratio artifact applies to every column of the table equally, and the
+> qualitative structure below (Activation-DiFR blind to sampling-only attacks,
+> cross-entropy blind to `bug_k2`) is mechanistic — but the absolute AUCs are not
+> the numbers a properly-powered rerun would print.
 
 How attacks map onto the real model: temperature/seed are real `SamplingSpec`
 changes and the sampling bug really hijacks the sampler; the forward-pass attacks
@@ -409,11 +442,76 @@ Two things fall out, both measured on real Qwen3 (`M`=Qwen3-1.7B, proxy=Qwen3-0.
       100%           100.0%          0.749   (= full recompute)
   ```
 
+> **⚠️ Both bullets are overstated, and the second is probably wrong (2026-07-30).**
+> Two independent problems, both worked out in
+> **[docs/TRIAGE_AND_AUDIT_COST.md](docs/TRIAGE_AND_AUDIT_COST.md)**:
+>
+> 1. **`recompute ratio` is not a cost.** Reading `M`'s logits at position `j`
+>    needs a prefill over `prompt + claimed[:j]`, so a sequence's real cost is set
+>    by its *deepest* audited position and top-k scatters the audit across every
+>    sequence. Measured: a **10% token budget really costs 86% of a full audit**,
+>    and a "5%" budget takes *more wall-clock than auditing every token*. The
+>    savings column above overstates by up to 15×. The fix — DSpark's prefix
+>    scheduler, which spends exactly its budget — is in `harness.select_prefix_scheduled`
+>    (`verify(..., scheduler="prefix")`).
+> 2. **"Beats full recompute" was a winsorization artifact.** Under a selective
+>    audit most of the score array is the verifier's `neutral` placeholder, which
+>    dragged the winsorization cap down onto the signal and distorted small-budget
+>    AUCs in both directions (up to +0.17 and −0.28). Fixed in `harness` and pinned
+>    by `tests/test_triage_and_cost.py`; a properly-measured rerun finds **nothing
+>    beats a full audit** — triage buys cost, not detection power. The run above
+>    predates the fix and has **not** been re-measured, so read its ≥10%-budget
+>    numbers as stale. (The *ranking* claim in the first bullet — that tie-ness
+>    finds the tokens that carry the signal — is unaffected and still holds.)
+
 Why subtle quant needs this tier (and no cheaper proxy statistic escapes it) is
 worked out in `experiments/exp_subtle_quant_detectors.py` (the blocker is the
 proxy *anchor*, not the aggregation) and `experiments/exp_real_quant_triage.py`
 (faithful deterministic quant is sparse/heavy-tailed — structurally unlike the
 i.i.d.-Gaussian `attacks.Quantization` model — even matched on mean divergence).
+
+## What a selective audit actually costs (and two ports from DSpark)
+
+The tier above raises an obvious question — what does a "10% budget" cost? —
+which turns out to have an unobvious answer, and answering it properly took two
+components ported out of DSpark (arXiv:2607.05147): a hardware-aware **prefix
+scheduler** and a learned **confidence head**. One transferred; one did not. Full
+write-up, with the retractions, in
+**[docs/TRIAGE_AND_AUDIT_COST.md](docs/TRIAGE_AND_AUDIT_COST.md)**.
+
+```
+.venv/bin/python -m experiments.exp_confidence_head_gpu   # the head (~30 min, H100)
+.venv/bin/python -m experiments.exp_prefix_cost_gpu       # cost model + scheduler (~40 min)
+.venv/bin/python -m experiments.plot_triage               # both figures, no GPU
+```
+
+![What a selective audit costs](docs/figures/fig_prefix_cost.png)
+
+**The scheduler transfers.** Panel A is the accounting gap: top-k's nominal budget
+against what it really costs to prefill. Panel C is a stopwatch confirming the cost
+model is physical, and contains the sharpest single number here — **top-k at a "5%"
+budget takes 1.75 s against 1.48 s for auditing every token.** The prefix schedule
+admits whole prefixes greedily by value per unit of *marginal* cost, so it spends
+exactly what it is budgeted (5% costs 5.0%), runs **16× faster** at that budget,
+and on panel B's honest x-axis — realized cost, not nominal — detects 0.12–0.20 AUC
+better (2–4 sd) than top-k operating points that cost *more*, in the band where
+top-k has already paid for every prefill.
+
+**The confidence head does not.** A calibrated logistic head over proxy-only
+features, BCE-trained on honest data alone, does not beat `entropy` — the
+hand-crafted signal already in the library — either as a ranking key or as the
+value term inside the scheduler, and its calibration stage is near-identity. It is
+kept, and documented as a negative, because the head *rediscovers* near-tie-ness
+and proxy surprisal as the dominant features while putting a **negative** weight on
+entropy — direct evidence that per-token surrogate sensitivity is not the quantity
+that maximizes batch-level detection.
+
+**And the detour that reframed the repo.** Diagnosing why the head's first run had
+no headroom found the batch/pool ratio artifact described in the warning above —
+that several published AUCs here, the README headline included, were measured with
+batches resampled from too small a token pool. That finding
+(`experiments/exp_baseline_headroom_gpu.py`) outlived the experiment that prompted
+it, and is the reason both experiments now default to a 64 × 128 pool at batch 400.
 
 ## Add your own attack / defense (no edits to the library)
 

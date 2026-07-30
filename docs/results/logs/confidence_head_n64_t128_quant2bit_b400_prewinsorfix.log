@@ -1,0 +1,32 @@
+==============================================================================
+Learned triage head (DSpark confidence head, ported)  M=Qwen/Qwen3-1.7B  proxy=Qwen/Qwen3-0.6B
+==============================================================================
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 7717.60it/s]
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 6724.83it/s]
+loaded  M=1.72B  proxy=0.60B [9s]
+head fit on 2048 honest tokens (disjoint prompts 0..15); BCE 0.6931 -> 0.3073 [150s]
+oracle head fit on the same features with quant_2bit labels; BCE 0.6931 -> 0.3418 [233s]
+STS: temperature 0.975  ECE held-out 0.0190 -> 0.0246   (in-sample 0.0108 -> 0.0114) [500s]
+honest eval materialized (8192 tokens) [825s]
+  quant_2bit: @20% entropy 0.994+-0.004  tie_margin 0.851+-0.089  learned 0.791+-0.047  oracle 0.891+-0.064  full 0.867+-0.042 [1214s]
+  quant_4bit: @20% entropy 0.722+-0.050  tie_margin 0.578+-0.015  learned 0.552+-0.027  oracle 0.589+-0.035  full 0.629+-0.040 [1604s]
+
+  budget         uniform         entropy      tie_margin       surprisal         learned          oracle
+  ------------------------------------------------------------------------------------------------------
+      5%      0.500+-0.000      0.737+-0.126      0.853+-0.056      0.870+-0.036      0.868+-0.057      0.837+-0.061
+     10%      0.702+-0.062      0.946+-0.031      0.927+-0.041      0.851+-0.053      0.891+-0.047      0.854+-0.078
+     20%      0.931+-0.030      0.994+-0.004      0.851+-0.089      0.783+-0.063      0.791+-0.047      0.891+-0.064
+     35%      0.922+-0.079      0.898+-0.067      0.815+-0.040      0.841+-0.045      0.769+-0.063      0.840+-0.062
+     50%      0.702+-0.034      0.809+-0.062      0.828+-0.050      0.860+-0.041      0.828+-0.053      0.859+-0.049
+     75%      0.794+-0.045      0.856+-0.044      0.871+-0.040      0.865+-0.043      0.865+-0.043      0.833+-0.046
+    100%      0.867+-0.042      0.867+-0.042      0.867+-0.042      0.867+-0.042      0.867+-0.042      0.867+-0.042
+
+  (AUC mean +- sd over 5 protocol seeds; a gap smaller than ~2 sd is not a finding)
+
+wrote /root/inference-verification/docs/results/confidence_head.json
+wrote /root/inference-verification/docs/results/confidence_head_params.json
+wrote /root/inference-verification/docs/figures/fig_confidence_head_pareto.png
+wrote /root/inference-verification/docs/figures/fig_confidence_head_diagnostics.png
+wrote /root/inference-verification/docs/figures/fig_prefix_cost.png
+total 1605s

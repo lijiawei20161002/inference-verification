@@ -1,0 +1,81 @@
+==============================================================================
+Baseline headroom diagnostic: why is full-recompute token_difr at 0.570?
+  pool = 117 prompts x 192 tokens = 22464 tokens/config, 5 protocol seeds per AUC
+==============================================================================
+
+==============================================================================
+M = Qwen/Qwen3-1.7B
+==============================================================================
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+  honest pool: 22464 tokens [753s]
+  quant_4bit pool: 22464 tokens [1589s]
+
+  per-token effect size d' = 0.0716  (token-level AUC 0.5138)
+  => predicted batch for AUC 0.90: b = 2766 (needs a >= 55320-token honest pool to stay inside the 10% ceiling)
+
+  [1] fixed batch, growing pool -- the batch/pool ratio artifact
+     pool    ratio             AUC   (batch)
+      576   69.4%      0.977 +-0.010   (200)
+     1152   34.7%      0.577 +-0.042   (200)
+     2304   17.4%      0.679 +-0.099   (200)
+     4608    8.7%      0.523 +-0.021   (200)
+     9216    4.3%      0.524 +-0.012   (200)
+    18432    2.2%      0.522 +-0.008   (200)
+    22464    1.8%      0.530 +-0.011   (200)
+     2304   86.8%      0.999 +-0.002   (1000)
+     4608   43.4%      0.690 +-0.116   (1000)
+     9216   21.7%      0.644 +-0.061   (1000)
+    18432   10.9%      0.646 +-0.047   (1000)
+    22464    8.9%      0.624 +-0.024   (1000)
+
+  [2] batch sweep with the pool grown to hold ratio = 10% (and, for contrast, on the full pool)
+    batch  pool@10%         AUC@10%  ratio_full        AUC_full
+       50      1000      0.511 +-0.012       0.4%      0.512 +-0.005
+      100      2000      0.552 +-0.022       0.9%      0.517 +-0.006
+      200      4000      0.556 +-0.044       1.8%      0.530 +-0.011
+      400      8000      0.583 +-0.013       3.6%      0.549 +-0.018
+      800     16000      0.598 +-0.042       7.1%      0.609 +-0.025
+     1600     32000              --      14.2%      0.715 +-0.049
+     3200     64000              --      28.5%      0.925 +-0.027
+
+  [3] attack-strength ladder (quant sigma), batch 200 at the full pool
+    sigma   d_prime  b for 0.90         AUC@200
+     0.09    0.0178       44958      0.503 +-0.004   [2442s]
+     0.36    0.1864         409      0.663 +-0.033   [3282s]
+
+==============================================================================
+M = Qwen/Qwen3-0.6B
+==============================================================================
+  honest pool: 22464 tokens [4026s]
+  quant_4bit pool: 22464 tokens [4861s]
+
+  per-token effect size d' = 0.0873  (token-level AUC 0.5166)
+  => predicted batch for AUC 0.90: b = 1861 (needs a >= 37220-token honest pool to stay inside the 10% ceiling)
+
+  [1] fixed batch, growing pool -- the batch/pool ratio artifact
+     pool    ratio             AUC   (batch)
+      576   69.4%      0.798 +-0.142   (200)
+     1152   34.7%      0.939 +-0.049   (200)
+     2304   17.4%      0.631 +-0.108   (200)
+     4608    8.7%      0.543 +-0.016   (200)
+     9216    4.3%      0.531 +-0.010   (200)
+    18432    2.2%      0.538 +-0.007   (200)
+    22464    1.8%      0.538 +-0.013   (200)
+     2304   86.8%      0.992 +-0.007   (1000)
+     4608   43.4%      0.778 +-0.094   (1000)
+     9216   21.7%      0.653 +-0.049   (1000)
+    18432   10.9%      0.695 +-0.047   (1000)
+    22464    8.9%      0.718 +-0.053   (1000)
+
+  [2] batch sweep with the pool grown to hold ratio = 10% (and, for contrast, on the full pool)
+    batch  pool@10%         AUC@10%  ratio_full        AUC_full
+       50      1000      0.632 +-0.094       0.4%      0.521 +-0.005
+      100      2000      0.531 +-0.015       0.9%      0.523 +-0.006
+      200      4000      0.539 +-0.038       1.8%      0.538 +-0.013
+      400      8000      0.616 +-0.035       3.6%      0.580 +-0.024
+      800     16000      0.672 +-0.063       7.1%      0.685 +-0.044
+     1600     32000              --      14.2%      0.830 +-0.047
+     3200     64000              --      28.5%      0.980 +-0.012
+
+wrote /root/inference-verification/docs/results/baseline_headroom.json
+total 4875s

@@ -248,6 +248,9 @@ class HFGPUBackend:
         self._claimed: dict[int, list[int]] = {}
         self._prompt_len: dict[int, int] = {}
         self._ref_depth: dict[int, int] = {}      # prompt_id -> rows currently valid
+        # prompt_id -> (logit noise, activation noise) at FULL sequence length; a
+        # pure function of (model_seed, prompt_id). See `_benign_noise`.
+        self._ref_noise: dict[int, tuple[np.ndarray, np.ndarray]] = {}
         self.prefill_tokens = 0                   # M-forward input tokens spent verifying
         self.prefill_calls = 0                    # number of reference prefills issued
 
@@ -330,6 +333,35 @@ class HFGPUBackend:
             self._prompt_len[prompt_id] = int(self._prompt_ids(prompt_id).shape[1])
         return self._prompt_len[prompt_id]
 
+    def _benign_noise(self, prompt_id: int, vocab: int, hidden: int):
+        """The verifier's benign noise for EVERY position of `prompt_id`, memoized.
+
+        The noise has to be drawn at the sequence's full length and sliced, so that
+        a position's noise does not depend on how deep the audit happened to go --
+        otherwise the audit budget would leak into the scores. But it is a pure
+        function of `(model_seed, prompt_id)`, and `prefill_reference` is called
+        once per prompt per BUDGET per scheduler (a cost sweep re-pays prefills on
+        purpose, via `drop_reference_cache`), so redrawing it each time was
+        re-generating the same ~20M float64 normals hundreds of times -- ~200 ms a
+        call at V=151936, which dominated `exp_prefix_cost_gpu`'s runtime.
+
+        Memoizing cannot change a single score (same seed, same shape, same values)
+        and cannot change a single reported cost: `prefill_tokens` counts
+        model-forward input tokens, and the timed region wraps only the forward
+        pass, so this draw was never inside either measurement. It is kept out of
+        `drop_reference_cache`, which exists to make the model recompute what an
+        audit actually pays for -- benign noise is not that.
+        """
+        cached = self._ref_noise.get(prompt_id)
+        n_full = len(self._claimed[prompt_id])
+        if cached is not None and cached[0].shape == (n_full, vocab):
+            return cached
+        nrng = np.random.default_rng((self.model_seed, prompt_id, 7))
+        noise = (nrng.normal(0.0, self.verifier_sigma, (n_full, vocab)),
+                 nrng.normal(0.0, self.act_benign_sigma, (n_full, hidden)))
+        self._ref_noise[prompt_id] = noise
+        return noise
+
     def prefill_reference(self, prompt_id: int, depth: int) -> int:
         """Prefill M over `[prompt + claimed[:depth-1]]` so reference rows
         `0..depth-1` become readable, and return the input tokens it cost.
@@ -357,13 +389,8 @@ class HFGPUBackend:
         idx = slice(L - 1, L - 1 + depth)
         logits = out.logits[0, idx].float().cpu().numpy()
         acts = out.hidden_states[-1][0, idx].float().cpu().numpy()
-        nrng = np.random.default_rng((self.model_seed, prompt_id, 7))
-        n_full = len(self._claimed[prompt_id])
-        # Draw the benign verifier noise for the FULL length and slice, so a
-        # position's noise does not depend on how deep the audit happened to go
-        # (otherwise the cost model would leak into the scores).
-        full_noise = nrng.normal(0.0, self.verifier_sigma, (n_full, logits.shape[1]))
-        full_act_noise = nrng.normal(0.0, self.act_benign_sigma, (n_full, acts.shape[1]))
+        full_noise, full_act_noise = self._benign_noise(prompt_id, logits.shape[1],
+                                                        acts.shape[1])
         logits = logits + full_noise[:depth]
         acts = acts + full_act_noise[:depth]
         self._ref_cache[prompt_id] = {"logits": logits.astype(np.float32),
@@ -488,6 +515,17 @@ class HFGPUBackend:
         claimed: list[int] = []
         served: list[np.ndarray] = []   # per-position served logits p (what the API returns)
 
+        # `sample_override` is the only consumer of the descending top-id ordering,
+        # and building that ordering costs a full-vocabulary argsort (4.8 ms at
+        # V=151936) plus a second `filtered_logits` -- ~13% of a generation step.
+        # `Attack.sample_override` returns None unconditionally and, crucially,
+        # WITHOUT drawing from `rng`, so for an attack that does not override the
+        # hook the whole block is dead work and skipping it leaves the RNG stream
+        # (and therefore every sampled token) bit-identical. Only the sampler-bug
+        # family pays for it. Asserted in
+        # `tests/test_smoke.py::test_top_id_ordering_is_skipped_only_when_unused`.
+        overrides_sampler = type(attack).sample_override is not Attack.sample_override
+
         with torch.no_grad():
             out = self.model(prompt_ids, use_cache=True, output_hidden_states=record_activations)
             past = out.past_key_values
@@ -505,9 +543,10 @@ class HFGPUBackend:
                 gseed = position_seed(pspec.seed, prompt_id, pos)
                 g = gumbel_noise(self.vocab, gseed)
 
-                filt = filtered_logits(logits, pspec.top_k, pspec.top_p)
-                top_ids = np.argsort(filt)[::-1]
-                override = attack.sample_override(prng, top_ids)
+                override = None
+                if overrides_sampler:
+                    filt = filtered_logits(logits, pspec.top_k, pspec.top_p)
+                    override = attack.sample_override(prng, np.argsort(filt)[::-1])
                 if override is not None:
                     token = int(override)
                 else:

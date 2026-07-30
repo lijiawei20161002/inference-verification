@@ -125,6 +125,27 @@ class Quantization(Attack):
 
 
 @dataclass
+class CoarseQuantization(Quantization):
+    """The same quantization family at 2x the deviation magnitude (int2-style
+    weight-only quantization), every sigma scaled together so it stays a pure
+    strength ladder rung of `quant_4bit` rather than a differently-shaped attack.
+
+    Registered because `exp_baseline_headroom_gpu.py` measured the per-token
+    effect size of the whole ladder and found that `quant_4bit` (d' = 0.072 on
+    Qwen3-1.7B) needs a batch of ~2800 tokens to reach AUC 0.90, i.e. a
+    >= 56k-token honest pool to stay inside the <=10% batch/pool ceiling
+    `EvalConfig` documents -- while this rung (d' = 0.186) reaches it at batch
+    ~410, which an 8k-token pool supports. It is the cheapest honest way to give
+    a triage or allocation experiment real detection headroom to allocate.
+    """
+
+    name: str = "quant_2bit"
+    extra_sigma: float = 0.36
+    bias_sigma: float = 0.12
+    act_sigma: float = 0.60
+
+
+@dataclass
 class KVCacheFP8(Quantization):
     name: str = "kv_fp8"
     extra_sigma: float = 0.07
@@ -181,6 +202,7 @@ class AdversarialTemp(Quantization):
 for a in [
     Attack(),
     Quantization(),
+    CoarseQuantization(),
     KVCacheFP8(),
     WrongTemperature(),
     WrongSeed(),

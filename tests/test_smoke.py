@@ -29,6 +29,35 @@ def test_seed_sync_is_deterministic():
     assert not np.array_equal(a, c)
 
 
+def test_top_id_ordering_is_skipped_only_when_unused():
+    """`HFGPUBackend.generate` skips the full-vocabulary argsort that builds
+    `top_k_ids` unless the attack actually implements `sample_override`.
+
+    That optimization is only sound because of two facts this test pins, both of
+    which a new attack could silently break:
+
+      1. the predicate `type(attack).sample_override is not Attack.sample_override`
+         is true for exactly the attacks that override the hook -- including
+         subclasses that inherit an override (`bug_k32` from `SamplingBug`); and
+      2. the BASE `sample_override` draws nothing from `rng`, so skipping the call
+         leaves the generation RNG stream -- and therefore every sampled token and
+         every activation noise draw downstream -- bit-identical.
+
+    Fact 2 is the load-bearing one: the same `prng` is used after this hook for
+    the activation noise, so a base implementation that consumed a draw would make
+    the skip change sampled outputs rather than just their cost."""
+    base = attacks.Attack
+    overriding = {"bug_k2", "bug_k32"}
+    for name, atk in attacks.all_attacks().items():
+        pred = type(atk).sample_override is not base.sample_override
+        assert pred == (name in overriding), f"{name}: predicate {pred}"
+
+    before = np.random.default_rng(0)
+    after = np.random.default_rng(0)
+    assert base().sample_override(after, np.arange(8)) is None
+    assert np.array_equal(before.random(4), after.random(4))     # no draws consumed
+
+
 def test_projection_is_seeded_and_orthonormal():
     """The Activation-DiFR projection must be reproducible from its seed (so
     provider and verifier share it) and have orthonormal rows."""

@@ -48,6 +48,13 @@ class TokenScores:
     spend. It is measured, not assumed -- `verify` reads it off the backend's
     counter -- and equals `recompute_ratio` only when the audit happens to be
     prefix-shaped. `None` when the backend cannot report it (eager prefill).
+
+    `audited` is the flat boolean mask of tokens a Tier-1 verifier actually scored;
+    everywhere it is False the score array holds the verifier's `neutral`
+    placeholder, which is not a measurement. `None` means "every token" -- a full
+    audit or a Tier-0-only run -- so every non-selective result is unaffected by
+    anything that reads it. `evaluate` needs it to keep the winsorization cap off
+    the padding: see the note in `evaluate`.
     """
 
     config_name: str
@@ -55,6 +62,7 @@ class TokenScores:
     recompute_ratio: float = 1.0
     prefill_ratio: float | None = None
     prefill_tokens: int = 0
+    audited: np.ndarray | None = None
 
 
 def generate_dataset(backend, attack: Attack, spec: SamplingSpec, n_prompts: int,
@@ -296,6 +304,7 @@ def verify(backend, sequences: list[Sequence], spec: SamplingSpec,
     out = {v.name: [] for v in verifiers}
     cfg = sequences[0].config_name if sequences else "?"
     audited = total = 0
+    masks: list[np.ndarray] = []
     i0 = 0
     for seq in sequences:
         steps = seq.steps
@@ -309,6 +318,7 @@ def verify(backend, sequences: list[Sequence], spec: SamplingSpec,
         i0 += n
         audited += int(audit.sum())
         total += n
+        masks.append(audit)
 
         # --- Tier-0 fields (cheap) ---
         proxy = np.stack([backend.proxy_logits(seq.prompt_id, st.position)
@@ -346,7 +356,9 @@ def verify(backend, sequences: list[Sequence], spec: SamplingSpec,
     pratio = (spent / denom) if (tier1 and can_cost and denom) else None
     return TokenScores(cfg, {k: (np.concatenate(v) if v else np.array([]))
                              for k, v in out.items()}, recompute_ratio=ratio,
-                       prefill_ratio=pratio, prefill_tokens=int(spent))
+                       prefill_ratio=pratio, prefill_tokens=int(spent),
+                       audited=(np.concatenate(masks) if (selective and masks)
+                                else None))
 
 
 def rescore_at_budget(full: TokenScores, verifiers: list[Verifier], values: np.ndarray,
@@ -390,7 +402,8 @@ def rescore_at_budget(full: TokenScores, verifiers: list[Verifier], values: np.n
         denom = full_prefill_cost(seq_lens, prompt_lens)
         pratio = (prefill_cost(mask, seq_lens, prompt_lens) / denom) if denom else None
     return TokenScores(full.config_name, scores, recompute_ratio=float(mask.mean()),
-                       prefill_ratio=pratio)
+                       prefill_ratio=pratio,
+                       audited=(mask if any(v.tier == 1 for v in verifiers) else None))
 
 
 def io_contexts(backend, sequences: list[Sequence], spec: SamplingSpec,
@@ -533,10 +546,29 @@ def evaluate(honest: TokenScores, attack: TokenScores, verifiers: list[Verifier]
     for d in verifiers:
         h = honest.scores[d.name]
         a = attack.scores[d.name]
-        h_cal, h_ev = _split(h, rng, cfg.calib_frac)   # calib (tau/cap) | eval null
+        idx = rng.permutation(len(h))
+        cut = int(len(h) * cfg.calib_frac)
+        h_cal, h_ev = h[idx[:cut]], h[idx[cut:]]      # calib (tau/cap) | eval null
         if cfg.winsor_pct is not None:
-            h_ev = winsorize(h_ev, h_cal, cfg.winsor_pct)
-            a = winsorize(a, h_cal, cfg.winsor_pct)
+            # The cap is a high quantile of the honest per-token score
+            # distribution, there to stop one `delta_max` outlier from carrying a
+            # batch. Under a SELECTIVE audit the score array is mostly the
+            # verifier's `neutral` placeholder, which is not a score at all, so
+            # taking the quantile over the padded array measures the padding: at a
+            # 5% budget on `token_difr` -- which is itself exactly 0 wherever the
+            # sampled token agrees -- the 99.9th percentile IS 0, `np.minimum`
+            # flattens honest and attack alike to a constant, and `partial_auc`
+            # returns exactly 0.5. Not "no signal": the signal, deleted by the
+            # metric. So the cap comes from the AUDITED honest tokens only.
+            # `audited=None` (full audit / Tier-0) means every token, which is
+            # what it always was -- no non-selective number moves.
+            cal_src = h_cal
+            if honest.audited is not None and len(honest.audited) == len(h):
+                aud = np.asarray(honest.audited, bool)[idx[:cut]]
+                if aud.any():
+                    cal_src = h_cal[aud]
+            h_ev = winsorize(h_ev, cal_src, cfg.winsor_pct)
+            a = winsorize(a, cal_src, cfg.winsor_pct)
         for b in batch_sizes:
             cb = batch_means(h_cal, b, cfg.n_batches, rng)   # calibration null -> tau
             hb = batch_means(h_ev, b, cfg.n_batches, rng)    # eval null (negatives)
@@ -553,6 +585,10 @@ def evaluate(honest: TokenScores, attack: TokenScores, verifiers: list[Verifier]
 
 
 def _split(x: np.ndarray, rng: np.random.Generator, frac: float = 0.5):
+    """The honest calib | eval split. `evaluate` inlines this same permutation so
+    it can carry the audit mask through the split alongside the scores; kept here
+    because it is the definition of the split and is drawn from the same RNG
+    stream, i.e. changing one without the other would silently desynchronize them."""
     idx = rng.permutation(len(x))
     cut = int(len(x) * frac)
     return x[idx[:cut]], x[idx[cut:]]
