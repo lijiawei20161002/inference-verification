@@ -55,6 +55,16 @@ class TokenScores:
     audit or a Tier-0-only run -- so every non-selective result is unaffected by
     anything that reads it. `evaluate` needs it to keep the winsorization cap off
     the padding: see the note in `evaluate`.
+
+    `weights` / `baseline` describe the AGGREGATION `evaluate` should use instead of
+    a plain batch mean: the batch statistic becomes the mean of
+    ``weights * (score - baseline)``. Both are flat per-token arrays in the same
+    order as `scores`, and both must be computable WITHOUT recomputing M -- they are
+    Tier-0 functions of the cheap proxy (`ivgym.infogain.InfoModel`), so using them
+    costs the verifier nothing extra. `None` (the default) is the unweighted mean
+    every result in this repo was measured with. See `ivgym/infogain.py` for why the
+    matched filter `weights = Delta/v`, `baseline = E[score | honest]` is the
+    variance-optimal choice, and `evaluate` for where they enter.
     """
 
     config_name: str
@@ -63,6 +73,8 @@ class TokenScores:
     prefill_ratio: float | None = None
     prefill_tokens: int = 0
     audited: np.ndarray | None = None
+    weights: np.ndarray | None = None
+    baseline: np.ndarray | None = None
 
 
 def generate_dataset(backend, attack: Attack, spec: SamplingSpec, n_prompts: int,
@@ -364,7 +376,9 @@ def verify(backend, sequences: list[Sequence], spec: SamplingSpec,
 def rescore_at_budget(full: TokenScores, verifiers: list[Verifier], values: np.ndarray,
                       budget: float, *, scheduler: str = "topk",
                       seq_lens: list[int] | None = None,
-                      prompt_lens: list[int] | None = None) -> TokenScores:
+                      prompt_lens: list[int] | None = None,
+                      weights: np.ndarray | None = None,
+                      baseline: np.ndarray | None = None) -> TokenScores:
     """Derive a selective-budget `TokenScores` from a FULL-budget one, exactly.
 
     A Tier-1 per-token score depends only on that token's own
@@ -384,6 +398,12 @@ def rescore_at_budget(full: TokenScores, verifiers: list[Verifier], values: np.n
     measure what a budget costs, run the real driver against a lazy-prefill
     backend (`exp_prefix_cost_gpu.py`). Pass `seq_lens`/`prompt_lens` to have the
     physical `prefill_ratio` of the derived mask reported here too.
+
+    `weights`/`baseline` set the aggregation the derived result will be evaluated
+    under (see `TokenScores`). The weights are **zeroed off the audit mask**, which
+    is what the matched-filter derivation requires and what makes an unaudited
+    token contribute exactly 0 to the statistic instead of the verifier's `neutral`
+    placeholder -- the padding cannot dilute or distort the batch mean at all.
     """
     if scheduler == "prefix":
         if seq_lens is None or prompt_lens is None:
@@ -403,7 +423,11 @@ def rescore_at_budget(full: TokenScores, verifiers: list[Verifier], values: np.n
         pratio = (prefill_cost(mask, seq_lens, prompt_lens) / denom) if denom else None
     return TokenScores(full.config_name, scores, recompute_ratio=float(mask.mean()),
                        prefill_ratio=pratio,
-                       audited=(mask if any(v.tier == 1 for v in verifiers) else None))
+                       audited=(mask if any(v.tier == 1 for v in verifiers) else None),
+                       weights=(np.where(mask, np.asarray(weights, float), 0.0)
+                                if weights is not None else None),
+                       baseline=(np.asarray(baseline, float)
+                                 if baseline is not None else None))
 
 
 def io_contexts(backend, sequences: list[Sequence], spec: SamplingSpec,
@@ -432,7 +456,12 @@ def winsorize(scores: np.ndarray, honest_train: np.ndarray, pct: float) -> np.nd
 def batch_means(scores: np.ndarray, batch_size: int, n_batches: int,
                 rng: np.random.Generator) -> np.ndarray:
     """Sample `n_batches` batches of `batch_size` tokens and return their mean
-    scores -- the batch-level statistic S."""
+    scores -- the batch-level statistic S.
+
+    A *weighted* statistic is obtained by passing pre-transformed scores
+    (`weights * (score - baseline)`, see `evaluate`): the aggregation stays a plain
+    mean, so the batch resampling -- and every number in this repo measured through
+    it -- is untouched."""
     n = len(scores)
     if batch_size > n:
         batch_size = n
@@ -503,6 +532,36 @@ class EvalConfig:
                 f"points in the region).")
 
 
+def _aggregate(x: np.ndarray, ts: TokenScores, sel: np.ndarray | None) -> np.ndarray:
+    """Apply `ts`'s aggregation transform to a (possibly subsetted) score array.
+
+    Returns ``weights * (x - baseline)``, restricted to the token positions `sel`
+    (``None`` = all of them, in order). With no weights and no baseline it returns
+    `x` unchanged, so the default aggregation path is untouched. A length mismatch
+    is a programming error worth raising on: silently broadcasting a wrongly-sized
+    weight array would produce a plausible number computed from the wrong tokens.
+    """
+    w, m = ts.weights, ts.baseline
+    if w is None and m is None:
+        return x
+    # A per-token array must cover every token of the config, not just this subset:
+    # `sel` indexes into the full pool.
+    n_full = len(x) if sel is None else int(np.max(sel)) + 1
+    for name, arr in (("weights", w), ("baseline", m)):
+        if arr is not None and len(arr) < n_full:
+            raise ValueError(
+                f"TokenScores.{name} has length {len(arr)} but the score array needs "
+                f"at least {n_full} per-token entries; weights/baseline must be flat "
+                f"arrays in the same (sequence, step) order as `scores`")
+    if m is not None:
+        mm = np.asarray(m, float)
+        x = x - (mm if sel is None else mm[sel])
+    if w is not None:
+        ww = np.asarray(w, float)
+        x = x * (ww if sel is None else ww[sel])
+    return x
+
+
 @dataclass
 class EvalResult:
     defense: str
@@ -532,7 +591,17 @@ def evaluate(honest: TokenScores, attack: TokenScores, verifiers: list[Verifier]
     calibration set (winsor cap + threshold tau) and a disjoint eval null; the
     reported `auc` is the standardized partial AUC at FPR <= `config.max_fpr` of
     the honest-eval vs attack batch statistics, and `tpr` is the catch rate at
-    tau = the honest-*calibration* ``(1 - max_fpr)`` quantile."""
+    tau = the honest-*calibration* ``(1 - max_fpr)`` quantile.
+
+    **Aggregation.** The batch statistic is a plain mean of per-token scores unless
+    the `TokenScores` carry `weights`/`baseline`, in which case it is the mean of
+    ``weights * (score - baseline)`` -- the matched-filter statistic derived in
+    `ivgym/infogain.py`. Both arrays are per-token and Tier-0 (functions of the
+    cheap proxy), each side supplies its own (the honest and attack runs have
+    different claimed tokens, hence different proxy features), and they are applied
+    *after* winsorization so the outlier cap is still taken on the raw score scale
+    the verifier emits. tau is calibrated on the transformed honest calibration
+    split, so the false-positive budget is honoured under either aggregation."""
     cfg = config or EvalConfig()
     if n_batches is not None:
         cfg = replace(cfg, n_batches=n_batches)
@@ -569,6 +638,12 @@ def evaluate(honest: TokenScores, attack: TokenScores, verifiers: list[Verifier]
                     cal_src = h_cal[aud]
             h_ev = winsorize(h_ev, cal_src, cfg.winsor_pct)
             a = winsorize(a, cal_src, cfg.winsor_pct)
+        # Weighted (matched-filter) aggregation, if the caller supplied it. A
+        # no-op -- bit-identical, not merely equivalent -- when both sides carry the
+        # default `weights=baseline=None`, which is every result measured so far.
+        h_cal = _aggregate(h_cal, honest, idx[:cut])
+        h_ev = _aggregate(h_ev, honest, idx[cut:])
+        a = _aggregate(a, attack, None)
         for b in batch_sizes:
             cb = batch_means(h_cal, b, cfg.n_batches, rng)   # calibration null -> tau
             hb = batch_means(h_ev, b, cfg.n_batches, rng)    # eval null (negatives)

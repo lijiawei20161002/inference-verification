@@ -57,7 +57,7 @@ import numpy as np
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 
-from ivgym import attacks, harness, verifiers
+from ivgym import attacks, harness, signal, verifiers
 from ivgym.backends.hf_gpu import HFGPUBackend
 from ivgym.core import SamplingSpec
 from experiments import plot_headroom
@@ -113,31 +113,30 @@ def subsample(h: np.ndarray, a: np.ndarray, n: int, seed: int = 0):
 
 
 def per_token_stats(h: np.ndarray, a: np.ndarray, winsor_pct: float = 99.9) -> dict:
-    """Per-token effect size, on exactly the scale `evaluate` scores.
+    """Per-token effect size, on exactly the scale `evaluate` scores, plus the
+    token-level AUC.
 
-    Winsorized at the honest percentile first (that is what `evaluate` does), then
-    `d' = (mean_a - mean_h) / sd_h`. A batch of `b` INDEPENDENT tokens separates by
-    `d' * sqrt(b)`, so `d'` is what says whether any batch size can reach a target.
+    The arithmetic lives in `ivgym.signal.per_token_stats` (winsorize at the honest
+    percentile the way `evaluate` does, then `d' = (mean_a - mean_h) / sd_h`); this
+    wrapper adds the token-level AUC the tables here print alongside it.
     """
     cap = np.percentile(h[np.isfinite(h)], winsor_pct)
-    hw, aw = np.minimum(h, cap), np.minimum(a, cap)
-    d = float((aw.mean() - hw.mean()) / (hw.std() + 1e-12))
-    return {"d_prime": d, "honest_mean": float(hw.mean()), "attack_mean": float(aw.mean()),
-            "honest_sd": float(hw.std()), "attack_sd": float(aw.std()),
-            "token_auc": float(harness.roc_auc(hw, aw))}
+    stats = signal.per_token_stats(h, a, winsor_pct)
+    stats["token_auc"] = float(harness.roc_auc(np.minimum(h, cap), np.minimum(a, cap)))
+    return stats
 
 
-def batch_for_target(d_prime: float, target_delta: float = 3.767) -> int:
-    """Batch size at which `d' * sqrt(b)` reaches the separation `target_delta`.
+def batch_for_target(d_prime: float, target_auc: float = TARGET_AUC) -> int:
+    """Batch size at which `d' * sqrt(b)` reaches standardized pAUC@FPR<=0.5% =
+    `target_auc` -- `ivgym.signal.batch_for_pauc`.
 
-    `target_delta = 3.767` is the batch-level separation a Gaussian pair needs for
-    standardized pAUC@FPR<=0.5% = 0.90 (solved numerically; see the docstring table
-    in `docs/TRIAGE_AND_AUDIT_COST.md`). Purely a prediction from the per-token
-    number -- the measured `fixed_ratio` sweep below is what confirms it.
+    The separation that target needs is *solved* (3.7673 at FPR <= 0.5%) rather
+    than hard-coded as the rounded 3.767 two files used to carry independently, so
+    this prediction and panel B of `plot_headroom` cannot drift apart. Purely a
+    prediction from the per-token number -- the measured `fixed_ratio` sweep below
+    is what confirms it.
     """
-    if d_prime <= 0:
-        return -1
-    return int(np.ceil((target_delta / d_prime) ** 2))
+    return signal.batch_for_pauc(d_prime, target_auc)
 
 
 # ------------------------------------------------------------------- generation

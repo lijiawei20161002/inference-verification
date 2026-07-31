@@ -26,6 +26,10 @@ from pathlib import Path
 
 import numpy as np
 
+sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
+
+from ivgym import signal
+
 ROOT = Path(__file__).resolve().parents[1]
 FIG_DIR = ROOT / "docs" / "figures"
 RES_DIR = ROOT / "docs" / "results"
@@ -39,10 +43,11 @@ SERIES = ["#2a78d6", "#eb6834", "#1baf7a", "#eda100", "#e87ba4", "#008300"]
 INK, INK2, MUTED, GRID = "#0b0b0b", "#52514e", "#8a8880", "#e3e2dd"
 
 # The batch-level separation a Gaussian pair needs for standardized
-# pAUC@FPR<=0.5% = 0.90; the same constant `exp_baseline_headroom_gpu` predicts
-# `batch_for_target` from, so panel B's dashed curve and the experiment's printed
-# prediction cannot drift apart.
-TARGET_DELTA = 3.767
+# pAUC@FPR<=0.5% = 0.90 -- solved, not a rounded literal, by the same library
+# function `exp_baseline_headroom_gpu.batch_for_target` predicts from, so panel B's
+# dashed curve and the experiment's printed prediction cannot drift apart. (3.7673;
+# earlier versions of both hard-coded the rounded 3.767 separately.)
+TARGET_DELTA = signal.delta_for_pauc(0.90, 0.005)
 
 # Configurations this repo actually published detection numbers at, so panel A can
 # say where they sit on the ratio axis rather than leaving it to the reader.
@@ -150,7 +155,7 @@ def panel_batch(ax, p, models):
     d = p["models"][head]["per_token"]["d_prime"]
     b_need = p["models"][head]["batch_for_target"]
     b_grid = np.geomspace(40, max(5000, 1.6 * b_need), 80)
-    ax.plot(b_grid, [_auc_of_delta(d * np.sqrt(b)) for b in b_grid], color=MUTED,
+    ax.plot(b_grid, [signal.pauc_of_delta(d * np.sqrt(b)) for b in b_grid], color=MUTED,
             lw=1.6, ls=(0, (5, 3)), zorder=2)
     ax.plot([b_need], [p["target_auc"]], marker="o", ms=6.0, color=MUTED,
             markeredgecolor="white", markeredgewidth=1.2, zorder=3)
@@ -178,47 +183,6 @@ def panel_batch(ax, p, models):
     ax.set_ylabel("detection AUC @ FPR $\\leq$ 0.5%", color=INK2, fontsize=10)
     ax.set_title("B  Legitimate power, ratio held fixed", color=INK, fontsize=11,
                  weight="bold", loc="left")
-
-
-def _auc_of_delta(delta: float, max_fpr: float = 0.005, n: int = 20000) -> float:
-    """Standardized pAUC@FPR<=`max_fpr` for two unit-variance Gaussians separated
-    by `delta`, by quadrature. The inverse of `batch_for_target`'s constant, so
-    panel B's dashed curve passes through 0.90 exactly at the predicted batch."""
-    from math import erf, erfc, log, sqrt
-    ndtr = lambda z: 0.5 * erfc(-z / sqrt(2.0))
-    # FPR u in (0, max_fpr]: threshold tau = ndtri(1-u); TPR = ndtr(delta - tau).
-    u = np.linspace(max_fpr / n, max_fpr, n)
-    tau = np.array([_ndtri(1.0 - x) for x in u])
-    tpr = np.array([ndtr(delta - t) for t in tau])
-    pauc = float(np.trapezoid(tpr, u))
-    # Standardize onto 0.5..1.0 the way `metrics.partial_auc` does.
-    return 0.5 * (1.0 + (pauc - 0.5 * max_fpr ** 2) / (max_fpr - 0.5 * max_fpr ** 2))
-
-
-def _ndtri(q: float) -> float:
-    """Inverse standard normal CDF (Acklam's rational approximation, |eps|<1.15e-9).
-    Hand-rolled to keep this module scipy-free like the rest of `experiments/`."""
-    a = [-3.969683028665376e+01, 2.209460984245205e+02, -2.759285104469687e+02,
-         1.383577518672690e+02, -3.066479806614716e+01, 2.506628277459239e+00]
-    b = [-5.447609879822406e+01, 1.615858368580409e+02, -1.556989798598866e+02,
-         6.680131188771972e+01, -1.328068155288572e+01]
-    c = [-7.784894002430293e-03, -3.223964580411365e-01, -2.400758277161838e+00,
-         -2.549732539343734e+00, 4.374664141464968e+00, 2.938163982698783e+00]
-    d = [7.784695709041462e-03, 3.224671290700398e-01, 2.445134137142996e+00,
-         3.754408661907416e+00]
-    p_low, p_high = 0.02425, 1 - 0.02425
-    if q < p_low:
-        r = np.sqrt(-2 * np.log(q))
-        return (((((c[0]*r+c[1])*r+c[2])*r+c[3])*r+c[4])*r+c[5]) / \
-               ((((d[0]*r+d[1])*r+d[2])*r+d[3])*r+1)
-    if q > p_high:
-        r = np.sqrt(-2 * np.log(1 - q))
-        return -(((((c[0]*r+c[1])*r+c[2])*r+c[3])*r+c[4])*r+c[5]) / \
-                ((((d[0]*r+d[1])*r+d[2])*r+d[3])*r+1)
-    r = q - 0.5
-    t = r * r
-    return (((((a[0]*t+a[1])*t+a[2])*t+a[3])*t+a[4])*t+a[5])*r / \
-           (((((b[0]*t+b[1])*t+b[2])*t+b[3])*t+b[4])*t+1)
 
 
 # ------------------------------------------------------------ C: attack strength

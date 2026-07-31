@@ -26,11 +26,11 @@ Quick start (needs a CUDA host with torch + transformers):
                                  record_activations=True),
         spec, list(verifiers.all_verifiers().values()))
 """
-from . import attacks, harness, metrics, sampling, verifiers  # noqa: F401
+from . import attacks, harness, metrics, sampling, signal, verifiers  # noqa: F401
 from . import spec_decode  # noqa: F401
 from .core import SamplingSpec, Sequence, TokenStep, VContext  # noqa: F401
 
 __all__ = [
-    "attacks", "harness", "metrics", "sampling", "verifiers", "spec_decode",
+    "attacks", "harness", "metrics", "sampling", "signal", "verifiers", "spec_decode",
     "SamplingSpec", "Sequence", "TokenStep", "VContext",
 ]
