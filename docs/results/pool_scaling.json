@@ -1,0 +1,93 @@
+{
+ "model": "Qwen/Qwen3-1.7B",
+ "attack": "quant_4bit",
+ "defense": "token_difr",
+ "n_prompts": 117,
+ "tokens": 480,
+ "n_seed": 5,
+ "eval_tokens": 56160,
+ "null_split": 28080.0,
+ "ratio_ceiling": 0.1,
+ "per_token": {
+  "d_prime": 0.07753692232627907,
+  "honest_mean": 0.13926671150841635,
+  "attack_mean": 0.29542805789754123,
+  "honest_sd": 2.0140255984357096,
+  "attack_sd": 2.912558929346258
+ },
+ "d_prime": 0.07753692232627907,
+ "batch_pred_090": 2361,
+ "rows": [
+  {
+   "batch": 200,
+   "ratio": 0.007122507122507123,
+   "in_ceiling": true,
+   "auc": 0.5306867167919799,
+   "sd": 0.006877379305805086,
+   "tpr": 0.0863,
+   "predicted": 0.519500903766985,
+   "is_prediction_point": false
+  },
+  {
+   "batch": 400,
+   "ratio": 0.014245014245014245,
+   "in_ceiling": true,
+   "auc": 0.5593182957393484,
+   "sd": 0.01009697764715016,
+   "tpr": 0.1236,
+   "predicted": 0.5479415622647095,
+   "is_prediction_point": false
+  },
+  {
+   "batch": 800,
+   "ratio": 0.02849002849002849,
+   "in_ceiling": true,
+   "auc": 0.6273182957393484,
+   "sd": 0.01495253302471696,
+   "tpr": 0.3045,
+   "predicted": 0.6249665020749497,
+   "is_prediction_point": false
+  },
+  {
+   "batch": 1600,
+   "ratio": 0.05698005698005698,
+   "in_ceiling": true,
+   "auc": 0.78065664160401,
+   "sd": 0.022605923892898915,
+   "tpr": 0.512,
+   "predicted": 0.7904818759760777,
+   "is_prediction_point": false
+  },
+  {
+   "batch": 2361,
+   "ratio": 0.08408119658119659,
+   "in_ceiling": true,
+   "auc": 0.8733533834586467,
+   "sd": 0.007913950443158034,
+   "tpr": 0.7181,
+   "predicted": 0.9000307031623361,
+   "is_prediction_point": true
+  },
+  {
+   "batch": 5600,
+   "ratio": 0.19943019943019943,
+   "in_ceiling": false,
+   "auc": 0.9957393483709274,
+   "sd": 0.0020580699176915612,
+   "tpr": 0.9898,
+   "predicted": 0.9984537849966755,
+   "is_prediction_point": false
+  },
+  {
+   "batch": 11200,
+   "ratio": 0.39886039886039887,
+   "in_ceiling": false,
+   "auc": 1.0,
+   "sd": 0.0,
+   "tpr": 1.0,
+   "predicted": 0.999974654576357,
+   "is_prediction_point": false
+  }
+ ],
+ "elapsed_s": 3368.9989292621613
+}

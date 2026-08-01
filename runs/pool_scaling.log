@@ -1,0 +1,26 @@
+==============================================================================
+Pool scaling: is the predicted batch the batch?   M=Qwen/Qwen3-1.7B  attack=quant_4bit
+  pool = 117 prompts x 480 tokens, batch swept at FIXED pool, 5 protocol seeds
+==============================================================================
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 9448.89it/s]
+  honest pool: 56160 tokens [1624s]
+  quant_4bit pool: 56160 tokens [3362s]
+
+  per-token d' = 0.0775  (honest mean 0.1393, sd 2.0140)
+  => predicted batch for AUC 0.90: 2361  (needs a >= 47220-token pool at a 10% ratio; this pool is 56160)
+  ceiling batch for this pool: 2808
+
+  batch   ratio  in ceiling       measured AUC  predicted  measured TPR
+    200   0.7%         yes   0.531 +-0.007         0.520        0.086
+    400   1.4%         yes   0.559 +-0.010         0.548        0.124
+    800   2.8%         yes   0.627 +-0.015         0.625        0.304
+   1600   5.7%         yes   0.781 +-0.023         0.790        0.512
+   2361   8.4%         yes   0.873 +-0.008         0.900        0.718  <- predicted b for 0.90
+   5600  19.9%        OVER   0.996 +-0.002         0.998        0.990
+  11200  39.9%        OVER   1.000 +-0.000         1.000        1.000
+
+  best legitimate point: batch 2361 at a 8.4% ratio -> AUC 0.873 +-0.008 (predicted 0.900)
+  |measured - predicted| over the 5 in-ceiling points: mean 0.012, max 0.027
+
+wrote /root/inference-verification/docs/results/pool_scaling.json  total 3369s

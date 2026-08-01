@@ -1,0 +1,115 @@
+{
+ "n_prompts": 64,
+ "tokens": 128,
+ "batch": 400,
+ "n_seed": 5,
+ "sub": [
+  16,
+  96,
+  400
+ ],
+ "defense": "token_difr",
+ "cells": [
+  {
+   "model": "HuggingFaceTB/SmolLM2-1.7B-Instruct",
+   "attack": "kv_fp8",
+   "published": 0.04,
+   "n_tok": 8192,
+   "d_prime": 0.01876174028809736,
+   "honest_mean": 0.13518083822535598,
+   "attack_mean": 0.17243648594677438,
+   "ratioed": {
+    "auc": 0.5130075187969925,
+    "sd": 0.008164134915145345,
+    "ratio": 0.09765625
+   },
+   "sweepcfg": {
+    "auc": 0.6007067669172932,
+    "sd": 0.09335278568868723,
+    "ratio": 0.5208333333333334
+   },
+   "reversed_per_token": false
+  },
+  {
+   "model": "EleutherAI/pythia-410m",
+   "attack": "kv_fp8",
+   "published": 0.086,
+   "n_tok": 8192,
+   "d_prime": 0.0011258534113763312,
+   "honest_mean": 0.8326052734272817,
+   "attack_mean": 0.8379047150247267,
+   "ratioed": {
+    "auc": 0.5002406015037594,
+    "sd": 0.0009541732245358863,
+    "ratio": 0.09765625
+   },
+   "sweepcfg": {
+    "auc": 0.4987919799498747,
+    "sd": 7.829824236499072e-05,
+    "ratio": 0.5208333333333334
+   },
+   "reversed_per_token": false
+  },
+  {
+   "model": "EleutherAI/pythia-410m",
+   "attack": "quant_4bit",
+   "published": 0.146,
+   "n_tok": 8192,
+   "d_prime": 0.010063763203152783,
+   "honest_mean": 0.8326052734272817,
+   "attack_mean": 0.8799758500998048,
+   "ratioed": {
+    "auc": 0.5011027568922305,
+    "sd": 0.0013283680891947158,
+    "ratio": 0.09765625
+   },
+   "sweepcfg": {
+    "auc": 0.5006165413533834,
+    "sd": 0.001778749553812632,
+    "ratio": 0.5208333333333334
+   },
+   "reversed_per_token": false
+  },
+  {
+   "model": "Qwen/Qwen3-0.6B",
+   "attack": "bug_k2",
+   "published": 0.123,
+   "n_tok": 8192,
+   "d_prime": 0.034367274037068574,
+   "honest_mean": 0.10525306358144168,
+   "attack_mean": 0.16544513788751378,
+   "ratioed": {
+    "auc": 0.5152681704260653,
+    "sd": 0.010857314105708404,
+    "ratio": 0.09765625
+   },
+   "sweepcfg": {
+    "auc": 0.5658345864661654,
+    "sd": 0.07300187608271472,
+    "ratio": 0.5208333333333334
+   },
+   "reversed_per_token": false
+  },
+  {
+   "model": "Qwen/Qwen3-0.6B",
+   "attack": "seed_43",
+   "published": 1.0,
+   "n_tok": 8192,
+   "d_prime": 0.603108000575302,
+   "honest_mean": 0.10525306358144168,
+   "attack_mean": 1.1615580107256183,
+   "ratioed": {
+    "auc": 1.0,
+    "sd": 0.0,
+    "ratio": 0.09765625
+   },
+   "sweepcfg": {
+    "auc": 1.0,
+    "sd": 0.0,
+    "ratio": 0.5208333333333334
+   },
+   "reversed_per_token": false
+  }
+ ],
+ "elapsed_s": 1840.1765050888062
+}
