@@ -4,6 +4,15 @@ __pycache__/
 *.pyc
 .DS_Store
 
+# LaTeX build intermediates (paper.pdf itself is tracked)
+*.aux
+*.out
+*.fls
+*.fdb_latexmk
+*.synctex.gz
+paper/paper.log
+texput.log
+
 # Local secrets / key helpers — never commit
 .set_key.sh
 .claude/

@@ -1,0 +1,14 @@
+\begin{tabular}{lrrrrrrrr}
+\toprule
+attack & \multicolumn{2}{c}{\td} & \multicolumn{2}{c}{\ce} & \multicolumn{2}{c}{\ad} & \multicolumn{2}{c}{\tl} \\
+\cmidrule(lr){2-3} \cmidrule(lr){4-5} \cmidrule(lr){6-7} \cmidrule(lr){8-9}
+ & 78\% & 8.9\% & 78\% & 8.9\% & 78\% & 8.9\% & 78\% & 8.9\% \\
+\midrule
+\texttt{quant\_4bit} & 0.908 & 0.718 & 0.565 & 0.505 & \textbf{1.000} & \textbf{1.000} & 0.732 & 0.600 \\
+\texttt{kv\_fp8} & 0.576 & 0.511 & 0.597 & 0.507 & \textbf{1.000} & \textbf{1.000} & 0.679 & 0.517 \\
+\texttt{temp\_1.1} & 0.596 & 0.516 & \textbf{0.897} & \textbf{0.823} & 0.551 & 0.504 & 0.808 & 0.661 \\
+\texttt{seed\_43} & \textbf{1.000} & \textbf{1.000} & 0.987 & 0.524 & 0.499 & 0.575 & 0.828 & 0.507 \\
+\texttt{bug\_k2} & \textbf{0.695} & \textbf{0.553} & 0.499 & 0.510 & 0.618 & 0.499 & 0.501 & 0.523 \\
+\texttt{bug\_k32} & \textbf{0.992} & \textbf{0.712} & 0.590 & 0.605 & 0.499 & 0.499 & 0.912 & 0.686 \\
+\bottomrule
+\end{tabular}

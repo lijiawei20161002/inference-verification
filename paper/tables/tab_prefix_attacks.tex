@@ -1,0 +1,12 @@
+\begin{tabular}{lrrrrrrl}
+\toprule
+& \multicolumn{2}{c}{global top-$k$ @ 5\%} & \multicolumn{2}{c}{prefix @ 5\%}
+& & \multicolumn{2}{c}{full audit} \\
+\cmidrule(lr){2-3}\cmidrule(lr){4-5}\cmidrule(lr){7-8}
+attack & cost & sec & cost & sec & speed-up & sec & AUC \\
+\midrule
+\texttt{quant\_2bit} & 75.8\% & 1.75 & 5.0\% & 0.11 & 16.0$\times$ & 1.48 & $0.823 \pm 0.050$ \\
+\texttt{kv\_fp8} & 76.9\% & 1.51 & 5.0\% & 0.10 & 14.5$\times$ & 1.56 & $0.507 \pm 0.005$ \\
+\texttt{bug\_k32} & 78.1\% & 1.31 & 5.0\% & 0.09 & 14.4$\times$ & 1.14 & $0.601 \pm 0.042$ \\
+\bottomrule
+\end{tabular}
