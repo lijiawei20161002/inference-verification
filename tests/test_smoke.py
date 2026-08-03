@@ -228,25 +228,23 @@ def test_driver_scores_tier0_verifiers_without_recompute():
     assert ts.scores["accept_rate"].max() > 0.0
 
 
-def test_learned_io_fits_and_scores_through_driver():
-    """learned_io must .fit on Tier-0 contexts (built without recomputing M) and
-    then score per-token probabilities through the single driver."""
+def test_io_contexts_never_recompute_m():
+    """`harness.io_contexts` is the Tier-0 entry point -- it must build a scoreable
+    context from the proxy and the served text alone. If it ever touched M the
+    whole Tier-0/Tier-1 cost separation would be fiction, so this is pinned."""
     from ivgym import harness
     be = _FakeBackend()
     seqs = be.sequences()
     spec = SamplingSpec(temperature=0.1)
 
-    det = verifiers.LearnedSeq(epochs=50)
-    ctxs = harness.io_contexts(be, seqs, spec, need_proxy=True)
-    # two-class toy labels so fit has both classes
-    labels = [i % 2 for i in range(len(ctxs))]
     be.n_ref_calls = 0
-    det.fit(ctxs, labels)
-    assert be.n_ref_calls == 0                          # fitting never recomputes M
-    ts = harness.verify(be, seqs, spec, [det])
-    s = ts.scores["learned_io"]
-    assert s.shape == (be.n * be.t,)
-    assert (s >= 0.0).all() and (s <= 1.0).all()        # probabilities
+    ctxs = harness.io_contexts(be, seqs, spec, need_proxy=True)
+    assert be.n_ref_calls == 0                          # never recomputes M
+    assert len(ctxs) == len(seqs)
+    for ctx, seq in zip(ctxs, seqs):
+        assert ctx.proxy_logits is not None
+        assert ctx.ref_logits is None                   # no reference distribution
+        assert len(ctx.claimed_tokens) == len(seq.steps)
 
 
 def test_metrics():
@@ -309,6 +307,79 @@ def test_eval_config_rejects_undersized_n_batches():
         assert False, "expected ValueError for undersized n_batches"
     except ValueError:
         pass
+
+
+def _ratio_fixture(n=4000, shift=0.3, seed=0):
+    """Honest/attack score pools with a small real per-token shift, so the ONLY
+    thing that moves the AUC between the assertions below is the batch/pool ratio."""
+    from ivgym import harness
+    rng = np.random.default_rng(seed)
+    h = np.abs(rng.normal(0.0, 1.0, n))
+    a = np.abs(rng.normal(shift, 1.0, n))
+    d = type("V", (), {"name": "s", "tier": 1})()
+    return (harness.TokenScores("honest", {"s": h}),
+            harness.TokenScores("attack", {"s": a}), [d])
+
+
+def test_every_result_reports_the_ratio_it_was_measured_at():
+    """Deployment rule 6: report the batch/pool ratio next to every AUC. Without
+    it a detection AUC is not interpretable, so `evaluate` attaches it always."""
+    from ivgym import harness
+    hs, as_, defs = _ratio_fixture()
+    r = harness.evaluate(hs, as_, defs, [100])[0]
+    assert r.eval_pool == 2000                       # half of 4000, calib_frac=0.5
+    assert abs(r.pool_ratio - 100 / 2000) < 1e-12
+    assert not r.over_ceiling
+
+
+def test_over_ceiling_batches_cannot_be_measured_silently():
+    """The central methodological result, enforced in code: an AUC measured with
+    the batch a large fraction of the pool is a property of that pool, not of the
+    deviation. It must warn (default), raise on request, and only ever be silent
+    when the caller explicitly opts in."""
+    import warnings
+    from ivgym.harness import EvalConfig, RatioCeilingWarning
+    from ivgym import harness
+    hs, as_, defs = _ratio_fixture()
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        r = harness.evaluate(hs, as_, defs, [1500])[0]     # 75% ratio
+    assert r.over_ceiling and abs(r.pool_ratio - 0.75) < 1e-12
+    assert any(issubclass(x.category, RatioCeilingWarning) for x in w)
+
+    try:
+        harness.evaluate(hs, as_, defs, [1500], config=EvalConfig(over_ratio="raise"))
+        assert False, "expected ValueError above the ratio ceiling"
+    except ValueError as e:
+        assert "ceiling" in str(e)
+
+    with warnings.catch_warnings(record=True) as w:
+        warnings.simplefilter("always")
+        harness.evaluate(hs, as_, defs, [1500], config=EvalConfig(over_ratio="allow"))
+    assert not any(issubclass(x.category, RatioCeilingWarning) for x in w)
+
+
+def test_the_ratio_artifact_is_reproduced_from_identical_scores():
+    """The falsification test for the ceiling itself. Holding the per-token scores
+    FIXED and growing only the batch, the AUC must climb far above what the
+    per-token effect size can support -- which is the whole reason the ceiling is
+    a correctness condition and not a style preference."""
+    from ivgym.harness import EvalConfig
+    from ivgym import harness
+    hs, as_, defs = _ratio_fixture()
+    cfg = EvalConfig(over_ratio="allow")
+    valid = harness.evaluate(hs, as_, defs, [100], config=cfg)[0]     # 5%
+    inflated = harness.evaluate(hs, as_, defs, [1500], config=cfg)[0]  # 75%
+
+    h = hs.scores["s"]
+    d_prime = (as_.scores["s"].mean() - h.mean()) / h.std()
+    from ivgym import signal
+    predicted = signal.pauc_of_delta(d_prime * np.sqrt(100), max_fpr=0.005)
+
+    assert abs(valid.auc - predicted) < 0.10, (valid.auc, predicted)   # tracks theory
+    assert inflated.auc > valid.auc + 0.3                              # ... and blows past it
+    assert inflated.auc > 0.95
 
 
 if __name__ == "__main__":

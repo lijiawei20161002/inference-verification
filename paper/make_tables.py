@@ -12,8 +12,10 @@ from pathlib import Path
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent
 
+# One results tree; `BASE` kept as an alias so the per-attack archives read
+# distinctly from the single-run JSONs at the call sites below.
 RES = REPO / "docs/results"
-BASE = REPO / "runs/baseline_json"
+BASE = RES
 OUT = HERE / "tables"
 OUT.mkdir(parents=True, exist_ok=True)
 

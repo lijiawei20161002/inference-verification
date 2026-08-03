@@ -151,7 +151,7 @@ def test_verifier_flags_quant_and_keeps_low_honest_fpr():
 
 
 def test_batched_auc_floor_needs_seed_averaging():
-    """Regression for the exp_spec_verifier_cost floor bug: harness.evaluate splits
+    """Regression for the honest-null floor bug: harness.evaluate splits
     the honest tokens ONCE (calibration | eval), then batch_means concentrates each
     batch mean around its finite subset's sample mean (~1/sqrt(batch)). For two
     draws of the SAME distribution the accidental subset-mean gap is amplified into

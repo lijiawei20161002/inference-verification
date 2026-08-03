@@ -78,7 +78,10 @@ def auc_seeds(h, a, batch):
     d = type("V", (), {"name": "s", "tier": 1})()
     hs = harness.TokenScores("h", {"s": h})
     as_ = harness.TokenScores("a", {"s": a})
-    out = [harness.evaluate(hs, as_, [d], [batch], n_batches=2000, seed=s)[0].auc
+    # over_ratio="allow": the sweep's own 52% configuration is reproduced here
+    # deliberately, so the ceiling guard is opted out of explicitly.
+    cfg = harness.EvalConfig(n_batches=2000, over_ratio="allow")
+    out = [harness.evaluate(hs, as_, [d], [batch], seed=s, config=cfg)[0].auc
            for s in range(N_SEED)]
     return float(np.mean(out)), float(np.std(out))
 

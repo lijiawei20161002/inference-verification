@@ -55,7 +55,7 @@ fabricates correlated ``(p, q)`` pairs so the whole verifier runs on CPU for
 tests; a real backend feeds actual ``M`` / proxy logprob rows instead (see
 ``ivgym/backends/hf_gpu.py`` -- ``reference_logits`` supplies ``p`` for the
 one-time reference, ``proxy_logits`` supplies ``q`` -- and
-``experiments/exp_proxy_spec_verify.py`` for the real-proxy run).
+``experiments/exp_spec_substitution_gpu.py`` for the real-proxy run).
 """
 from __future__ import annotations
 
@@ -226,7 +226,7 @@ class AdvQuantTemp(QuantTarget):
     generic *entropy / cross-entropy* fingerprint (a no-recompute baseline) but
     NOT the draft-anchored acceptance rate: retuning temperature does not restore
     ``TV(p̂, q)``, which the trusted proxy still measures. See
-    ``experiments/exp_proxy_spec_verify.py``."""
+    ``experiments/exp_spec_substitution_gpu.py``."""
 
     name: str = "adv_quant_temp"
     sigma: float = 0.5

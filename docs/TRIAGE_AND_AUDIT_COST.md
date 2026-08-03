@@ -293,11 +293,11 @@ smaller token pool.
   the audit of the metric in the first place) and deflated others by up to −0.28.
   Every headline number the pre-fix run produced is therefore withdrawn.
 
-  Other selective-budget results on disk (`exp_selective_verify_gpu`,
-  `exp_cost_curve_gpu`, the `tie_triage` figures) run at budgets ≥ 10% and are
-  affected at the milder end of that scale, but they were **not** re-run for this
-  write-up — their logs predate the fix and should be read as stale at small
-  budgets.
+  The other selective-budget results that were on disk at the time
+  (`exp_selective_verify_gpu` and the `tie_triage` figures) ran at budgets ≥ 10%
+  and were affected at the milder end of that scale. They were never re-run, so
+  rather than ship stale numbers they have been **deleted** from the repo; only
+  the prefix-scheduler results below, measured after the fix, remain.
 * **`prefill_reference` redrew ~20M benign-noise normals on every call.** The
   verifier's benign noise has to be drawn at the sequence's full length and sliced,
   so a position's noise cannot depend on how deep the audit went — but it is a pure
@@ -569,14 +569,17 @@ the superseded run. What is genuinely open, in descending order of what it buys:
    says a ≥ 55 000-token honest pool would let `quant_4bit` itself be measured at
    AUC 0.90 inside the ratio ceiling. That is ~7× this run's generation cost, and
    the most useful place to spend the next block of GPU-hours.
-2. **Re-run the other selective-budget results on disk.** `exp_selective_verify_gpu`,
-   `exp_cost_curve_gpu` and the `tie_triage` figures predate the winsorization fix
-   and run at budgets ≥ 10%, so they are distorted at the milder end of that scale
-   ("Incidental fixes" quantifies how much). Treat their logs as stale at small
-   budgets until re-run.
-3. **The ratio artifact is not confined to this document.** § 3 shows the README
-   headline table (78%) and `exp_gpu.py`'s default (69%) both sit above the ceiling.
-   The README now carries a warning, but those tables have not been re-measured.
+2. ~~**Re-run the other selective-budget results on disk.**~~ **Resolved by
+   deletion.** `exp_selective_verify_gpu` and the `tie_triage` figures predated
+   the winsorization fix and were never re-measured, so they have been removed
+   rather than left on disk to be cited. The claim they carried — that triage can
+   beat a full audit — is withdrawn; triage buys cost, not detection power.
+3. ~~**The ratio artifact is not confined to this document.**~~ **Resolved.**
+   § 3 showed the README headline table (78%) and `exp_gpu.py`'s default (69%)
+   both sat above the ceiling. Both have since been re-measured inside it
+   (`exp_headline_ratio_gpu`), and the ceiling is now enforced in code:
+   `EvalConfig.max_pool_ratio` warns (or raises) on any over-ratio measurement and
+   `EvalResult.pool_ratio` records the ratio on every number the repo produces.
 4. **Does the Pareto gap survive a different attack family?** Part 2b is one
    deviation (`quant_2bit`). The scheduler's advantage is geometric and so should be
    attack-independent — a cheap, falsifiable prediction: run `kv_fp8` or `bug_k2` at

@@ -99,7 +99,10 @@ def auc_of(h: np.ndarray, a: np.ndarray, batch: int, name: str = ATTACK,
     cannot tell a 0.57-vs-0.64 difference from noise; this can.
     """
     hs, as_, defs = _scores(h, a, name)
-    vals = [harness.evaluate(hs, as_, defs, [batch], seed=s)[0].auc
+    # over_ratio="allow": sweeping the pool size ACROSS the ceiling is this
+    # experiment's subject, so the guard is opted out of explicitly.
+    cfg = harness.EvalConfig(over_ratio="allow")
+    vals = [harness.evaluate(hs, as_, defs, [batch], seed=s, config=cfg)[0].auc
             for s in range(n_seed)]
     return float(np.mean(vals)), float(np.std(vals))
 

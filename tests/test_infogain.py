@@ -249,28 +249,65 @@ def test_realized_info_is_an_oracle_ceiling():
     assert info[hot].mean() > 5 * info[~hot].mean()
 
 
-def test_realized_moments_recovers_planted_moments():
-    """The binned oracle reads back a planted `(m, v, Delta)` -- it is the same
-    quantity `probe_moments` estimates from honest data, with the estimation error
-    removed, which is the only reason it can serve as a ceiling."""
-    rng = np.random.default_rng(11)
-    n = 20000
+def _planted_moments(seed: int = 11, n: int = 20000):
+    """A two-group population with known `(m, v, Delta)`: a quiet half (small mean,
+    small variance) and a loud half (large mean, large variance), with the same
+    kind of shift in each. Means are far apart so an equal-count binning never
+    mixes the two groups."""
+    rng = np.random.default_rng(seed)
     quiet = np.arange(n) < n // 2
-    # The bins are equal-count slices of the honest SCORE, so the oracle can only
-    # tell two groups apart to the extent the score does: the planted means are set
-    # far enough apart (0 vs 10, against sds of 0.1 and 1.0) that no bin mixes them.
     m_true = np.where(quiet, 0.0, 10.0)
     v_true = np.where(quiet, 0.01, 1.00)
     d_true = np.where(quiet, 0.05, 0.40)
     h = rng.normal(m_true, np.sqrt(v_true))
     a = rng.normal(m_true + d_true, np.sqrt(v_true))
+    return quiet, m_true, v_true, d_true, h, a
+
+
+def test_realized_moments_understates_v_when_binned_on_the_score_itself():
+    """The default key is the honest score, so `realized_moments` conditions on the
+    very quantity whose spread it is measuring: each bin is a narrow slice of the
+    score and `v` comes back far BELOW the true conditional variance.
+
+    This is the documented bias in `realized_moments`' docstring, and it is why
+    that function is a diagnostic and `oracle_model` is the ceiling arm. Pinned as
+    a test because the bias is silent -- the returned array looks like a variance,
+    it just is not the right one -- and because a `Delta/v` weight built on it
+    diverges as `n_bins` grows, which would make an unbounded "ceiling" look like
+    a real result.
+    """
+    quiet, m_true, v_true, d_true, h, a = _planted_moments()
     mom = infogain.realized_moments(h, a, n_bins=20)
+
+    # m and Delta ARE recovered: they are between-bin quantities.
     for side, sel in (("quiet", quiet), ("loud", ~quiet)):
         assert abs(mom["m"][sel].mean() - m_true[sel].mean()) < 0.05, side
-        assert abs(mom["v"][sel].mean() - v_true[sel].mean()) < 0.1 * \
-            v_true[sel].mean() + 0.02, (side, mom["v"][sel].mean())
         assert abs(mom["delta"][sel].mean() - d_true[sel].mean()) < 0.1, side
-    # and the information is larger where the shift is large relative to the noise
+
+    # v is NOT: on the loud half the within-bin spread is an order of magnitude
+    # below the planted 1.0, because the bins slice the score finely.
+    v_loud = mom["v"][~quiet].mean()
+    assert v_loud < 0.2 * v_true[~quiet].mean(), v_loud
+
+    # ... and it keeps shrinking with more bins, so no finite `n_bins` fixes it.
+    v_finer = infogain.realized_moments(h, a, n_bins=80)["v"][~quiet].mean()
+    assert v_finer < v_loud, (v_loud, v_finer)
+
+
+def test_realized_moments_recovers_v_given_an_independent_key():
+    """The fix the docstring names: bin on a key that is not the score being
+    measured. With a key that separates the two groups but carries no information
+    about the within-group draw, all three moments come back."""
+    quiet, m_true, v_true, d_true, h, a = _planted_moments()
+    key = np.where(quiet, 0.0, 1.0)          # group label: independent of the draw
+    mom = infogain.realized_moments(h, a, n_bins=2, key=key)
+    for side, sel in (("quiet", quiet), ("loud", ~quiet)):
+        assert abs(mom["m"][sel].mean() - m_true[sel].mean()) < 0.05, side
+        assert abs(mom["v"][sel].mean() - v_true[sel].mean()) < \
+            0.1 * v_true[sel].mean() + 0.02, (side, mom["v"][sel].mean())
+        assert abs(mom["delta"][sel].mean() - d_true[sel].mean()) < 0.1, side
+    # Information is larger where the shift is large relative to the noise: the
+    # quiet half has a 5x smaller shift but a 100x smaller variance.
     assert mom["info"][quiet].mean() > mom["info"][~quiet].mean()
 
 

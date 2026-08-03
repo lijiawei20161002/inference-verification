@@ -90,7 +90,10 @@ def partial_auc(neg: np.ndarray, pos: np.ndarray, max_fpr: float = 0.005,
         tpr_edge = np.interp(max_fpr, fpr, tpr)
         fpr_c = np.append(fpr_c, max_fpr)
         tpr_c = np.append(tpr_c, tpr_edge)
-    pauc = float(np.trapz(tpr_c, fpr_c))            # raw area, in [0, max_fpr]
+    # numpy >= 2 renamed trapz -> trapezoid; keep both so the pure-numpy core
+    # runs unchanged on numpy 1.x.
+    _trapz = getattr(np, "trapezoid", None) or np.trapz
+    pauc = float(_trapz(tpr_c, fpr_c))              # raw area, in [0, max_fpr]
     if not standardized:
         return pauc / max_fpr
     min_area = 0.5 * max_fpr * max_fpr              # area under the chance diagonal

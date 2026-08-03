@@ -7,7 +7,7 @@ Inference verification used to be three separate families in this repo:
   * white-box **recomputation defenses** (`token_difr`, `cross_entropy`,
     `token_toploc`, `activation_difr`) that re-run the reference model M;
   * black-box **I/O detectors** (`surface_stat`/`surprise`, `surface_rank`,
-    `surface_tokens`, `learned_io`) that read only outputs / a cheap proxy;
+    `surface_tokens`) that read only outputs / a cheap proxy;
   * the **acceptance-rate fingerprint** (`accept_rate`) comparing the served
     distribution `p` to the client's proxy `q`.
 
@@ -348,15 +348,6 @@ def token_surface_features(tokens: list[int]) -> dict[str, np.ndarray]:
     return {"is_repeat": is_repeat}
 
 
-def feature_matrix(ctx: VContext, use_proxy: bool) -> tuple[np.ndarray, list[str]]:
-    """Stack per-token feature columns into [T, F] plus their names."""
-    cols = [token_surface_features(ctx.claimed_tokens)["is_repeat"]]
-    names = ["is_repeat"]
-    if use_proxy:
-        cols += [proxy_nll(ctx), proxy_rank(ctx)]
-        names += ["proxy_nll", "proxy_rank"]
-    return np.column_stack(cols), names
-
 
 @dataclass
 class SurfaceStat(Verifier):
@@ -415,58 +406,6 @@ class AcceptRate(Verifier):
             q = sd.softmax(ctx.proxy_logits[i] / temp)
             out[i] = sd.tv(p, q)             # = 1 - accept_rate(p, q)
         return out
-
-
-@dataclass
-class LearnedSeq(Verifier):
-    """The strongest Tier-0 verifier: a pure-numpy logistic regression on
-    output-only features (`feature_matrix`), trained on labeled honest/attack
-    sequences. `evidence` returns the per-token P(attack). Must be `.fit` before
-    use. The crucial evaluation is held-out-attack generalization."""
-
-    name: str = "learned_io"
-    needs_proxy: bool = True
-    needs_fit: bool = True
-    use_proxy: bool = True
-    epochs: int = 800
-    lr: float = 1.5
-    l2: float = 1e-3
-    verifier_flops: float = 0.08
-    _w: np.ndarray | None = field(default=None, repr=False)
-    _b: float = field(default=0.0, repr=False)
-    _mu: np.ndarray | None = field(default=None, repr=False)
-    _sd: np.ndarray | None = field(default=None, repr=False)
-    _names: list[str] = field(default_factory=list, repr=False)
-
-    def fit(self, contexts: list[VContext], labels: list[int]) -> "LearnedSeq":
-        rows, ys, names = [], [], None
-        for ctx, y in zip(contexts, labels):
-            fm, names = feature_matrix(ctx, self.use_proxy)
-            rows.append(fm)
-            ys.append(np.full(len(fm), float(y)))
-        X = np.vstack(rows)
-        Y = np.concatenate(ys)
-        self._names = names
-        self._mu = X.mean(axis=0)
-        self._sd = X.std(axis=0) + 1e-8
-        Xs = (X - self._mu) / self._sd
-        n, f = Xs.shape
-        w = np.zeros(f)
-        b = 0.0
-        for _ in range(self.epochs):
-            p = 1.0 / (1.0 + np.exp(-(Xs @ w + b)))
-            g = p - Y
-            w -= self.lr * (Xs.T @ g / n + self.l2 * w)
-            b -= self.lr * float(g.mean())
-        self._w, self._b = w, b
-        return self
-
-    def evidence(self, ctx: VContext) -> np.ndarray:
-        if self._w is None:
-            raise RuntimeError("learned_io must be .fit(...) before scoring")
-        fm, _ = feature_matrix(ctx, self.use_proxy)
-        Xs = (fm - self._mu) / self._sd
-        return 1.0 / (1.0 + np.exp(-(Xs @ self._w + self._b)))
 
 
 # ---------------------------------------------------------------------------
@@ -560,71 +499,10 @@ class LLMJudge(Verifier):
         return np.full(len(ctx.claimed_tokens), p)
 
 
-@dataclass
-class LogitJudge(LLMJudge):
-    """Hybrid: recompute on a CHEAP PROXY, then let the LLM judge the LOGIT-level
-    divergence (per-token proxy surprisal + rank), not the decoded text. Same
-    judge model/plumbing as `llm_judge`, but the evidence is numbers off
-    proxy_logits, so it needs a proxy backend rather than a text one."""
-
-    name: str = "logit_judge"
-    needs_proxy: bool = True
-    needs_text: bool = False
-    max_rows: int = 64
-    verifier_flops: float = 0.58
-
-    def _evidence_str(self, nll: np.ndarray, rank: np.ndarray, temp: float) -> str:
-        n = len(nll)
-        rows = " ".join(f"{i}:{s:.2f}/{int(r)}"
-                        for i, (s, r) in enumerate(zip(nll, rank)) if i < self.max_rows)
-        more = "" if n <= self.max_rows else f" (+{n - self.max_rows} more tokens)"
-        return (f"temperature={temp:.2f}  tokens={n}\n"
-                f"per-token  surprisal_nats/proxy_rank  (rank 0 = proxy's argmax, "
-                f"capped at {int(RANK_CAP)}):\n{rows}{more}\n"
-                f"summary: mean_surprisal={float(nll.mean()):.2f}  "
-                f"median_surprisal={float(np.median(nll)):.2f}  "
-                f"max_surprisal={float(nll.max()):.2f}  mean_rank={float(rank.mean()):.1f}  "
-                f"frac_not_argmax={float(np.mean(rank > 0)):.2f}  "
-                f"frac_in_top8={float(np.mean(rank < 8)):.2f}")
-
-    def _p_deviation_logits(self, nll: np.ndarray, rank: np.ndarray, temp: float) -> float:
-        sys_prompt = (
-            "You are an inference-verification judge working in LOGIT space. A "
-            "verifier re-scored a provider's claimed tokens under a CHEAP PROXY "
-            "model -- a smaller model from the same family as the reference model "
-            "M, sharing M's tokenizer. For each claimed token you are given its "
-            "surprisal (negative log-likelihood, nats) and its rank under the "
-            "proxy's temperature-scaled distribution. Because the proxy is smaller "
-            "than M, even a FAITHFUL sample from M shows nonzero surprisal and is "
-            "often not the proxy's argmax -- that alone is NOT evidence of a "
-            "deviation. Decide whether the PATTERN of surprisals and ranks is "
-            "consistent with faithful sampling from M at the stated temperature, "
-            "or indicates a DEVIATION (wrong model, wrong temperature/seed, "
-            "quantized/corrupted decoding, or a sampling bug). Reply with ONLY a "
-            "probability in [0,1] that it is a deviation -- e.g. '0.12'. No other text.")
-        msg = self._judge_create(model=self.model, max_tokens=8, system=sys_prompt,
-                                 messages=[{"role": "user",
-                                            "content": self._evidence_str(nll, rank, temp)}])
-        txt = "".join(b.text for b in msg.content if getattr(b, "type", "") == "text").strip()
-        try:
-            return float(min(max(float(txt.split()[0]), 0.0), 1.0))
-        except (ValueError, IndexError):
-            return 0.5
-
-    def evidence(self, ctx: VContext) -> np.ndarray:
-        if ctx.proxy_logits is None:
-            raise RuntimeError("logit_judge needs proxy logits (set needs_proxy=True); "
-                               "run with a proxy-capable backend.")
-        nll = proxy_nll(ctx)
-        rank = proxy_rank(ctx)
-        p = self._p_deviation_logits(nll, rank, ctx.sampling.temperature)
-        return np.full(len(ctx.claimed_tokens), p)
-
-
 # ---------------------------------------------------------------------------
-# Register the built-ins that need neither fitting, an API key, nor a text
-# backend. (learned_io needs .fit; llm_judge/logit_judge need API access, so the
-# experiments construct those explicitly -- as before.)
+# Register the built-ins that need neither an API key nor a text backend.
+# Each name below carries a claim the report stands behind; `llm_judge` needs API
+# access, so `exp_io_detector_gpu` constructs it explicitly.
 # ---------------------------------------------------------------------------
 for _v in [
     TokenDiFR(), CrossEntropy(), ActivationDiFR(), TokenTOPLOC(),

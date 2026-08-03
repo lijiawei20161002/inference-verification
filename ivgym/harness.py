@@ -17,6 +17,7 @@ you pass:
 """
 from __future__ import annotations
 
+import warnings
 from dataclasses import dataclass, field, replace
 
 import numpy as np
@@ -27,6 +28,17 @@ from .core import SamplingSpec, Sequence, VContext
 from .metrics import partial_auc, roc_auc, tpr_at_fpr
 from .sampling import gumbel_noise, position_seed, projection
 from .verifiers import Verifier
+
+
+class RatioCeilingWarning(UserWarning):
+    """A detection AUC was measured with the batch too large a fraction of the
+    honest token pool. See `EvalConfig.max_pool_ratio` -- the number is a property
+    of the particular pool it was drawn from, not of the deviation."""
+
+
+# Always show it: the artifact is invisible in the resulting table, so a warning
+# suppressed after the first occurrence would hide every cell but one.
+warnings.simplefilter("always", RatioCeilingWarning)
 
 
 @dataclass
@@ -433,7 +445,8 @@ def rescore_at_budget(full: TokenScores, verifiers: list[Verifier], values: np.n
 def io_contexts(backend, sequences: list[Sequence], spec: SamplingSpec,
                 need_proxy: bool = True, need_text: bool = False) -> list[VContext]:
     """Build per-sequence Tier-0 `VContext`s (proxy/text only, NO recompute of M).
-    Used to `.fit` a `learned_io` verifier on labeled sequences."""
+    Used to score Tier-0 verifiers (`surface_stat`, `accept_rate`, `llm_judge`)
+    on the same sequences a Tier-1 recompute is scored on."""
     ctxs = []
     for seq in sequences:
         steps = seq.steps
@@ -498,17 +511,30 @@ class EvalConfig:
                      ``n_batches * max_fpr`` honest eval batches above tau; below
                      `min_region_pts` the estimate is too coarse and `evaluate`
                      raises (bump `n_batches`, not the metric).
+    max_pool_ratio : the batch/pool ceiling (default 10%). `batch_means`
+                     resamples WITHOUT replacement from a fixed, finite token
+                     pool, so as `batch_size` approaches the honest eval split
+                     every batch mean converges to the pool mean, the honest
+                     variance collapses, and the AUC stops answering "would a
+                     fresh batch be flagged?" -- it answers "do these two
+                     particular pools have different means?", which is nearly
+                     deterministic. Measured on one cell (`token_difr` vs
+                     `quant_4bit`, Qwen3-1.7B), the SAME per-token scores read
+                     0.977 at a 69% ratio and 0.530 at 1.8%.
+    over_ratio     : what `evaluate` does when the ceiling is exceeded --
+                     ``"warn"`` (default; emits a `RatioCeilingWarning` naming
+                     the pool size that would be needed), ``"raise"``, or
+                     ``"allow"``. Experiments that deliberately measure the
+                     inflated arm -- `exp_headline_ratio_gpu`,
+                     `exp_baseline_headroom_gpu`, `exp_reversal_check_gpu` --
+                     must say so by passing ``"allow"``; there is no way to
+                     produce an over-ceiling number silently.
 
-    Caveat this floor does NOT cover: `n_batches` alone guarantees enough
-    resampled *batches* land in the region, not that those batches are close to
-    independent draws. `batch_means` resamples without replacement from a FIXED,
-    finite token pool, so if `batch_size` is a large fraction of that pool (a
-    small `n_prompts`/`n_tokens` token count), the batches overlap heavily and
-    the extreme low-FPR tail can look artifically diagonal/noisy regardless of
-    `n_batches` -- more independent evidence, i.e. a bigger honest token pool
-    (`n_prompts`/`n_tokens`, not a bigger `n_batches`), is what actually
-    resolves it. As a rule of thumb keep `batch_size` well under ~10% of the
-    honest eval-split token count."""
+    Note the artifact has NO SIGN: a collapsed-variance measurement is pushed
+    toward both 1.0 and 0.0, which is why it cannot be spotted from a single
+    table and why the ceiling is enforced here rather than left to the reader.
+    More independent evidence -- a bigger honest token pool (`n_prompts` x
+    `n_tokens`), not a bigger `n_batches` -- is what actually resolves it."""
 
     max_fpr: float = 0.005
     n_batches: int = 2000
@@ -516,12 +542,17 @@ class EvalConfig:
     calib_frac: float = 0.5
     seed: int = 0
     min_region_pts: int = 10
+    max_pool_ratio: float = 0.10
+    over_ratio: str = "warn"
 
     def __post_init__(self) -> None:
         if not 0.0 < self.max_fpr <= 1.0:
             raise ValueError(f"max_fpr must be in (0, 1], got {self.max_fpr}")
         if not 0.0 < self.calib_frac < 1.0:
             raise ValueError(f"calib_frac must be in (0, 1), got {self.calib_frac}")
+        if self.over_ratio not in ("warn", "raise", "allow"):
+            raise ValueError(f"over_ratio must be 'warn', 'raise' or 'allow', "
+                             f"got {self.over_ratio!r}")
         region_pts = self.n_batches * self.max_fpr
         if region_pts < self.min_region_pts:
             need = int(np.ceil(self.min_region_pts / self.max_fpr))
@@ -530,6 +561,29 @@ class EvalConfig:
                 f"batches inside FPR<= {self.max_fpr:.3%}; the partial-AUC estimate "
                 f"is too coarse. Use n_batches >= {need} (>= {self.min_region_pts} "
                 f"points in the region).")
+
+    def check_ratio(self, batch_size: int, pool: int, where: str = "") -> float:
+        """Ratio of `batch_size` to the honest eval pool, enforcing the ceiling.
+
+        Returns the ratio so the caller can record it on the result -- every AUC
+        this repo reports carries the ratio it was measured at, because without
+        it a detection AUC is not interpretable."""
+        ratio = batch_size / max(pool, 1)
+        if ratio > self.max_pool_ratio and self.over_ratio != "allow":
+            need = int(np.ceil(batch_size / self.max_pool_ratio))
+            msg = (f"batch/pool ratio {ratio:.1%} exceeds the {self.max_pool_ratio:.0%} "
+                   f"ceiling{f' ({where})' if where else ''}: batch={batch_size} against "
+                   f"an honest eval split of {pool} tokens. Batches resampled without "
+                   f"replacement from a pool this small overlap heavily, the honest "
+                   f"variance collapses, and the AUC is inflated (or deflated -- the "
+                   f"artifact has no sign). Grow the pool to >= {need} eval tokens "
+                   f"(~{2 * need} generated tokens per config at calib_frac=0.5), or "
+                   f"shrink the batch. To measure the inflated arm on purpose, pass "
+                   f"EvalConfig(over_ratio='allow').")
+            if self.over_ratio == "raise":
+                raise ValueError(msg)
+            warnings.warn(msg, RatioCeilingWarning, stacklevel=3)
+        return ratio
 
 
 def _aggregate(x: np.ndarray, ts: TokenScores, sel: np.ndarray | None) -> np.ndarray:
@@ -571,6 +625,18 @@ class EvalResult:
     auc_full: float     # threshold-free full-range ROC AUC (context / legacy)
     tpr: float          # out-of-sample TPR at the calibrated FPR = max_fpr point
     max_fpr: float      # the false-positive budget the above are computed at
+    # The batch/pool ratio the AUC above was measured at, and the honest eval
+    # split it was drawn from. Reported on EVERY result because without it a
+    # detection AUC is not interpretable (`EvalConfig.max_pool_ratio`).
+    pool_ratio: float = float("nan")
+    eval_pool: int = 0
+    max_pool_ratio: float = EvalConfig.max_pool_ratio
+
+    @property
+    def over_ceiling(self) -> bool:
+        """True when this number was measured above the batch/pool ceiling and
+        should be read as an ordering rather than a level."""
+        return self.pool_ratio > self.max_pool_ratio
 
 
 def evaluate(honest: TokenScores, attack: TokenScores, verifiers: list[Verifier],
@@ -645,6 +711,9 @@ def evaluate(honest: TokenScores, attack: TokenScores, verifiers: list[Verifier]
         h_ev = _aggregate(h_ev, honest, idx[cut:])
         a = _aggregate(a, attack, None)
         for b in batch_sizes:
+            # Enforce (or at minimum record) the batch/pool ceiling BEFORE
+            # measuring, so an inflated number can never be produced silently.
+            ratio = cfg.check_ratio(b, len(h_ev), f"{d.name} vs {attack.config_name}")
             cb = batch_means(h_cal, b, cfg.n_batches, rng)   # calibration null -> tau
             hb = batch_means(h_ev, b, cfg.n_batches, rng)    # eval null (negatives)
             ab = batch_means(a, b, cfg.n_batches, rng)       # attack (positives)
@@ -655,6 +724,8 @@ def evaluate(honest: TokenScores, attack: TokenScores, verifiers: list[Verifier]
                 auc_full=roc_auc(hb, ab),
                 tpr=float(np.mean(ab > tau)),
                 max_fpr=cfg.max_fpr,
+                pool_ratio=ratio, eval_pool=len(h_ev),
+                max_pool_ratio=cfg.max_pool_ratio,
             ))
     return results
 

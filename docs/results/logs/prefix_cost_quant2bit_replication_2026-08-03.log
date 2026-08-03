@@ -1,0 +1,100 @@
+==============================================================================
+Prefill-cost accounting + prefix scheduler   M=Qwen/Qwen3-1.7B  proxy=Qwen/Qwen3-0.6B
+==============================================================================
+loaded  M=1.72B  proxy=0.60B (lazy reference: nothing prefilled during generation) [19s]
+value signals: ['tie_margin', 'entropy', 'learned']   prompts 48..111   (head fit on 0..15, disjoint)
+full-audit prefill cost = 8662 reference-forward tokens (64 prompts x (prompt 8.3 avg + 127 generated))
+honest priced [968s]
+attack priced [1961s]
+attack=quant_2bit  batch=400  AUC = mean +- sd over 5 seeds
+  value_fn = tie_margin   scheduler = topk
+   budget  tokens audited  PREFILL cost  prefills     sec             AUC
+  -----------------------------------------------------------------------
+       5%            5.0%         75.8%        64    1.35      0.650+-0.082
+      10%           10.0%         86.4%        64    1.19      0.584+-0.015
+      20%           20.0%         92.4%        64    1.16      0.652+-0.050
+      35%           35.0%         95.6%        64    1.18      0.671+-0.044
+      50%           50.0%         97.1%        64    1.17      0.746+-0.039
+      75%           75.0%         99.1%        64    1.16      0.840+-0.057
+     100%          100.0%        100.0%        64    1.17      0.823+-0.050
+  value_fn = tie_margin   scheduler = prefix
+   budget  tokens audited  PREFILL cost  prefills     sec             AUC
+  -----------------------------------------------------------------------
+       5%            4.9%          5.0%         4    0.08      0.622+-0.109
+      10%            9.8%         10.0%         8    0.16      0.614+-0.048
+      20%           19.7%         20.0%        18    0.32      0.707+-0.068
+      35%           34.3%         35.0%        31    0.57      0.811+-0.069
+      50%           49.4%         50.0%        40    0.74      0.793+-0.068
+      75%           74.1%         75.0%        58    1.06      0.788+-0.043
+     100%          100.0%        100.0%        64    1.16      0.823+-0.050
+  value_fn = entropy   scheduler = topk
+   budget  tokens audited  PREFILL cost  prefills     sec             AUC
+  -----------------------------------------------------------------------
+       5%            5.0%         56.0%        58    1.09      0.815+-0.096
+      10%           10.0%         71.9%        62    1.13      0.646+-0.027
+      20%           20.0%         86.6%        64    1.15      0.724+-0.065
+      35%           35.0%         93.6%        64    1.16      0.651+-0.072
+      50%           50.0%         96.4%        64    1.16      0.745+-0.094
+      75%           75.0%         99.1%        64    1.17      0.828+-0.059
+     100%          100.0%        100.0%        64    1.16      0.823+-0.050
+  value_fn = entropy   scheduler = prefix
+   budget  tokens audited  PREFILL cost  prefills     sec             AUC
+  -----------------------------------------------------------------------
+       5%            4.7%          5.0%         7    0.13      0.738+-0.066
+      10%            9.4%         10.0%        14    0.24      0.716+-0.079
+      20%           19.1%         20.0%        22    0.41      0.729+-0.087
+      35%           34.1%         35.0%        34    0.60      0.745+-0.066
+      50%           48.9%         50.0%        46    0.84      0.778+-0.051
+      75%           74.1%         75.0%        58    1.06      0.788+-0.061
+     100%          100.0%        100.0%        64    1.16      0.823+-0.050
+  value_fn = learned   scheduler = topk
+   budget  tokens audited  PREFILL cost  prefills     sec             AUC
+  -----------------------------------------------------------------------
+       5%            5.0%         74.5%        64    1.15      0.687+-0.077
+      10%           10.0%         85.5%        64    1.17      0.699+-0.105
+      20%           20.0%         90.4%        64    1.16      0.656+-0.058
+      35%           35.0%         94.3%        64    1.16      0.728+-0.080
+      50%           50.0%         96.7%        64    1.17      0.746+-0.070
+      75%           75.0%         99.0%        64    1.16      0.843+-0.057
+     100%          100.0%        100.0%        64    1.16      0.823+-0.050
+  value_fn = learned   scheduler = prefix
+   budget  tokens audited  PREFILL cost  prefills     sec             AUC
+  -----------------------------------------------------------------------
+       5%            4.8%          5.0%         6    0.11      0.695+-0.085
+      10%            9.5%         10.0%        12    0.21      0.672+-0.076
+      20%           19.2%         20.0%        24    0.43      0.702+-0.066
+      35%           33.9%         35.0%        36    0.64      0.717+-0.073
+      50%           49.0%         50.0%        44    0.81      0.811+-0.060
+      75%           74.0%         75.0%        59    1.07      0.748+-0.063
+     100%          100.0%        100.0%        64    1.16      0.823+-0.050
+  At nominal budget 10%, top-k really costs 86.4% of a full audit; the prefix schedule at the SAME real cost is the comparison panel B makes.
+  Prefix-scheduled AUC by value signal (step 5: does admitting against the
+  calibrated head beat admitting against a guessed signal?)
+   budget      tie_margin         entropy         learned
+       5%      0.622+-0.109      0.738+-0.066      0.695+-0.085
+      10%      0.614+-0.048      0.716+-0.079      0.672+-0.076
+      20%      0.707+-0.068      0.729+-0.087      0.702+-0.066
+      35%      0.811+-0.069      0.745+-0.066      0.717+-0.073
+      50%      0.793+-0.068      0.778+-0.051      0.811+-0.060
+      75%      0.788+-0.043      0.788+-0.061      0.748+-0.063
+     100%      0.823+-0.050      0.823+-0.050      0.823+-0.050
+wrote /root/inference-verification/docs/results/prefix_cost_quant2bit.json
+wrote /root/inference-verification/docs/figures/fig_confidence_head_pareto.png
+wrote /root/inference-verification/docs/figures/fig_confidence_head_diagnostics.png
+wrote /root/inference-verification/docs/figures/fig_prefix_cost.png
+total 1981s
+
+================================================================================
+REPLICATION CHECK vs the committed docs/results/prefix_cost_quant2bit.json
+(the run the report and paper/figs/fig_cost.pdf were built from)
+================================================================================
+  every AUC                max|delta| = 0.000000  over 7 budgets x 2 schedulers
+  every prefill_ratio      max|delta| = 0.000000
+  every token_ratio        max|delta| = 0.000000
+  full_prefill_cost        8662 == 8662 reference-forward tokens
+  wall clock               differs (this host is ~20% faster); the ORDERING that
+                           carries the claim is unchanged:
+                             5% top-k  = 1.35 s   vs   full audit = 1.17 s
+                             prefix schedule at a 5% budget: 16.0x faster
+The committed JSON is kept as canonical so the paper stays self-consistent with
+paper.pdf; this log is the independent re-run.

@@ -102,8 +102,8 @@ DEFAULT_PROMPTS = [
     "In chess, a common opening for white is",
     "The northern lights are caused by",
     # --- extended bank: more prompts => more INDEPENDENT sequences, which is the
-    # only thing that tightens the per-SEQUENCE-constant detectors' (llm_judge,
-    # logit_judge, surface_tokens) honest-null floor toward 0.5. honest + null use
+    # only thing that tightens the per-SEQUENCE-constant verifiers' (llm_judge,
+    # surface_tokens) honest-null floor toward 0.5. honest + null use
     # disjoint ranges [0,N) and [N,2N), so the bank must hold >= 2N prompts.
     "The capital of Japan is",
     "A brief history of the internet begins with",
@@ -231,7 +231,7 @@ class HFGPUBackend:
         # inference API hands the client for free -- NOT a client-side recompute of M.
         # The client-side speculative verifier (ivgym.spec_decode.ProxySpecVerifier)
         # reads it as `p` and pairs it with its own cheap proxy `q`; see
-        # `served_logits` and `experiments/exp_spec_verifier_cost.py`.
+        # `served_logits` and the `accept_rate` Tier-0 verifier.
         self._served_cache: dict[int, np.ndarray] = {}
 
         # --- lazy reference prefill: making the recompute cost REAL ------------

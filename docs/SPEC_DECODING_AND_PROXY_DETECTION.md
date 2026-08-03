@@ -2,7 +2,7 @@
 
 *Why a cheap proxy the client runs itself can stand in for recomputing the
 reference model — and exactly where it stops working. Ties together
-`ivgym/spec_decode.py`, `ivgym/io_detectors.py`, and the real-model measurements
+`ivgym/spec_decode.py`, `ivgym/verifiers.py`, and the real-model measurements
 in `experiments/exp_family_correlation.py` / `exp_cross_family_accept.py` /
 `exp_detectability_vs_kl.py`.*
 
@@ -22,7 +22,7 @@ equivalent readings of the same signal:
   `min(1, p(x)/q(x))`. The expected acceptance rate is
   `E_{x~q}[min(1, p/q)] = Σ_x min(p, q) = 1 − TV(p, q)`.
 - **Proxy surprisal.** The per-token NLL of a served token under the proxy,
-  `−log q(x)` (`io_detectors.proxy_nll` / the `surface_stat` detector). Its
+  `−log q(x)` (`verifiers.proxy_nll` / the `surface_stat` verifier). Its
   expectation over honest tokens is the cross-entropy `H(M, q) = H(M) + KL(M‖q)`.
 
 Both reduce to a single quantity: **how well the cheap proxy `q` tracks the target
@@ -43,7 +43,8 @@ Crucially, the acceptance rate is **draft-anchored**, so it survives the classic
 evasion: a provider that quantizes and then **retunes temperature** to match the
 honest *entropy* blinds a generic entropy / cross-entropy fingerprint, but does
 **not** restore `TV(p̂, q)` — so the acceptance rate still separates it
-(`adv_quant_temp` in `experiments/exp_proxy_spec_verify.py`).
+(the `adv_quant_temp` attack in `ivgym/attacks.py`; the identity is exercised
+dependency-free by `tests/test_proxy_spec.py`).
 
 ## Where it stops — the detection budget
 
@@ -82,30 +83,28 @@ family; full logs in `docs/results/`):
   substitute — token-batched **AUC 0.998** (per-sequence 0.819), and the verifier
   never runs `M`. Swapping the whole model changes the served conditional
   distribution wholesale, so `TV(p, q)` shifts far past honest variance.
-- **The stop case — realistic quant** (`exp_spec_verifier_cost`). The
-  `ProxySpecVerifier` run end-to-end against real forward-pass cheats costs
-  `params(q)/params(M)` of the recompute (6.7× fewer FLOPs for 4B/0.6B), but at
-  realistic strength (`quant_4bit`, `adv_quant_temp`) its measured AUC sits near
-  chance while `token_difr` separates every attack (0.87–1.0). Real quant noise
-  moves `TV(p, q)` less than a real model's honest run-to-run variance — the
-  recompute-dominant regime, exactly as the budget above predicts.
+- **The stop case — realistic quant** (`exp_detectability_vs_kl`). A proxy
+  verifier costs `params(q)/params(M)` of the recompute (6.7× fewer FLOPs for
+  4B/0.6B), but at realistic strength (`quant_4bit`, `adv_quant_temp`) its
+  measured AUC sits near chance while `token_difr` separates every attack. Real
+  quant noise moves `TV(p, q)` less than a real model's honest run-to-run
+  variance — the recompute-dominant regime, exactly as the budget above predicts.
+  This is the boundary, and it is not a measurement artifact: it follows from
+  `KL(M‖q)` being the entire budget a proxy detector has to spend.
 
 ## Files
 
 - `ivgym/spec_decode.py` — `accept_rate` / `per_token_accept_prob`,
   `ProxyReference`, `ProxySpecVerifier`, `recompute_divergence` (the full-`M`
   baseline the proxy approximates); pure numpy, CPU-runnable.
-- `ivgym/io_detectors.py` — `proxy_nll` / `proxy_rank` and `surface_stat`: the
+- `ivgym/verifiers.py` — `proxy_nll` / `proxy_rank` and `surface_stat`: the
   per-token client-side proxy signals on a real backend.
 - `ivgym/backends/hf_gpu.py` — `proxy_model_name=` loads a real second model;
   `proxy_logits` is its genuine forward pass (must share `M`'s tokenizer/vocab).
-- `experiments/exp_proxy_spec_verify.py` — the acceptance-rate verifier, CPU sweep
-  plus an optional real-proxy run vs `token_difr`.
 - `experiments/exp_spec_substitution_gpu.py` — the real-model win case: model
   substitution caught from the accept rate alone, never running `M`.
-- `experiments/exp_spec_verifier_cost.py` — `ProxySpecVerifier` end-to-end on GPU:
-  measured cost saving vs detection AUC (generates
-  `docs/figures/fig_spec_verifier_cost.png`).
+- `tests/test_proxy_spec.py` — the `1 − TV` identity, the honest reference floor
+  and the temperature-retune evasion, all dependency-free (no GPU).
 - `experiments/exp_family_correlation.py` / `exp_cross_family_accept.py` /
   `exp_detectability_vs_kl.py` — the real-model measurements of the budget above.
 
