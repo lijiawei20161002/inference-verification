@@ -1,0 +1,215 @@
+{
+  "accept_pass_rate": {
+    "honest": 0.9547526041666666,
+    "honest_spec": 0.9635416666666666,
+    "honest_spec_seeded": 0.9886067708333334,
+    "seed_43": 0.95458984375,
+    "spec_lenient": 0.93017578125
+  },
+  "auc": {
+    "honest": {
+      "spec_replay": [
+        1.0,
+        0.0
+      ]
+    },
+    "honest_spec": {
+      "spec_accept": [
+        0.4995538847117794,
+        0.0009823026835295446
+      ],
+      "spec_replay": [
+        1.0,
+        0.0
+      ],
+      "token_difr": [
+        0.9725864661654136,
+        0.019777148007718393
+      ]
+    },
+    "honest_spec_seeded": {
+      "spec_accept": [
+        0.4999649122807018,
+        0.00150814731573304
+      ],
+      "token_difr": [
+        0.9919097744360903,
+        0.006647217564316171
+      ]
+    },
+    "seed_43": {
+      "spec_accept": [
+        0.5011027568922305,
+        0.0034876557585372886
+      ],
+      "spec_replay": [
+        1.0,
+        0.0
+      ],
+      "token_difr": [
+        0.9820050125313283,
+        0.013379111869557246
+      ]
+    },
+    "spec_lenient": {
+      "spec_accept": [
+        0.500516290726817,
+        0.0024098027829220414
+      ],
+      "spec_replay": [
+        1.0,
+        0.0
+      ],
+      "token_difr": [
+        0.9929473684210526,
+        0.00577487554022628
+      ]
+    }
+  },
+  "batch": 307,
+  "cost_seconds": {
+    "prefill_difr": 0.3949122357647866,
+    "ratio": 11.823091170764084,
+    "spec_replay": 4.669083367897353
+  },
+  "d_prime": {
+    "honest": {
+      "spec_replay": 1.7083433712876068
+    },
+    "honest_spec": {
+      "spec_accept": -0.025286347879345694,
+      "spec_replay": 1.6671975374261174,
+      "token_difr": 0.26780953749138
+    },
+    "honest_spec_seeded": {
+      "spec_accept": -0.012486367993152373,
+      "token_difr": 0.30240766412475584
+    },
+    "seed_43": {
+      "spec_accept": -0.006571406034690617,
+      "spec_replay": 1.818329350263511,
+      "token_difr": 0.2877750673792557
+    },
+    "spec_lenient": {
+      "spec_accept": -0.003672947660461421,
+      "spec_replay": 1.8539363218744151,
+      "token_difr": 0.30235013677095784
+    }
+  },
+  "draft": "Qwen/Qwen3-0.6B",
+  "eval_pool": 3072,
+  "gamma": 4,
+  "model": "Qwen/Qwen3-1.7B",
+  "n_prompts": 48,
+  "n_seeds": 5,
+  "n_tokens": 128,
+  "pool_ratio": 0.09993489583333333,
+  "replay_disagreement": {
+    "honest": 0.3956705729166667,
+    "honest_spec": 0.38720703125,
+    "honest_spec_seeded": 0.044270833333333336,
+    "seed_43": 0.4182942708333333,
+    "spec_lenient": 0.4256184895833333
+  },
+  "scores": [
+    "token_difr",
+    "spec_accept",
+    "spec_replay"
+  ],
+  "seconds": 2474.150721311569,
+  "spec_runs": {
+    "honest_spec": {
+      "accept_rate": 0.49622538618016127,
+      "accepted_frac": 0.65771484375,
+      "bonus_frac": 0.10384114583333333,
+      "draft_params": 596049920,
+      "gamma": 4,
+      "mean_accepted": 1.984901544720645,
+      "rounds": 2134,
+      "target_params": 1720574976,
+      "tokens_per_round": 2.953591537626798
+    },
+    "honest_spec_seeded": {
+      "accept_rate": 0.4923400120453402,
+      "accepted_frac": 0.65771484375,
+      "bonus_frac": 0.10009765625,
+      "draft_params": 596049920,
+      "gamma": 4,
+      "mean_accepted": 1.969360048181361,
+      "rounds": 2132,
+      "target_params": 1720574976,
+      "tokens_per_round": 2.941944789716312
+    },
+    "spec_lenient": {
+      "accept_rate": 0.5703887515318157,
+      "accepted_frac": 0.6892903645833334,
+      "bonus_frac": 0.11686197916666667,
+      "draft_params": 596049920,
+      "gamma": 4,
+      "mean_accepted": 2.2815550061272627,
+      "rounds": 1938,
+      "target_params": 1720574976,
+      "tokens_per_round": 3.252119068114167
+    }
+  },
+  "tpr": {
+    "honest": {
+      "spec_replay": [
+        1.0,
+        0.0
+      ]
+    },
+    "honest_spec": {
+      "spec_accept": [
+        0.0015,
+        0.0010954451150103322
+      ],
+      "spec_replay": [
+        1.0,
+        0.0
+      ],
+      "token_difr": [
+        0.9455,
+        0.008117881497040954
+      ]
+    },
+    "honest_spec_seeded": {
+      "spec_accept": [
+        0.0039,
+        0.0034698703145794943
+      ],
+      "token_difr": [
+        0.9893000000000001,
+        0.000979795897113272
+      ]
+    },
+    "seed_43": {
+      "spec_accept": [
+        0.005200000000000001,
+        0.00593801313572141
+      ],
+      "spec_replay": [
+        1.0,
+        0.0
+      ],
+      "token_difr": [
+        0.9678000000000001,
+        0.001989974874213235
+      ]
+    },
+    "spec_lenient": {
+      "spec_accept": [
+        0.0038,
+        0.002712931993250107
+      ],
+      "spec_replay": [
+        1.0,
+        0.0
+      ],
+      "token_difr": [
+        0.9913000000000001,
+        0.0013999999999999792
+      ]
+    }
+  }
+}

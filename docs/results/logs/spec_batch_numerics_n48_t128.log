@@ -1,0 +1,43 @@
+loading target=Qwen/Qwen3-1.7B draft=Qwen/Qwen3-0.6B (all simulated noise OFF) ...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights:  27%|██▋       | 83/311 [00:00<00:00, 769.10it/s]Loading weights:  51%|█████▏    | 160/311 [00:00<00:00, 619.09it/s]Loading weights:  72%|███████▏  | 224/311 [00:00<00:00, 602.52it/s]Loading weights:  92%|█████████▏| 285/311 [00:00<00:00, 564.42it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 612.29it/s]
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights:  23%|██▎       | 71/311 [00:00<00:00, 600.46it/s]Loading weights:  45%|████▍     | 139/311 [00:00<00:00, 614.31it/s]Loading weights:  65%|██████▍   | 201/311 [00:00<00:00, 549.35it/s]Loading weights:  83%|████████▎ | 257/311 [00:00<00:00, 522.04it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 567.90it/s]
+loaded in 25.6s | 48 prompts x 128 tokens
+  6/48 prompts (768 positions) 82s
+  12/48 prompts (1536 positions) 137s
+  18/48 prompts (2304 positions) 191s
+  24/48 prompts (3072 positions) 245s
+  30/48 prompts (3840 positions) 298s
+  36/48 prompts (4608 positions) 352s
+  42/48 prompts (5376 positions) 405s
+  48/48 prompts (6144 positions) 458s
+
+================================================================================================
+Forward-pass shape vs the verifier's prefill, same prefixes, 6144 positions, Qwen/Qwen3-1.7B bf16
+================================================================================================
+           path | mean|dlogit|  max|dlogit|  argmax flip  sampled-token flip  mean margin
+-----------------------------------------------------------------------------------------
+ prefill_repeat |    0.000e+00    0.000e+00        0.00%               0.00%       0.0000
+         batch2 |    2.935e-02    6.344e+00        0.57%               0.63%       0.0447
+         batch8 |    2.754e-02    6.219e+00        0.57%               0.60%       0.0502
+         decode |    6.518e-02    9.750e+00        1.50%               2.10%       0.1078
+      verify_g4 |    6.464e-02    4.531e+00        1.89%               1.95%       0.1412
+      verify_g8 |    6.428e-02    5.758e+00        1.73%               2.03%       0.1408
+
+  Control: the same call twice is bit-identical (max|dlogit| = 0.000e+00). Every other row is therefore
+  attributable to the shape of the forward pass, not to run-to-run jitter.
+  verify_g4: the shape alone flips the sampled token at 1.95%, vs 0.63% for the benign batch-composition
+    yardstick -- 3.1x.
+  verify_g8: the shape alone flips the sampled token at 2.03%, vs 0.63% for the benign batch-composition
+    yardstick -- 3.2x.
+
+  Against the right control: an ORDINARY sequential server (`decode`) already flips
+  2.10% of sampled tokens against the verifier's prefill; the speculative verify pass flips
+  2.03%. Speculation therefore adds no measurable numerical penalty of its
+  own (0.97x decode) -- the floor is the PREFILL-vs-INCREMENTAL mismatch that every
+  serving stack has, and a spec-aware verifier inherits it rather than creating it.
+  It is 3.2x the benign batch-composition noise a verifier already tolerates,
+  which is the size of the problem: real, bounded, and not fixable by disclosure.
+
+wrote /root/inference-verification/docs/results/spec_batch_numerics.json
+total 458.0s

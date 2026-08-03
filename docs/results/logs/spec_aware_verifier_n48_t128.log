@@ -1,0 +1,96 @@
+loading target=Qwen/Qwen3-1.7B draft=Qwen/Qwen3-0.6B gamma=4 ...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 9508.81it/s]
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 8379.61it/s]
+loaded in 9.3s | 48 prompts x 128 tokens per arm
+
+generating + auditing honest (non-speculative) null ...
+  6144 tokens, 430s
+  honest_spec_seeded   6144 tokens in 546.3s
+  honest_spec          6144 tokens in 545.9s
+  seed_43              6144 tokens in 416.4s
+  spec_lenient         6144 tokens in 521.3s
+
+============================================================================================
+1. Share of a server's tokens each replay verifier CANNOT reproduce
+============================================================================================
+             server |   V0 Gumbel rerun   V2 spec replay
+----------------------------------------------------------
+             honest |              2.5%            39.6%
+ honest_spec_seeded |             30.6%             4.4%
+        honest_spec |             27.9%            38.7%
+            seed_43 |             29.7%            41.8%
+       spec_lenient |             30.9%            42.6%
+
+  Read the diagonal. V0 reproduces the sequential server and fails on the
+  speculative one; V2 reproduces the seeded speculative server and fails on
+  the sequential one. Each verifier is sound only against the decoding
+  algorithm it assumes -- and which algorithm a provider runs is exactly what
+  a client cannot check.
+
+============================================================================================
+2. Detection AUC @ FPR<=0.5%, each verifier calibrated on ITS OWN honest
+   null   (batch=307, eval pool=3072, ratio=10.0%, 5 protocol seeds)
+============================================================================================
+   V0/V1 null = honest (sequential)   |   V2 null = honest_spec_seeded
+             server |    V0 token_difr   V1 spec_accept   V2 spec_replay
+------------------------------------------------------------------------
+             honest |    -- (the null)    -- (the null)      1.000+-0.000
+ honest_spec_seeded |      0.992+-0.007      0.500+-0.002    -- (the null)
+        honest_spec |      0.973+-0.020      0.500+-0.001      1.000+-0.000
+            seed_43 |      0.982+-0.013      0.501+-0.003      1.000+-0.000
+       spec_lenient |      0.993+-0.006      0.501+-0.002      1.000+-0.000
+
+Flag rate at a threshold calibrated to 0.5% FPR on that verifier's own null
+             server |    V0 token_difr   V1 spec_accept   V2 spec_replay
+------------------------------------------------------------------------
+             honest |    -- (the null)    -- (the null)           100.0%  <- HONEST server
+ honest_spec_seeded |            98.9%             0.4%    -- (the null)  <- HONEST server
+        honest_spec |            94.5%             0.1%           100.0%  <- HONEST server
+            seed_43 |            96.8%             0.5%           100.0%
+       spec_lenient |            99.1%             0.4%           100.0%
+
+  V2's honest floor is 4.4% disagreement, against 2.5% for V0 on its own
+  null -- the replay has to rerun the draft rollout and the batched verify pass
+  itself, and its forward passes do not have the shapes the server's did, so a
+  share of acceptance decisions flip on numerics alone. The fix is sound, but it
+  is noisier than the detector it replaces.
+
+============================================================================================
+3. V1b: share of claimed tokens that PASS the acceptance test
+   (attested draft model, uniform from the public position seed)
+============================================================================================
+             server |  pass rate
+---------------------------------
+             honest |      95.5%
+ honest_spec_seeded |      98.9%
+        honest_spec |      96.4%
+            seed_43 |      95.5%
+       spec_lenient |      93.0%
+
+  The acceptance test passes 95.5% of the wrong-seed ATTACK's tokens and
+  95.5% of honest ones. It is a DISTRIBUTIONAL check: it asks whether the
+  claimed token was a plausible draw, which is the one thing an output-preserving
+  deviation preserves. The cheap spec-aware rung buys nothing against exactly the
+  attack that motivated seeded verification in the first place.
+
+  V3 trust_declared: certifies 100% of every server's tokens, without a
+  forward pass. A provider asserting `draft = claimed` may name any draft
+  probability q_hat <= p(t)/u, so acceptance is forced for every token with
+  p(t) > 0. Not measured because it is arithmetic: the disclosure has to be
+  RECOMPUTED, not believed.
+
+============================================================================================
+What the sound rung costs, per audited sequence (GPU-synchronised)
+============================================================================================
+  V0 token_difr   one prefill over [prompt+claimed] :    394.9 ms
+  V2 spec_replay  re-run the speculative loop       :   4669.1 ms   (11.8x)
+
+  V2 is not a prefill. It replays ~32 sequential rounds, each a
+  4-step draft rollout plus a batched target pass, because the round
+  structure is only knowable by walking it. The sound spec-aware audit
+  therefore costs more than the generation it is checking -- where plain
+  recomputation costs one prefill.
+
+wrote docs/results/spec_aware_verifier.json
+total 2474.2s

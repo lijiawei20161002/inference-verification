@@ -18,6 +18,18 @@ them:
 Of these, **C is the one that decides whether any of this deploys**, and it is
 the cheapest to run. It is first for that reason.
 
+A fourth bound has since been measured rather than assumed, and it belongs here
+because it changes what the items below are worth:
+
+- **D** — the verifier assumed the provider's *decoding algorithm*, not just its
+  model. An honest speculative-decoding server is flagged by `token_difr` at 94.5%
+  ([docs/SPECULATIVE_PROVIDERS.md](docs/SPECULATIVE_PROVIDERS.md),
+  `exp_spec_decode_difr_gpu` / `exp_spec_aware_verifier_gpu` /
+  `exp_spec_batch_numerics_gpu`). This one is **closed as a measurement** — the
+  false positive is real, the sound fix costs 11.8× a prefill, and the residual
+  numerical floor is the prefill-versus-incremental mismatch that every serving
+  stack has. What it opens is item 3 and item 10 below.
+
 ---
 
 ## Tier 1 — the results that are load-bearing and untested
@@ -121,6 +133,15 @@ been wrong about before.
 
 **Cost:** ~2–3 GPU-days. Highest scientific value on the list.
 
+**What D adds to this item.** There is now a measured hiding place. An honest
+speculative server sits at a 94.5% `token_difr` flag rate while doing nothing wrong,
+so a provider that speculates *and* cheats has a ready-made alibi: every flag it
+draws is one an honest speculative server would also draw. The sharpest version of
+item 3 is therefore a **mixture attacker** — speculate honestly on most rounds and
+lenient-accept on a chosen fraction `ε` — and the question is whether the seed-free
+portfolio can resolve `ε` at all. On the current numbers (`spec_lenient` at 0.531
+without `token_difr`) the prediction is that it cannot, at any `ε`.
+
 ---
 
 ## Tier 2 — finishing what the corrections started
@@ -208,6 +229,26 @@ each other up to nondeterminism and a cheating one does not — without anyone
 running `M`. This is a genuinely different mechanism from everything in the repo
 (it replaces the trusted anchor with an assumption of non-collusion), and it is
 cheap to simulate with the existing backend.
+
+---
+
+### 10. The unattested draft, and the sequential test that might rescue V2
+
+Both spec-aware verifiers assume the client knows which draft model the provider
+used. Drop that and V2 must search over drafts, which is either expensive or
+unsound — and a provider free to choose its draft can pick one whose disagreement
+pattern mimics numerics. That is the honest next question, and it is cheap: reuse
+`exp_spec_aware_verifier_gpu` with the verifier's draft deliberately mismatched
+(0.6B verifier against a 1.7B-drafted server, and vice versa), and report V2's
+disagreement floor as a function of draft mismatch on `model_taxonomy.distance`.
+
+The other half is item 8's machinery pointed at this problem. V2's failure is that
+its honest floor (4.4%) is close to its signal, and a fixed-batch test cannot spend
+its way out. A sequential test can: 4.4% versus 38.7% is a large per-token
+separation, so an SPRT should reach a verdict in far fewer tokens than the 11.8×
+replay cost suggests — which is the one route by which the sound spec-aware audit
+becomes affordable. **Cost:** ~half a GPU-day, and it is the cheapest item that could
+turn a negative into a deployable positive.
 
 ---
 

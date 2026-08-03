@@ -62,6 +62,12 @@ CLAIMS = [
      "info_directed.json"),
     ("no single recompute detector is robust across model families",
      "robustness_sweep.json"),
+    ("an HONEST speculative-decoding provider is flagged by `token_difr` at 94.5%",
+     "spec_decode_difr.json"),
+    ("the sound spec-aware verifier is a re-generation, not a prefill (11.8x)",
+     "spec_aware_verifier.json"),
+    ("the speculative forward pass diverges 3x the benign batch-composition floor",
+     "spec_batch_numerics.json"),
 ]
 
 
@@ -120,6 +126,37 @@ def test_pool_scaling_has_points_inside_the_ceiling():
     assert ratios, "pool_scaling.json records no batch/pool ratio"
     inside = [r for r in ratios if r <= CEILING]
     assert len(inside) >= 4, f"only {len(inside)} points inside the ceiling: {sorted(ratios)}"
+
+
+def test_the_speculative_false_positive_is_measured_inside_the_ceiling():
+    """The whole speculative finding is a false-positive rate on an HONEST server,
+    so it is exactly the kind of number the ratio artifact used to manufacture.
+    Both speculative experiments size their batch from `EvalConfig.max_pool_ratio`;
+    this asserts the arithmetic came out inside the ceiling, and that the honest
+    speculative arm really is flagged (the claim would be vacuous otherwise)."""
+    for name in ("spec_decode_difr.json", "spec_aware_verifier.json"):
+        d = json.loads((RES / name).read_text())
+        ratio = d["batch"] / d["eval_pool"]
+        assert abs(ratio - d["pool_ratio"]) < 1e-6, f"{name}: pool_ratio disagrees with batch/pool"
+        assert ratio <= CEILING + 1e-9, f"{name}: batch/pool {ratio:.1%} over the ceiling"
+    # `tpr` on an honest arm IS the false-positive rate; entries are (mean, sd).
+    d = json.loads((RES / "spec_decode_difr.json").read_text())
+    assert d["tpr"]["honest_spec"]["token_difr"][0] > 0.5, (
+        "honest speculation is no longer flagged by token_difr -- the finding is gone")
+
+
+def test_the_spec_numerics_determinism_control_holds():
+    """`spec_batch_numerics` attributes its divergence to the *shape* of the
+    forward pass. That attribution rests entirely on one control: the same call
+    twice is bit-identical. If it ever stops being, every other row in that table
+    is run-to-run jitter and the experiment says nothing."""
+    d = json.loads((RES / "spec_batch_numerics.json").read_text())["stats"]
+    assert d["prefill_repeat"]["bit_identical"], (
+        "the prefill-repeat control is no longer bit-identical: the speculative "
+        "divergence can no longer be attributed to forward-pass shape")
+    assert d["verify_g4"]["token_flip_rate"] > d["batch2"]["token_flip_rate"], (
+        "the speculative verify pass no longer exceeds the benign batch-composition "
+        "yardstick -- the irreducible-floor claim is gone")
 
 
 def _collect_ratios(obj) -> list[float]:

@@ -1,0 +1,122 @@
+loading target=Qwen/Qwen3-1.7B draft=Qwen/Qwen3-0.6B gamma=4 ...
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 9009.29it/s]
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 8598.00it/s]
+loaded in 8.5s | target 1.72B, draft 0.60B, vocab 151936 | 48 prompts x 128 tokens per arm
+
+generating honest (non-speculative) null ...
+  6144 tokens in 174.6s
+  honest_null          6144 tokens in 174.0s
+  honest_spec          6144 tokens in 313.9s
+  honest_spec_seeded   6144 tokens in 313.5s
+  spec_lenient         6144 tokens in 290.4s
+  spec_topk            6144 tokens in 236.3s
+  seed_43              6144 tokens in 177.2s
+  quant_2bit           6144 tokens in 201.5s
+
+==============================================================================
+1. The speculative server really speculated
+==============================================================================
+                arm |  accept  acc/round  tok/round   bonus  rounds
+------------------------------------------------------------------------------
+        honest_spec |   0.496       1.98       2.95   0.104    2134
+ honest_spec_seeded |   0.492       1.97       2.94   0.100    2132
+       spec_lenient |   0.570       2.28       3.25   0.117    1938
+          spec_topk |   0.815       3.26       4.19   0.164    1479
+
+  Honest exact speculation emits 2.95 tokens per target verify pass at gamma=4, i.e. a 2.95x reduction in target forward passes. This is a server with a real reason to exist, not a strawman.
+  The lenient CHEAT accepts 0.570 of drafts vs 0.496 honest -- it is cheaper, which is why a provider would run it.
+
+==============================================================================
+2. Detection AUC @ FPR<=0.5%   (batch=307 tokens, honest eval pool=3072, batch/pool=10.0%)
+   mean +- sd over 5 protocol seeds
+==============================================================================
+                arm |       token_difr    cross_entropy     token_toploc  activation_difr
+-----------------------------------------------------------------------------------------
+        honest_null |     0.499+-0.000     0.548+-0.012     0.505+-0.007     0.499+-0.000
+        honest_spec |     0.973+-0.020     0.500+-0.001     0.503+-0.005     0.500+-0.001
+ honest_spec_seeded |     0.992+-0.007     0.515+-0.004     0.515+-0.017     0.499+-0.000
+       spec_lenient |     0.993+-0.006     0.531+-0.008     0.509+-0.011     0.499+-0.000
+          spec_topk |     1.000+-0.000     0.999+-0.001     1.000+-0.000     0.499+-0.000
+            seed_43 |     0.982+-0.013     0.503+-0.002     0.511+-0.013     0.499+-0.000
+         quant_2bit |     0.717+-0.034     0.509+-0.004     0.696+-0.084     1.000+-0.000
+
+  `honest_null` is an honest provider measured against another honest
+  provider: it is what 'no deviation' reads as under this protocol.
+
+==============================================================================
+3. Per-token effect size d'  /  batch it nominates for AUC 0.90
+==============================================================================
+                arm |       token_difr    cross_entropy     token_toploc  activation_difr
+-----------------------------------------------------------------------------------------
+        honest_null |      -0.035 / --    +0.088 / 1830      +0.011 / --      -0.026 / --
+        honest_spec |     +0.268 / 198      -0.012 / --      -0.006 / --   +0.012 / 97890
+ honest_spec_seeded |     +0.302 / 156    +0.052 / 5201   +0.025 / 22028      -0.043 / --
+       spec_lenient |     +0.302 / 156    +0.070 / 2891   +0.019 / 40918      -0.094 / --
+          spec_topk |       +1.295 / 9     +0.376 / 101      +0.828 / 21      -0.099 / --
+            seed_43 |     +0.288 / 172   +0.017 / 50504   +0.012 / 99576      -0.040 / --
+         quant_2bit |     +0.150 / 634    +0.042 / 8049     +0.137 / 757       +8.154 / 1
+
+==============================================================================
+4. Flag rate at a threshold calibrated to 0.5% FPR on honest traffic
+   For an HONEST arm this is a FALSE-POSITIVE rate.
+==============================================================================
+                arm |       token_difr    cross_entropy     token_toploc  activation_difr
+-----------------------------------------------------------------------------------------
+        honest_null |            0.0%            21.2%             0.3%             0.1%   <- honest
+        honest_spec |           94.5%             0.9%             0.2%             0.5%   <- honest
+ honest_spec_seeded |           98.9%             8.3%             1.3%             0.0%   <- honest
+       spec_lenient |           99.1%            14.6%             0.8%             0.0% 
+          spec_topk |          100.0%           100.0%           100.0%             0.0% 
+            seed_43 |           96.8%             2.5%             1.1%             0.0% 
+         quant_2bit |           37.9%             5.8%            32.8%           100.0% 
+
+  Calibration check: `honest_null` should sit at the nominal 0.5% on every column.
+  It does NOT, on: cross_entropy (21.2%) (tolerance 2.0%).
+  Those columns are miscalibrated ACROSS PROMPT RANGES: the same honest
+  server on different prompts already exceeds the FPR budget, so their
+  speculative rows measure prompt difficulty as much as speculation and
+  cannot be read as false-positive rates. The columns within tolerance (token_difr, token_toploc, activation_difr)
+  can.
+
+==============================================================================
+5. Honesty certificate: the emitted tokens, judged WITHOUT the seed
+==============================================================================
+                arm |   mean NLL under M   mean rank in M  seed replay agrees   mean margin
+----------------------------------------------------------------------------------------
+             honest |      0.7416+-0.0139     1.021+-0.057              97.5%        0.1765
+        honest_null |      0.8377+-0.0149     1.069+-0.051              97.9%        0.0969
+        honest_spec |      0.7283+-0.0144     0.996+-0.052              72.1%        0.7816
+ honest_spec_seeded |      0.7988+-0.0150     1.134+-0.058              69.4%        0.8598
+       spec_lenient |      0.8180+-0.0152     1.104+-0.053              69.1%        0.8596
+          spec_topk |      1.2258+-0.0227     4.690+-0.170              60.1%        3.1014
+            seed_43 |      0.7599+-0.0142     1.074+-0.057              70.3%        0.8267
+         quant_2bit |      0.7881+-0.0149     1.628+-0.087              91.5%        0.5147
+
+  Columns 1-2 read the claimed tokens against the recomputed reference and
+  need NO seed. Columns 3-4 are the seeded replay. An honest speculative
+  server matches the honest server on 1-2 and not on 3-4 -- which is the
+  finding: what the seeded verifier reports is a break in SEED
+  SYNCHRONISATION, not in the distribution the tokens were drawn from.
+
+  The mechanism in one number: the verifier's replay reproduces 97.5% of an
+  honest sequential server's tokens and only 72.1% of an honest speculative server's --
+  against 70.3% for the wrong-seed ATTACK.
+
+==============================================================================
+6. What tolerating speculative decoding costs
+==============================================================================
+             attack |   best AUC (all 4)   best, no token_difr     cost
+------------------------------------------------------------------------------
+       spec_lenient |      0.993 (token_)        0.531 (cross_)    0.462
+          spec_topk |      1.000 (token_)        1.000 (token_)    0.000
+            seed_43 |      0.982 (token_)        0.511 (token_)    0.471
+         quant_2bit |      1.000 (activa)        1.000 (activa)    0.000
+
+  A provider that speculates cannot be checked with `token_difr` -- the
+  detector flags it at the rate in table 4 while it is doing nothing wrong.
+  So the row above without `token_difr` is the portfolio a verifier actually
+  has against a provider that is ALLOWED to speculate.
+
+wrote /root/inference-verification/docs/results/spec_decode_difr.json
+total 1902.4s

@@ -17,7 +17,7 @@ figure in it regenerates from the committed run artifacts
 
 ## The short version
 
-**Three findings organize everything else.**
+**Four findings organize everything else.**
 
 1. **Recomputation works, but barely, and at a price.** Re-running the reference
    model `M` and comparing per-token sampling margins catches every deviation we
@@ -36,6 +36,14 @@ figure in it regenerates from the committed run artifacts
    bound. The same measurement reads **0.977 and 0.530** depending only on pool
    size. This is now enforced in code (`EvalConfig.max_pool_ratio`) rather than
    left to the reader.
+4. **The strongest detector assumes the provider's decoding algorithm, not just its
+   model.** An honest **speculative-decoding** server produces exactly `M`'s output
+   distribution by a different random route, and `token_difr` — the detector that
+   reads a wrong seed at AUC 1.000 — flags it at **94.5%** while flagging a
+   *cheating* speculative server at 99.1%. Tolerate speculation and the surviving
+   portfolio drops to chance on every output-preserving deviation; make the verifier
+   spec-aware and the sound version costs **11.8× a prefill**, more than generating
+   the tokens it audits.
 
 ---
 
@@ -164,7 +172,7 @@ recomputes `M`; Tier-0 never does.
 
 | tier | verifier | what it sees | structural blind spot |
 |---|---|---|---|
-| 1 | `token_difr` | post-Gumbel margin — forward pass **and** draw | nothing, but the margin under `kv_fp8` is reliably positive and reliably tiny (d′ = 0.015) |
+| 1 | `token_difr` | post-Gumbel margin — forward pass **and** draw | the margin under `kv_fp8` is reliably positive and reliably tiny (d′ = 0.015) — and it **flags an honest speculative-decoding provider at 94.5%** (see below) |
 | 1 | `token_toploc` | rank of the claimed token in the filtered distribution | `bug_k2`. **Needs no seed synchronization** — a much weaker deployment requirement |
 | 1 | `cross_entropy` | NLL of the claimed token | anything that doesn't move the bulk of the distribution (`bug_k2`) |
 | 1 | `activation_difr` | L2 on projected activations | **the sampler, exactly and by construction** — activations are computed before a token is drawn |
@@ -207,6 +215,64 @@ reversals" the earlier record reported, which
 have d′ > 0. `token_difr` does not invert on SmolLM2 or Pythia; it is simply *at
 chance* there, because an fp8 KV cache at 8 192 tokens is below its detection
 floor.
+
+---
+
+## The provider may also speculate — and then the best detector inverts
+
+`token_difr`'s guarantee is not "the provider sampled from `p`". It is "the provider
+sampled from `p` **via this exact map**" — `argmax(filt(logits) + T·g)` with `g` from
+the public seed. A **speculative-decoding** server samples from the same `p` by a
+different route: a small draft model proposes, `M` accepts with probability
+`min(1, p/q)`, and rejections are corrected from the residual `(p − q)₊`. The output
+law is *exactly* `M`'s — but the token is a function of the draft's randomness and
+the server's acceptance uniforms, which the verifier does not hold.
+
+Measured on two real models (target Qwen3-1.7B, draft Qwen3-0.6B, γ = 4, a real
+batched verify pass, nothing simulated), at a threshold calibrated to 0.5% FPR on
+honest traffic — **for the honest arms these are false-positive rates**:
+
+```
+                arm |    token_difr  cross_entropy   token_toploc  activation_difr
+        honest_null |          0.0%          21.2%           0.3%             0.1%   <- honest
+        honest_spec |         94.5%           0.9%           0.2%             0.5%   <- honest
+       spec_lenient |         99.1%          14.6%           0.8%             0.0%   (cheat)
+            seed_43 |         96.8%           2.5%           1.1%             0.0%   (cheat)
+```
+
+An honest speculative provider is flagged at **94.5%**, a cheating one at 99.1%. The
+detector is not separating honest from dishonest, it is separating *sequential from
+speculative*. (`honest_null` is the same honest config on disjoint prompts, so its
+row is the protocol's own calibration check. `cross_entropy` fails it at 21.2% — that
+column's threshold does not transfer across prompt ranges, so its rows are not
+readable as false-positive rates. The other three pass and are.) The mechanism is stated without any metric by two columns of the same
+table: the seeded replay reproduces **97.5%** of an honest sequential server's tokens,
+**72.1%** of an honest speculative server's, and **70.3%** of the wrong-seed
+*attack's* — while the seed-free columns (NLL and rank under `M`) put honest
+speculation exactly on top of honest sequential decoding. `exp_spec_decode_difr_gpu`
+
+**The cost of tolerating it.** Drop `token_difr` and the remaining seed-free
+portfolio loses ~0.47 AUC on precisely the output-preserving deviations
+(`seed_43` 0.982 → 0.511, `spec_lenient` 0.993 → 0.531 — chance) and loses *nothing*
+on forward-pass ones (`quant_2bit` stays 1.000 via `activation_difr`).
+
+**Teaching the verifier to speculate does not rescue it.** A ladder of four
+spec-aware verifiers, each demanding more disclosure (`exp_spec_aware_verifier_gpu`):
+the cheap seed-free acceptance check sits at **AUC 0.500** on every arm; the sound
+replay costs **11.8× a prefill** — more than the generation it audits — is *noisier*
+than the detector it replaces (4.4% honest floor vs 2.5%), and still flags an honest
+*sequential* server at 100%, because it too assumes one decoding algorithm. The
+cheapest rung, believing the provider's own disclosure, certifies everything by
+arithmetic.
+
+**And one part is not bookkeeping.** With all simulated noise off, the speculative
+verify pass disagrees with the verifier's prefill on 2.03% of sampled tokens against
+0.63% for benign batch-composition noise (3.2×) — but an *ordinary sequential decode*
+already disagrees on 2.10%. Speculation adds no numerical penalty of its own
+(0.97×); the floor is the **prefill-versus-incremental** mismatch every serving stack
+has, and every prefill-based verifier inherits. `exp_spec_batch_numerics_gpu`
+
+Full write-up: **[docs/SPECULATIVE_PROVIDERS.md](docs/SPECULATIVE_PROVIDERS.md)**.
 
 ---
 
@@ -331,13 +397,21 @@ setting should take the scheduler and skip the head.
    caches and sampler deviations are recompute-dominant. Spot-check with it rather
    than running it continuously.
 3. **Use a portfolio of detectors.** `token_toploc` deserves particular attention:
-   it needs no seed synchronization.
-4. **Budget in prefill tokens, and schedule prefixes.** Depth is cheap, breadth is
+   it needs no seed synchronization — which is now a much stronger argument than it
+   looked, because seed synchronization is what speculative decoding breaks.
+4. **Contract for the decoding algorithm, or give up `token_difr`.** Using it means
+   requiring the provider to derive sampling randomness from the public seed *and not
+   to speculate* — a real restriction with a real throughput cost to them (2.95×
+   fewer target forward passes, given up). Unstated, that assumption turns the
+   detector into a speculation detector. If the provider may speculate, budget for
+   losing output-preserving deviations entirely, or for an audit that costs more than
+   the generation.
+5. **Budget in prefill tokens, and schedule prefixes.** Depth is cheap, breadth is
    expensive.
-5. **Spend the tuning effort on pool size, not the estimator.** Every attempt to be
+6. **Spend the tuning effort on pool size, not the estimator.** Every attempt to be
    cleverer than a plain mean failed. Measure `d′` on a few thousand tokens first;
    it tells you the pool the verdict will require.
-6. **Report the batch/pool ratio next to every AUC.** It is one number, and without
+7. **Report the batch/pool ratio next to every AUC.** It is one number, and without
    it a detection AUC is not interpretable.
 
 ---
@@ -359,12 +433,16 @@ ivgym/
   signal.py          the theory side: d' -> batch separation -> predicted pAUC, so an
                      experiment can PREDICT a detection AUC instead of only measuring one
   spec_decode.py     the acceptance-rate identity 1-TV(p,q), ProxyReference anchor
+  spec_server.py     the PROVIDER side: an honest speculative server, and why a
+                     seed-replaying verifier cannot tell it from a wrong-seed attack
   triage.py          NEGATIVE RESULT: the learned confidence head (DSpark port)
   infogain.py        NEGATIVE RESULT: the derived matched filter, with oracle arms
   model_taxonomy.py  model-relationship axes + a distance() derived from them
   model_registry.py  one ModelIdentity per HF id
   backends/hf_gpu.py a real model on a GPU + lazy_reference: RAISE on an unpaid
                      reference row, so a selective budget's cost is MEASURED not assumed
+  backends/hf_gpu_spec.py  the same, generating by REAL speculative decoding (two
+                     models, a real batched target verify pass, nothing simulated)
 
 experiments/         one file per claim; exp_*_gpu.py need CUDA, plot_*.py do not
 tests/               test_smoke / test_proxy_spec / test_triage_and_cost / test_infogain
@@ -388,6 +466,9 @@ docs/results/        every committed run artifact; docs/figures/ every committed
 | `KL(M‖q)` is the proxy's whole budget | `exp_detectability_vs_kl` | `exp_detectability_vs_kl_*.txt` |
 | recomputation is necessary (`seed_43`) | `exp_io_detector_gpu` | `exp_io_detector_gpu_*.txt` |
 | no detector is robust across families | `exp_robustness_gpu` | `robustness_sweep.json` |
+| an HONEST speculative provider is flagged at 94.5% | `exp_spec_decode_difr_gpu` | `spec_decode_difr.json` |
+| the sound spec-aware verifier costs 11.8× a prefill | `exp_spec_aware_verifier_gpu` | `spec_aware_verifier.json` |
+| the speculative/prefill numerical floor is real and bounded | `exp_spec_batch_numerics_gpu` | `spec_batch_numerics.json` |
 
 `tests/test_claims.py` asserts this table: delete an artifact and a test fails.
 
@@ -440,7 +521,13 @@ quantize + temperature-retune cheat against the seed-free verifier
   structurally unlike an i.i.d. Gaussian perturbation. Read the quantization
   numbers as a *model of* the attack, not a measurement of it.
 - **The verifier is passive.** No experiment has the attacker adapting to the
-  specific verifier it faces.
+  specific verifier it faces. The speculative results sharpen why that matters: an
+  honest speculative server already occupies a 94.5%-flag band under `token_difr`,
+  so an adaptive cheat has an unusually wide place to hide.
+- **Speculative decoding is measured on one (target, draft) pair at one γ.** The
+  direction of the finding is set by *whether* the randomness path differs, not by
+  how often, but the levels (2.95 tokens/round, 72.1% replay agreement) are
+  one-configuration measurements, and V1/V2 assume the draft model is attested.
 - **Small-sample statistics remain the weak axis.** Five to nine protocol seeds
   over 10⁴-token pools can separate triage from random allocation but cannot rank
   two triage signals against each other. Several comparisons are directional
@@ -464,6 +551,9 @@ See **[`NEXT_EXPERIMENTS.md`](NEXT_EXPERIMENTS.md)** for what to run about them.
 - **[docs/ACCEPTANCE_RATE_FINGERPRINT.md](docs/ACCEPTANCE_RATE_FINGERPRINT.md)**,
   **[docs/SPEC_DECODING_AND_PROXY_DETECTION.md](docs/SPEC_DECODING_AND_PROXY_DETECTION.md)**
   — the proxy tier's theory and its boundary.
+- **[docs/SPECULATIVE_PROVIDERS.md](docs/SPECULATIVE_PROVIDERS.md)** — the same
+  mechanism turned around: what happens to a seed-replaying verifier when the
+  *provider* speculates, and what the sound fix costs.
 
 Methodology follows *DiFR: Inference Verification Despite Nondeterminism*
 (Karvonen et al., 2025); the testbed design follows the model-organism pattern of
