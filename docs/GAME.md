@@ -22,7 +22,7 @@ et al., 2025), not a fork of either codebase:
 - It does **not** vendor or import
   [`adamkarvonen/difr`](https://github.com/adamkarvonen/difr). The seed-synced
   Gumbel-Max sampler (`ivgym/sampling.py`), the per-token margin score
-  (`ivgym/defenses.py`), and the generate→verify→calibrate→evaluate loop
+  (`ivgym/verifiers.py`), and the generate→verify→calibrate→evaluate loop
   (`ivgym/harness.py`) are reimplemented in pure numpy from the paper's
   Algorithm 1 / metric definitions, and run against a real model on a GPU via
   the HF-GPU backend (`ivgym/backends/hf_gpu.py`).
@@ -64,7 +64,7 @@ Two parties, one specification ϕ.
 
   An honest provider is just `Attack()` with only benign numerical noise.
 
-- **Verifier = defender** (`Defense` in `ivgym/defenses.py`). Trusts ϕ and the
+- **Verifier = defender** (`Verifier` in `ivgym/verifiers.py`). Trusts ϕ and the
   reference model, **not** the provider. For each claimed token it recomputes
   the reference logits (and, optionally, a projected activation fingerprint) and
   emits a **per-token divergence score**, higher = more divergent. The verifier
@@ -86,8 +86,8 @@ verifier does **not** see the attack — this asymmetry is the game.
 
 ### 3a. Per-token score `s_t`
 For each claimed token `t`, the defense returns one scalar (`Defense.score`,
-`ivgym/defenses.py`). For the default **Token-DiFR**
-(`defenses.py:74`):
+`ivgym/verifiers.py`). For the default **Token-DiFR**
+(`verifiers.TokenDiFR`):
 
 ```
 filt = top_p(top_k(ref_logits))          # filter under ϕ

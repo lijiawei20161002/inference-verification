@@ -12,8 +12,6 @@ The black-box detectors:
   * **surface_tokens** uses pure token-id statistics, no model at all.
   * the **`llm_judge`** -- a zero-shot Claude judge over (prompt, decoded
     continuation) -- which only runs on a real-text backend like this one.
-  * the **`logit_judge`** -- recompute on the cheap proxy, then a Claude judge
-    over the per-token surprisal/rank divergence (logit space, not text).
 
 The headline (Role 2): where an attack is output-*indistinguishable* (a wrong
 sampling seed; quantization tuned to output-match), every black-box detector --
@@ -50,7 +48,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 from ivgym import attacks, harness, verifiers
 from ivgym.backends.hf_gpu import HFGPUBackend, DEFAULT_PROMPTS
 from ivgym.core import SamplingSpec
-from ivgym.verifiers import LLMJudge, LogitJudge
+from ivgym.verifiers import LLMJudge
 
 MODEL = os.environ.get("IVGYM_MODEL", "Qwen/Qwen3-0.6B")
 # Option B: a REAL cheap proxy model for the black-box detectors. When set, the
@@ -114,18 +112,6 @@ def _maybe_judge():
     return judge if _judge_available(judge, "llm_judge") else None
 
 
-def _maybe_logit_judge():
-    """Build the logit_judge (recompute-on-proxy + LLM judges the logit-level
-    divergence) if requested and an API key resolves; else None. Unlike llm_judge
-    it needs no text backend -- its evidence is per-token surprisal/rank off the
-    cheap proxy -- but it does need proxy logits, which every HF-GPU backend
-    provides (real proxy when IVGYM_PROXY_MODEL is set, else the noised fallback)."""
-    if not RUN_JUDGE:
-        return None
-    judge = LogitJudge(model=JUDGE_MODEL)
-    return judge if _judge_available(judge, "logit_judge") else None
-
-
 def run():
     if 2 * N_PROMPTS > len(DEFAULT_PROMPTS):
         print(f"  NOTE: 2*PROMPTS ({2*N_PROMPTS}) > prompt bank ({len(DEFAULT_PROMPTS)}); "
@@ -149,12 +135,8 @@ def run():
     spec = SamplingSpec()
     td = verifiers.get("token_difr")
     judge = _maybe_judge()
-    logit_judge = _maybe_logit_judge()
-    io_dets = ([verifiers.get(n) for n in IO_NAMES]
-               + ([judge] if judge else [])
-               + ([logit_judge] if logit_judge else []))
-    io_cols = (IO_NAMES + (["llm_judge"] if judge else [])
-               + (["logit_judge"] if logit_judge else []))
+    io_dets = [verifiers.get(n) for n in IO_NAMES] + ([judge] if judge else [])
+    io_cols = IO_NAMES + (["llm_judge"] if judge else [])
 
     def score_pool(seqs):
         """Detectability arrays for one already-generated sequence pool: token_difr
@@ -267,8 +249,8 @@ def main():
           "it means that\nattack is crude enough to catch from outputs alone (a "
           "statement about the attack,\nnot the verifier). The interesting rows are "
           "the LOW I/O-AUC ones with high token_difr.")
-    if any(c in io_cols for c in ("llm_judge", "logit_judge", "surface_tokens")):
-        print("\nNOTE: per-SEQUENCE-constant detectors (llm_judge, logit_judge, surface_tokens) "
+    if any(c in io_cols for c in ("llm_judge", "surface_tokens")):
+        print("\nNOTE: per-SEQUENCE-constant detectors (llm_judge, surface_tokens) "
               "emit one value per\nsequence broadcast to its tokens, so with few sequences their "
               "token-batch null FLOOR\ninflates well above 0.5 (a known finite-pool artifact). "
               "Read them via the dominance\nblock below -- excess over each detector's OWN "

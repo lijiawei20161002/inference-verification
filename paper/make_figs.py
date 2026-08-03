@@ -12,10 +12,10 @@ import numpy as np
 HERE = Path(__file__).resolve().parent
 REPO = HERE.parent
 
+# One results tree. Each prefix-cost run is archived under the attack it was
+# measured against, so a figure can never plot one attack under another's name.
 RES = REPO / "docs/results"
-# `docs/results/prefix_cost.json` holds whichever attack ran last; each attack's
-# run is archived here so the figures always name the attack they plot.
-BASE = REPO / "runs/baseline_json"
+BASE = RES
 OUT = HERE / "figs"
 OUT.mkdir(parents=True, exist_ok=True)
 
@@ -36,6 +36,15 @@ plt.rcParams.update({
     "axes.spines.top": False, "axes.spines.right": False,
     "figure.facecolor": "white", "axes.facecolor": "white",
 })
+
+
+def save(fig, name):
+    """Write a figure with NO embedded timestamp, so `git diff` on `figs/` shows
+    a real change in the plot rather than the minute the build ran. That is what
+    makes "every number regenerates from the committed run" a checkable claim
+    instead of an assertion."""
+    fig.savefig(OUT / name, bbox_inches="tight", metadata={"CreationDate": None})
+    print(f"wrote {name}")
 
 
 def load(name, root=RES):
@@ -107,9 +116,8 @@ def fig_ratio():
         ax.legend(loc="lower right", fontsize=7.5)
 
     fig.tight_layout()
-    fig.savefig(OUT / "fig_ratio.pdf", bbox_inches="tight")
+    save(fig, "fig_ratio.pdf")
     plt.close(fig)
-    print("wrote fig_ratio.pdf")
 
 
 # ---------------------------------------------------------------- figure 2
@@ -163,9 +171,8 @@ def fig_infodirected():
     ax.grid(axis="y", visible=False)
 
     fig.tight_layout()
-    fig.savefig(OUT / "fig_infodirected.pdf", bbox_inches="tight")
+    save(fig, "fig_infodirected.pdf")
     plt.close(fig)
-    print("wrote fig_infodirected.pdf")
 
 
 # ---------------------------------------------------------------- figure 3
@@ -210,9 +217,8 @@ def fig_cost():
     ax.legend(loc="center right", fontsize=7.5)
 
     fig.tight_layout()
-    fig.savefig(OUT / "fig_cost.pdf", bbox_inches="tight")
+    save(fig, "fig_cost.pdf")
     plt.close(fig)
-    print("wrote fig_cost.pdf")
 
 
 # ---------------------------------------------------------------- figure 4
@@ -281,9 +287,8 @@ def fig_prefix_attacks():
     ax.set_ylim(0.47, 0.93)
 
     fig.tight_layout()
-    fig.savefig(OUT / "fig_prefix_attacks.pdf", bbox_inches="tight")
+    save(fig, "fig_prefix_attacks.pdf")
     plt.close(fig)
-    print("wrote fig_prefix_attacks.pdf")
 
 
 if __name__ == "__main__":

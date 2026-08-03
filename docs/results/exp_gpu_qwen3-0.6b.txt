@@ -1,16 +1,29 @@
 loading Qwen/Qwen3-0.6B ...
 Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
-Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 7762.70it/s]
-loaded in 6.1s | vocab=151936 hidden=1024 | 20 prompts x 128 tokens
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 8280.98it/s]
+loaded in 8.7s | vocab=151936 hidden=1024 | 12 prompts x 48 tokens
 
-Real-model DiFR detection AUC @ batch=1000 tokens
+Real-model detection AUC @ FPR<=0.5%   (batch=28 tokens, honest eval pool=288, batch/pool=9.7%)
       attack |       token_difr    cross_entropy  activation_difr     token_toploc
 ----------------------------------------------------------------------------------
-  quant_4bit |           0.9967           0.6555           1.0000           0.9017
-      kv_fp8 |           0.9145           0.7115           1.0000           0.8789
-    temp_1.1 |           0.9205           0.9711           0.5201           0.9451
-     seed_43 |           1.0000           0.9980           0.4987           0.9505
-      bug_k2 |           0.8996           0.4987           0.5064           0.5102
-     bug_k32 |           1.0000           0.6957           0.4987           0.9745
+  quant_4bit |           0.5290           0.5000           1.0000           0.5001
+      kv_fp8 |           0.5034           0.5050           1.0000           0.5002
+    temp_1.1 |           0.5139           0.5097           0.4995           0.5068
+     seed_43 |           0.9773           0.5050           0.4987           0.5062
+      bug_k2 |           0.4987           0.5016           0.5014           0.4987
+     bug_k32 |           0.5125           0.5024           0.5002           0.5003
 
-total 1100.7s on Qwen/Qwen3-0.6B
+Per-token effect size d'  /  batch it nominates for AUC 0.90 (pool-independent)
+      attack |       token_difr    cross_entropy  activation_difr     token_toploc
+----------------------------------------------------------------------------------
+  quant_4bit |   +0.037 / 10273      -0.030 / --       +3.986 / 1    +0.064 / 3445
+      kv_fp8 |      -0.000 / --    +0.066 / 3232       +3.086 / 2    +0.078 / 2316
+    temp_1.1 |    +0.087 / 1885    +0.115 / 1079      -0.066 / --     +0.157 / 577
+     seed_43 |      +0.781 / 24    +0.071 / 2855      -0.153 / --     +0.152 / 612
+      bug_k2 |      -0.050 / --      +0.001 / --      -0.020 / --      -0.011 / --
+     bug_k32 |    +0.039 / 9230   +0.032 / 13672      -0.043 / --    +0.051 / 5354
+
+  A cell needing more than this pool's 288-token eval split x 10% = 28 tokens per batch cannot be resolved here.
+  Grow the pool (IVGYM_PROMPTS / IVGYM_TOKENS), not the batch.
+
+total 147.0s on Qwen/Qwen3-0.6B

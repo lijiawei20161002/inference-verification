@@ -231,7 +231,10 @@ def main():
                # `curves` keeps the flat single-value-signal shape the figure and
                # every existing reader expect; `curves_by_value` carries the cross.
                "curves": curves[VALUE_FNS[0]], "curves_by_value": curves}
-    out = RES_DIR / "prefix_cost.json"
+    # Named for the attack it was measured against. A single `prefix_cost.json`
+    # would hold whichever attack ran last, which is how a figure ends up
+    # plotting one deviation under another's name.
+    out = RES_DIR / f"prefix_cost_{ATTACK.replace('_', '')}.json"
     out.write_text(json.dumps(payload, indent=2))
 
     tk = curves[VALUE_FNS[0]]["topk"]

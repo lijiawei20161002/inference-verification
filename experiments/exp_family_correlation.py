@@ -1,7 +1,7 @@
 """Within-family conditional-distribution correlation: the statistic that BOUNDS
 every black-box proxy detector.
 
-The black-box I/O detectors (`surface_stat`/`surface_rank`/`logit_judge` in
+The Tier-0 black-box verifiers (`surface_stat` / `surface_rank` / `accept_rate` in
 `ivgym/verifiers.py`) score a claimed token by its surprisal/rank under a small
 *proxy* LM. They work AT ALL only because, within a model family, the proxy's
 conditional next-token distribution agrees with the large reference M's. This

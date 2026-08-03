@@ -23,6 +23,7 @@ can be iterated without re-running the model:
 from __future__ import annotations
 
 import json
+import os
 import sys
 from pathlib import Path
 
@@ -309,7 +310,10 @@ def fig_cost(p, path):
 def main(argv):
     FIG_DIR.mkdir(parents=True, exist_ok=True)
     head = RES_DIR / "confidence_head.json"
-    cost = RES_DIR / "prefix_cost.json"
+    # The committed figure documents `quant_2bit`; override with IVGYM_ATTACK to
+    # plot one of the other archived runs (kv_fp8, bug_k32).
+    _atk = os.environ.get("IVGYM_ATTACK", "quant_2bit").replace("_", "")
+    cost = RES_DIR / f"prefix_cost_{_atk}.json"
     wrote = []
     if head.exists():
         p = json.loads(head.read_text())

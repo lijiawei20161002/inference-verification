@@ -88,7 +88,12 @@ def auc_seeds(h: np.ndarray, a: np.ndarray, batch: int) -> tuple[float, float, f
     v[0] = type("V", (), {"name": "s", "tier": 1})()
     aucs, tprs = [], []
     for s in range(N_SEED):
-        r = harness.evaluate(hs, as_, v, [batch], n_batches=2000, seed=s)[0]
+        # over_ratio="allow": this experiment measures the INFLATED arm on
+        # purpose (that is the whole comparison), so the ceiling guard in
+        # `EvalConfig` is opted out of explicitly rather than silently.
+        r = harness.evaluate(hs, as_, v, [batch], seed=s,
+                             config=harness.EvalConfig(n_batches=2000,
+                                                       over_ratio="allow"))[0]
         aucs.append(r.auc)
         tprs.append(r.tpr)
     return float(np.mean(aucs)), float(np.std(aucs)), float(np.mean(tprs))

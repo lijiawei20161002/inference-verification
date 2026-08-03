@@ -1,27 +1,28 @@
-# Pure-numpy core (sampling, metrics, harness) + the dependency-free tests.
+# Pure-numpy core (sampling, verifiers, harness, metrics, signal, spec_decode)
+# and the dependency-free tests. `python tests/test_smoke.py` needs only this.
 numpy>=1.24
 
-# Real-model GPU backend (ivgym/backends/hf_gpu.py) -- required to run the
-# experiments; needs a CUDA host. torch is the only heavy dep -- reuse a system
-# install via:  python -m venv --system-site-packages .venv
+# Real-model GPU backend (ivgym/backends/hf_gpu.py) -- required by every
+# experiments/exp_*_gpu.py; needs a CUDA host. torch is the only heavy dep --
+# reuse a system install via:  python -m venv --system-site-packages .venv
 torch>=2.4
 transformers>=4.44
 accelerate
 safetensors
 
-# Optional: the llm_judge I/O detector (experiments/exp_io_detector_gpu.py).
+# Figures and the paper build (experiments/plot_*.py, paper/make_figs.py).
+matplotlib>=3.7
+
+# The cross-validated proxy panel in experiments/exp_proxy_distance_grid.py.
+scikit-learn>=1.3
+
+# Optional: the llm_judge Tier-0 verifier (experiments/exp_io_detector_gpu.py).
+# Its key resolves from ANTHROPIC_API_KEY, the repo .claude/, or
+# ~/.claude/anthropic_key.sh. Set IVGYM_JUDGE=0 to skip it entirely.
 # anthropic
-
-# Optional: real bitsandbytes NF4 4-bit weights for the subtle-quant experiments
-# (IVGYM_QUANT=nf4 in exp_real_quant_triage / exp_tie_triage_margin; see
-# experiments/quantlib.py). Without it, the deterministic fake-quant path is used.
-# bitsandbytes
-
-# Optional: render the Pareto figure (docs/figures/*.png).
-# matplotlib
 
 # Optional: the higher-throughput vLLM production path (vllm_adapter.py).
 # vllm>=0.10.0
 
-# Optional: pytest, if you want `pytest tests/` instead of running the file directly.
+# Optional: pytest, if you want `pytest tests/` instead of running each file.
 # pytest

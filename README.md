@@ -1,528 +1,403 @@
 # Inference Verification Gym (`ivgym`)
 
-**Infrastructure for the inference-verification game.** `ivgym` is a
-standardized environment where a cheating **provider** (an *attack* — a way of
-deviating from a sampling specification) is pitted against a **verifier** (a
-*defense* — a per-token divergence score), and the gym reports how reliably the
-deviation is caught (detection AUC). Attacks and defenses are pluggable
-registries; the `generate → verify → calibrate → evaluate` loop and the backend
-are the fixed infrastructure underneath.
+**Can a client check that an inference provider ran the model it charged for?**
 
-The methodology follows *DiFR: Inference Verification Despite Nondeterminism*
-(Karvonen et al., 2025) — drop in **a new attack** or **a new defense** and
-immediately get detection-AUC curves against everything else.
+You rent inference. The provider promises a specific model under specific
+sampling settings and bills you accordingly. Nothing stops it from quietly
+serving a 4-bit copy, a smaller model, or a different sampler and pocketing the
+difference. `ivgym` is a testbed that pits provider-side deviations (*attacks*)
+against verifier-side detectors, on real models on a GPU, under one fixed
+evaluation protocol — so "who catches whom" is a grid rather than an anecdote.
 
-It runs on **a real model on a GPU** via the HuggingFace backend
-(`ivgym/backends/hf_gpu.py`), validated on an NVIDIA H100-80GB with
-`Qwen/Qwen3-0.6B`. The attack/defense/harness/metrics core is pure numpy and
-backend-agnostic; a documented **vLLM adapter** sketches the higher-throughput
-production path.
+The full write-up is **[`paper/paper.pdf`](paper/paper.pdf)**. Every table and
+figure in it regenerates from the committed run artifacts
+(`python paper/make_tables.py && python paper/make_figs.py`, byte-identical).
 
-## The game, as infrastructure
+---
 
-The verification game is a hypothesis test between two parties who agree on a
-sampling spec ϕ. The **provider (attacker)** emits `(input, output)` pairs
-*claiming* it ran ϕ on the reference model, but may secretly deviate (cheaper
-quantized weights, wrong seed/temperature, a sampler bug, or exfiltrated
-weights). The **verifier (defender)** recomputes under ϕ — it never sees the
-attack — scores each claimed token for divergence, aggregates those scores into
-a batch statistic `S`, and flags the batch when `S > τ`. The **defender wins**
-when it flags a deviating provider while keeping the honest false-positive rate
-under budget (AUC → 1 / high TPR@FPR); the **attacker wins** when it deviates
-yet keeps `S` indistinguishable from honest (AUC ≈ 0.5).
+## The short version
 
-DiFR specifies a score for a *single token*; the **aggregation across tokens**
-and the **classification rule** are `ivgym`'s own (specified, not implicit):
-per-token scores are winsorized at the 99.9th honest-*calibration*-split
-percentile, a batch of `b` tokens is averaged into `S` (`harness.batch_means`),
-and the decision is `S > τ` with **τ fixed by a target false-positive rate**
-(the `(1−α)` quantile of a *held-out* honest calibration split, distinct from the
-honest split `S` is measured on).
+**Three findings organize everything else.**
 
-**The fixed, headline eval metric is AUC @ FPR ≤ 0.5%** — the standardized
-partial AUC (`metrics.partial_auc`) over the strict low-false-positive region a
-verifier actually has to operate in, McClish-standardized so a random verifier
-still scores 0.5 and a perfect one scores 1.0 (same scale as full AUC, just
-restricted to the region that matters operationally). `harness.evaluate` reports
-it as `EvalResult.auc`, alongside `auc_full` (threshold-free full-range AUC, for
-context) and `tpr` (the out-of-sample catch rate at that same FPR budget). Every
-knob the number depends on — the FPR budget, batch-resampling count,
-winsorization percentile, calibration/eval split — is one `harness.EvalConfig`,
-so every experiment scores under the identical, standardized protocol rather
-than each picking its own settings; `EvalConfig` refuses to run (raises
-`ValueError`) if `n_batches` is too small to resolve the FPR region at all. See
-**[docs/GAME.md](docs/GAME.md)** for the full formalization — players, win
-conditions, the exact per-token→batch→decide pipeline, and how this relates to
-the stego paper's `SAFE`-set security game.
-Two worked *attacker wins* (AUC ≈ 0.5) ship as pluggable example strategies — a
-SAFE-set substitution against the seed-synced verifier
-([`examples/safe_set_strategies.py`](examples/safe_set_strategies.py)) and a
-quantize+temp-retune compute cheat against the seed-free verifier
-([`examples/seed_free_strategies.py`](examples/seed_free_strategies.py)) — run
-either against the built-in defenses with `experiments/run.py --strategies`.
+1. **Recomputation works, but barely, and at a price.** Re-running the reference
+   model `M` and comparing per-token sampling margins catches every deviation we
+   tried *on some model*, but no single detector is reliable across model
+   families, and the per-token signal from realistic quantization is so weak
+   (d′ ≈ 0.07) that thousands of tokens must be pooled before a verdict is
+   trustworthy.
+2. **The cheap tiers fail in one predictable place.** A client-side proxy catches
+   wholesale model substitution at **AUC 0.998** without ever running `M` — but is
+   blind to quantization, because quantization moves the served distribution less
+   than `M`'s own run-to-run nondeterminism. *Deviations that change what the
+   model can do are cheap to catch; deviations that change only how precisely it
+   does it are not.*
+3. **The dominant error here is statistical, not cryptographic.** Resampling
+   evaluation batches from too small a token pool inflates detection AUC without
+   bound. The same measurement reads **0.977 and 0.530** depending only on pool
+   size. This is now enforced in code (`EvalConfig.max_pool_ratio`) rather than
+   left to the reader.
 
-`ivgym` makes the three axes of that game into pluggable registries and holds
-everything else fixed:
+---
 
-| Axis        | Built-in instances                                       | Where |
-|-------------|----------------------------------------------------------|------|
-| **Attack** (provider deviation) | 4-bit quant, fp8 KV cache, wrong temp/seed, sampling bug, adversarial-temp | `ivgym/attacks.py` |
-| **Defense** (verifier score)    | Token-DiFR margin (+clipped/likelihood), cross-entropy, Activation-DiFR, TOPLOC | `ivgym/defenses.py` |
-| **Backend** (the arena)         | **real HF GPU** (transformers); vLLM sketched            | `ivgym/backends/` |
+## Quickstart
 
-So the framework makes those three axes pluggable registries and keeps the
-generate → verify → calibrate → evaluate loop fixed.
+```bash
+python -m venv --system-site-packages .venv         # reuse system torch if present
+.venv/bin/pip install -r requirements.txt
+
+.venv/bin/python tests/test_smoke.py                # 18 tests, numpy only, no GPU
+.venv/bin/python tests/test_claims.py               # every claim still has its evidence
+.venv/bin/python -m experiments.exp_gpu             # ~3 min, downloads Qwen3-0.6B
+```
+
+`exp_gpu` prints the real-model grid **and the ratio it was measured at**, then
+tells you what that pool can and cannot resolve:
+
+```
+Real-model detection AUC @ FPR<=0.5%   (batch=28 tokens, honest eval pool=288, batch/pool=9.7%)
+      attack |       token_difr    cross_entropy  activation_difr     token_toploc
+----------------------------------------------------------------------------------
+  quant_4bit |           0.5290           0.5000           1.0000           0.5001
+      kv_fp8 |           0.5034           0.5050           1.0000           0.5002
+    temp_1.1 |           0.5139           0.5097           0.4995           0.5068
+     seed_43 |           0.9773           0.5050           0.4987           0.5062
+      bug_k2 |           0.4987           0.5016           0.5014           0.4987
+     bug_k32 |           0.5125           0.5024           0.5002           0.5003
+
+Per-token effect size d'  /  batch it nominates for AUC 0.90 (pool-independent)
+      attack |       token_difr    cross_entropy  activation_difr     token_toploc
+----------------------------------------------------------------------------------
+  quant_4bit |   +0.037 / 10273      -0.030 / --       +3.986 / 1    +0.064 / 3445
+      kv_fp8 |      -0.000 / --    +0.066 / 3232       +3.086 / 2    +0.078 / 2316
+     seed_43 |      +0.781 / 24    +0.071 / 2855      -0.153 / --     +0.152 / 612
+      ...
+```
+
+Read the two tables together. A 3-minute pool resolves exactly two things —
+`activation_difr` on forward-pass attacks (d′ ≈ 4, needs a batch of 1) and
+`seed_43` under `token_difr` (d′ = 0.78, needs 24) — and it says so. Everything
+else sits at chance *and reports the batch it would need*. **Growing the batch on
+this pool buys ratio, not evidence.** Grow `IVGYM_PROMPTS`/`IVGYM_TOKENS`.
+
+---
+
+## The evaluation protocol
+
+Everything is scored under one `harness.EvalConfig`, so no experiment picks its
+own settings.
+
+| knob | value | why |
+|---|---|---|
+| metric | **standardized partial AUC @ FPR ≤ 0.5%** | A provider is checked continuously, so it cannot tolerate more than a sliver of false accusations. McClish-standardized, so 0.5 = chance and 1.0 = perfect, same scale as full AUC. Consistently *stricter*. |
+| threshold | `(1−α)` quantile of a **held-out** honest calibration split | out-of-sample, never the batches TPR is measured on |
+| winsorization | 99.9th pct of the honest calibration split | one outlier cannot carry a batch |
+| **batch/pool ratio** | **≤ 10%, enforced** | see below |
+
+### The batch/pool ceiling
+
+The batch statistic is a mean of `b` tokens drawn *without replacement from a
+fixed token pool*. As `b` approaches the pool size every batch mean converges to
+the pool mean and the honest variance collapses. The AUC then no longer answers
+"would a fresh batch be flagged?" — it answers "do these two particular pools have
+different means?", which is nearly deterministic. Holding the model, the attack
+and the per-token scores fixed and growing only the pool:
+
+| honest pool (tokens) | batch/pool | AUC @ FPR ≤ 0.5% |
+|---:|---:|---|
+| 576 | 69.4% | 0.977 ± 0.010 |
+| 1 152 | 34.7% | 0.577 ± 0.042 |
+| 2 304 | 17.4% | 0.679 ± 0.099 |
+| 4 608 | 8.7% | 0.523 ± 0.021 |
+| 22 464 | 1.8% | 0.530 ± 0.011 |
+
+0.977 and 0.530 are the **same measurement**. Note it is not monotone: at 17.4%
+it bounces back to 0.679 with a ±0.099 spread. Over-ratio measurements are not
+conservatively biased, they are *erratic* — and the artifact has **no sign**,
+which is why it cannot be spotted from a single table.
+
+So it is a correctness condition, and the library treats it as one:
+
+```python
+harness.evaluate(honest, attack, verifiers, [1500])
+# RatioCeilingWarning: batch/pool ratio 75.0% exceeds the 10% ceiling ...
+#   Grow the pool to >= 15000 eval tokens, or shrink the batch. To measure the
+#   inflated arm on purpose, pass EvalConfig(over_ratio='allow').
+
+harness.EvalConfig(over_ratio="raise")   # hard failure
+harness.EvalConfig(over_ratio="allow")   # deliberate: exp_headline_ratio_gpu et al.
+```
+
+Every `EvalResult` carries `.pool_ratio`, `.eval_pool` and `.over_ceiling`, so a
+number can never travel without the ratio that makes it interpretable.
+
+### The pool-independent statement
+
+`d′ = (E[s | deviating] − E[s | honest]) / sd(s | honest)`. A batch of `b`
+independent tokens separates by `d′√b`, so `d′` says how big a pool a verdict
+needs *before any GPU time is spent* (`ivgym/signal.py`). On a 56 160-token pool —
+large enough to test the prediction for the first time — it holds to within
+0.03 AUC:
+
+| batch | ratio | measured | predicted from d′ = 0.0775 alone |
+|---:|---:|---|---|
+| 400 | 1.4% | 0.559 ± .010 | 0.548 |
+| 800 | 2.8% | 0.627 ± .015 | 0.625 |
+| 1 600 | 5.7% | 0.781 ± .023 | 0.790 |
+| **2 361** | 8.4% | **0.873 ± .008** | **0.900** ← the batch d′ nominates for 0.90 |
+
+Across the five points inside the ceiling the mean absolute residual is 0.012.
+The residual is signed the way theory says it should be: the prediction treats
+the `b` tokens in a batch as independent and tokens inside a sequence are not, so
+it is mildly optimistic exactly where the curve is steep.
+
+**Deployment consequence.** A 4-bit quantization of a 1.7B model is detectable —
+but the verifier needs ~10³ tokens pooled into each verdict and 10⁴–10⁵ honest
+tokens to calibrate against. Any protocol promising a verdict on a single
+completion is not, on this evidence, measuring quantization.
+
+---
+
+## What catches what
+
+Eight verifiers, each mapping to a claim the report stands behind. Tier-1
+recomputes `M`; Tier-0 never does.
+
+| tier | verifier | what it sees | structural blind spot |
+|---|---|---|---|
+| 1 | `token_difr` | post-Gumbel margin — forward pass **and** draw | nothing, but the margin under `kv_fp8` is reliably positive and reliably tiny (d′ = 0.015) |
+| 1 | `token_toploc` | rank of the claimed token in the filtered distribution | `bug_k2`. **Needs no seed synchronization** — a much weaker deployment requirement |
+| 1 | `cross_entropy` | NLL of the claimed token | anything that doesn't move the bulk of the distribution (`bug_k2`) |
+| 1 | `activation_difr` | L2 on projected activations | **the sampler, exactly and by construction** — activations are computed before a token is drawn |
+| 0 | `accept_rate` | `1 − TV(p, q)` against a client-owned proxy | quantization (see the KL budget below) |
+| 0 | `surface_stat` / `surface_rank` | proxy surprisal / rank | same |
+| 0 | `surface_tokens` | token-id statistics, no model at all | almost everything; it is the zero-FLOP floor |
+| 0 | `llm_judge` | a zero-shot judge reading the continuation | anything output-indistinguishable |
+
+The headline grid at a **legitimate 8.9% ratio** (Qwen3-0.6B, 22 464-token pool,
+batch 1000, 5 protocol seeds — `exp_headline_ratio_gpu`):
+
+```
+      attack |       token_difr    cross_entropy  activation_difr     token_toploc
+  quant_4bit |            0.718            0.505            1.000            0.600
+      kv_fp8 |            0.511            0.507            1.000            0.517
+    temp_1.1 |            0.516            0.823            0.504            0.661
+     seed_43 |            1.000            0.524            0.575            0.507
+      bug_k2 |            0.553            0.510            0.499            0.523
+     bug_k32 |            0.712            0.605            0.499            0.686
+```
+
+Re-measured from the *same per-token scores* as the previously-published 78%-ratio
+table, **16 of 24 cells fall**, by a median of 0.137 and by as much as 0.463. The
+winning detector per attack is unchanged in all six rows, so the portfolio
+recommendation survives — what changes is how good the winner is.
+
+Two cells settle that the valid arm is the *correct* one, not merely the
+pessimistic one: under `seed_43` the provider redraws from **exactly** the honest
+distribution, so a detector that only reads where the claimed token sits has
+mechanistically nothing to see. At 78% `cross_entropy` read 0.987 and
+`token_toploc` 0.828 — near-perfect detection of a deviation neither can in
+principle observe. At 8.9% they read 0.524 and 0.507. The inflated arm did not
+exaggerate a real signal, it **manufactured** one.
+
+**Use a portfolio, not the best detector.** Each score is structurally blind to a
+different class of deviation, and which one wins is set by the attack, not the
+model. That argument rests on the mechanism above — not on the "detector
+reversals" the earlier record reported, which
+[do not exist](docs/results/reversal_check.json): re-measured, all five cells
+have d′ > 0. `token_difr` does not invert on SmolLM2 or Pythia; it is simply *at
+chance* there, because an fp8 KV cache at 8 192 tokens is below its detection
+floor.
+
+---
+
+## The cheap tier: where a proxy wins, and exactly where it stops
+
+The client holds its own small proxy `q` (sharing `M`'s tokenizer) and computes
+the rate at which `q`'s drafts would be accepted against the served distribution
+`p`. That rate is exactly an overlap:
+
+```
+accept = E_{x~q}[min(1, p(x)/q(x))] = Σ_x min(p(x), q(x)) = 1 − TV(p, q)
+```
+
+The client **owns** `q`, so `q` is a trusted anchor even though `p` is not.
+
+- **It wins outright on substitution.** A provider paid for Qwen3-4B that secretly
+  serves Qwen3-0.6B is caught at **AUC 0.998** (honest accept 0.776 vs 0.700),
+  using a trusted 1.7B draft and **never running `M`** — at 2.3× fewer FLOPs than
+  recomputation. `exp_spec_substitution_gpu`
+- **It survives the standard evasion.** A provider that quantizes then retunes
+  temperature to restore honest *entropy* blinds an entropy fingerprint
+  (1.00 → 0.59) but cannot re-enter the honest acceptance band, because matching
+  entropy does not restore `TV(p̂, q)`.
+- **It is blind to realistic quantization**, and this is not a tuning failure. The
+  expected proxy surprisal on honest text is `H(M,q) = H(M) + KL(M‖q)`, so
+  **`KL(M‖q)` is the entire signal available to any proxy detector**.
+  `exp_detectability_vs_kl`
+
+A cheap proxy shrinks how often the exact recomputation must fire. It does not
+replace it. The same wall shows up from three independent directions —
+the acceptance rate, the recompute detectors on `kv_fp8`, and the selective-audit
+Pareto — which is the strongest form the claim takes.
+
+**Validating that recomputation is necessary at all.** `exp_io_detector_gpu` runs
+black-box detectors, including a zero-shot Claude judge, against the same
+sequences. The clean case is a wrong seed: `token_difr` scores 1.000 while the
+judge sits at its own honest-null floor (0.511 against a floor of 0.989 — *no
+signal*). Re-seeding redraws from the same distribution, so the continuation
+reads as a perfectly ordinary sample to any reader of the text, while a re-run
+flips which Gumbel candidate won. That gap is a quantitative proof the deviation
+is invisible in the outputs. The converse matters too: a *high* black-box AUC is
+not a verifier win, it is a statement that the attack was crude.
+
+---
+
+## What a selective audit really costs
+
+If a full audit is too expensive, audit some tokens — and report the fraction
+audited as the cost. **It is not the cost, and the gap inverts conclusions.**
+
+Reading `M`'s logits at generated position `j` requires a prefill over
+`prompt + claimed[:j]`. So a sequence's audit cost is set by its *deepest* audited
+position, and any sequence touched at all re-pays for its prompt. A global top-`k`
+rule scatters its audit across essentially every sequence. Measured on a backend
+instrumented to prefill lazily and refuse to serve an unpaid row:
+
+| nominal budget | top-`k` realized | seconds | prefix schedule | seconds |
+|---:|---:|---:|---:|---:|
+| 5% | **75.8%** | **1.75** | 5.0% | **0.11** |
+| 10% | 86.4% | 1.53 | 10.0% | 0.21 |
+| 100% | 100% | 1.48 | 100% | 1.49 |
+
+**A "5%" top-`k` audit takes 1.75 s; auditing every single token takes 1.48.** The
+reported saving was overstated by up to 15×. The fix is a scheduler that admits
+contiguous per-sequence prefixes greedily by value per unit of *marginal* cost —
+depth is cheap, breadth is expensive — which spends exactly its budget and runs
+**16× faster**. `harness.select_prefix_scheduled`, `verify(..., scheduler="prefix")`
+
+This replicates across attacks *because it contains no statistics*: at a nominal
+5% budget top-k realizes 75–77% on every attack and the prefix schedule realizes
+5.0% on every attack. Re-running it against a different deviation is a null
+experiment by construction, and it comes back null.
+
+![What a selective audit costs](docs/figures/fig_prefix_cost.png)
+
+---
+
+## Two things that did not transfer (kept, because the pattern is the result)
+
+Given a budget, where should it go? Two principled answers were implemented and
+both lost to a one-line heuristic.
+
+- **A learned, calibrated per-token value head** (DSpark port, `ivgym/triage.py`).
+  Nine cheap proxy features, BCE-trained on per-token *sensitivity* using honest
+  data only, then temperature-scaled. It does not beat `entropy`, the hand-written
+  signal already in the library, either as a ranking key or as the value term
+  inside the scheduler. Its calibration stage is near-identity (fitted temperature
+  0.975; held-out ECE gets *worse*, 0.0190 → 0.0246). The informative part is what
+  it learned: largest positive weights on tie-ness (+0.86) and proxy surprisal
+  (+0.80), and a **negative** weight on entropy (−0.28) — while `entropy` is the
+  best allocator in the table. It is not failing to fit; it is fitting the wrong
+  target.
+- **The correct target, derived — and it still loses** (`ivgym/infogain.py`). For a
+  weighted centered batch statistic, detection power is `δ²(A) = (b/n) Σ_{t∈A} I(t)`
+  with `I(t) = Δ(t)²/v(t)`. Sensitivity is the numerator only; a near-tie position
+  is sensitive *and* noisy. The theory also names the optimal aggregator: the
+  matched filter `w = Δ/v`. Measured at full scale, the matched filter is **below
+  the plain mean at every budget** (−0.078 ± .008 at a 5% budget, t = −10.4), and
+  substituting **oracle** weights read off labelled pairs does not rescue it
+  (−0.142 ± .024). Why: fitting the same features on labelled pairs predicts log
+  honest variance well (R² = 0.73) and the signal not at all (R² = 0.002), so
+  `I = Δ²/v` divides a quantity the features cannot estimate by one they can, and
+  the resulting estimate is **anti-correlated** with the truth (Spearman −0.92).
+
+**The pattern.** The prefix scheduler is a statement about prefill geometry: it
+holds for every value signal, contains no statistics, and delivers 16×. The head
+and the matched filter are statements about *where the evidence is*, and both
+fail. In selective verification, **the cost side transfers and the signal side
+does not** — so the engineering worth doing is on the accounting, not the
+estimator. Anyone porting speculative-decoding machinery into a verification
+setting should take the scheduler and skip the head.
+
+---
+
+## What we would actually deploy
+
+1. **Cascade, cheap tier first, for the right reason.** A client-side proxy
+   catches capability downgrades — the attacks with real money in them — at a
+   small fraction of one forward pass. Use it as a continuous first-line filter,
+   not as a verifier.
+2. **Keep recomputation for what only recomputation can see.** Quantization, fp8
+   caches and sampler deviations are recompute-dominant. Spot-check with it rather
+   than running it continuously.
+3. **Use a portfolio of detectors.** `token_toploc` deserves particular attention:
+   it needs no seed synchronization.
+4. **Budget in prefill tokens, and schedule prefixes.** Depth is cheap, breadth is
+   expensive.
+5. **Spend the tuning effort on pool size, not the estimator.** Every attempt to be
+   cleverer than a plain mean failed. Measure `d′` on a few thousand tokens first;
+   it tells you the pool the verdict will require.
+6. **Report the batch/pool ratio next to every AUC.** It is one number, and without
+   it a detection AUC is not interpretable.
+
+---
 
 ## Layout
 
 ```
 ivgym/
-  sampling.py            seed-synced Gumbel-Max + top-k/top-p (Alg. 1)
-  core.py                SamplingSpec, Sequence/TokenStep, VerifyContext
-  attacks.py             Attack base + registry (honest, quant, temp, seed, bug, adv-temp)
-  defenses.py            Defense base + registry (token_difr, cross_entropy, activation_difr,
-                         token_toploc)
-                         -- white-box: handed ref_logits (verifier re-ran model M)
-  io_detectors.py        IODetector base + registry (surface_stat/rank/tokens, learned, llm_judge)
-                         -- black-box: score (prompt, claimed_tokens) WITHOUT recomputing M
-  metrics.py             ROC AUC, TPR@FPR, standardized partial AUC (AUC@FPR<=α), pure numpy
-  spec_decode.py         client-side proxy verification: speculative accept rate
-                         1−TV(p,q), ProxyReference anchor, ProxySpecVerifier (no vLLM changes)
-  triage.py              LEARNED triage: a calibrated confidence head (DSpark port,
-                         arXiv:2607.05147) over proxy-only features, trained with BCE
-                         on surrogate-sensitivity labels from HONEST data only, then
-                         Sequential-Temperature-Scaled; drops into the value registry
-                         via head_value_fn -- MEASURED, and it does NOT beat the
-                         hand-crafted `entropy` signal it was meant to replace
-                         (docs/TRIAGE_AND_AUDIT_COST.md Part 1); kept because the
-                         negative is load-bearing and the fit/calibration code is
-                         what makes it reproducible
-  model_taxonomy.py      model-relationship taxonomy: independent axes (family/size/base/
-                         org/generation/domain/tokenizer) + a distance() DERIVED from them,
-                         shared by every model-distance-ladder experiment below
-  model_registry.py      one ModelIdentity (taxonomy facts) per HF id used by those experiments
-  harness.py             generate_dataset / verify / winsorize / batch_means / evaluate
-                         + EvalConfig: the one standardized eval protocol (FPR budget,
-                           n_batches, winsor_pct, calib split) every experiment scores under
-                         + verify_selective: proxy-triaged SELECTIVE recompute tier
-                           (recompute M only on the top-budget tokens a cheap proxy
-                           flags as near-ties) -- sits between io_verify and verify
-                         + prefill_cost / select_prefix_scheduled: the PHYSICAL audit
-                           cost (a Tier-1 row needs M prefilled over its whole prefix,
-                           so cost is prompt+deepest-audited-position per sequence, not
-                           a token count) and DSpark's prefix scheduler against it
-  backends/
-    base.py              Backend protocol
-    hf_gpu.py            REAL model on a GPU (transformers) — the arena
-                         + lazy_reference=True: prefill nothing during generation and
-                           RAISE on an unpaid reference row, so a selective budget's
-                           cost is measured instead of assumed
-    vllm_adapter.py      contract + skeleton for the vLLM production path
-experiments/
-  run.py                    pluggable CLI: --strategies <file> --attacks/--defenses (no edits)
-  exp_gpu.py                attack × defense AUC grid on a real model (Table 2 / Fig. 1 shape)
-  exp_io_detector_gpu.py    black-box I/O detectors vs recomputation, incl. the LLM judge
-  exp_family_correlation.py within-family proxy↔M agreement = the exact spec-decoding accept rate (1−TV)
-  exp_cross_family_accept.py cross-family accept rate (shared Qwen tokenizer): high within family, falls with family distance
-  exp_detectability_vs_kl.py proxy detectability is bounded by KL(M‖proxy) — the accept-rate budget
-  exp_proxy_spec_verify.py  CPU + optional real proxy (GPU): cheap accept-rate vs full-recompute AUC
-  exp_spec_verifier_cost.py SpeculativeVerifier on GPU: measured cost saving vs detection AUC (+ figure)
-  exp_spec_substitution_gpu.py the win case: model substitution caught from the accept rate, never running M
-  plot_accept_rate_fingerprint.py regenerates docs/figures/fig_accept_rate_*.png
-  exp_subtle_quant_detectors.py CPU: why subtle quant evades the cheap proxy (anchor,
-                            not aggregation) + proxy-tie-triaged selective recompute
-  exp_real_quant_triage.py  GPU: faithful (deterministic int-n) quant is sparse/heavy-
-                            tailed, unlike the i.i.d.-Gaussian model; proxy stays blind
-  exp_tie_triage_pareto.py  GPU: detection AUC vs recomputation ratio (TV signal) ->
-                            docs/figures/fig_tie_triage_pareto.png
-  exp_tie_triage_margin.py  GPU: same, sparse Token-DiFR flip signal (sharper win) ->
-                            docs/figures/fig_tie_triage_margin.png
-  exp_selective_verify_gpu.py GPU: verify_selective end-to-end on the real backend
-  exp_confidence_head_gpu.py GPU: the LEARNED triage head vs all four hand-crafted
-                            value signals + an oracle-labeled upper bound; calibration
-                            and cross-deviation transfer (docs/TRIAGE_AND_AUDIT_COST.md)
-  exp_prefix_cost_gpu.py    GPU: what a selective audit really costs on a lazy-prefill
-                            backend -- top-k's token ratio vs measured prefill cost --
-                            and the prefix scheduler on the honest Pareto, crossed with
-                            the value signal it admits against (tie_margin/entropy/head)
-  plot_triage.py            figures for both of the above from cached JSON (no GPU) ->
-                            docs/figures/fig_confidence_head_{pareto,diagnostics}.png,
-                            docs/figures/fig_prefix_cost.png
-  exp_baseline_headroom_gpu.py GPU: WHY a detection AUC is what it is -- separates the
-                            batch/pool ratio artifact from legitimate batch power, model
-                            choice and attack strength, on shared per-token scores; the
-                            source of the warning above (docs/TRIAGE_AND_AUDIT_COST.md §3)
-  plot_headroom.py          that sweep as a figure from cached JSON (no GPU) ->
-                            docs/figures/fig_baseline_headroom.png
-  exp_proxy_distance_grid.py GPU: 2-D model-distance ladder, rank/group DERIVED by
-                            ivgym/model_taxonomy.py (quant/family/domain/tokenizer) ->
-                            docs/figures/fig_proxy_distance_grid_{qwen,llama}.png
-  exp_robustness_gpu.py     GPU: unified algorithm vs every attack on a MATRIX of real
-                            families/sizes -> docs/results/robustness_sweep.{json,md}
-  analyze_robustness.py     orientation-correct cross-model tables -> robustness_report.md
-  plot_robustness.py        figures from the sweep JSON (no GPU) ->
-                            docs/figures/fig_robustness_{heatmap,summary}.png
-examples/
-  custom_strategies.py      template: a custom attack + a custom defense
-  safe_set_strategies.py    seed-aware SAFE-set substitution attack
-  seed_free_strategies.py   quant + temp-retune + fingerprint-spoof attack
-tests/test_smoke.py         backend-agnostic unit tests (sampling, projection, metrics, registry)
-tests/test_proxy_spec.py    client-side proxy verifier (accept-rate identity, reference, evasion)
-mvp/                        standalone Merkle-commit-and-audit demo (separate from ivgym --
-                             see docs/MVP_PROTOCOL.md); reproduce with `python -m mvp.experiment`
+  core.py            SamplingSpec, Sequence/TokenStep, VContext
+  sampling.py        seed-synced Gumbel-Max + top-k/top-p
+  attacks.py         Attack base + registry (honest, quant, kv_fp8, temp, seed, bug, adv-temp)
+  verifiers.py       ONE abstraction for every detector: (value, evidence, aggregation)
+                     under a recompute budget. Tier-1 recomputes M; Tier-0 never does.
+  harness.py         generate -> verify -> calibrate -> evaluate, and EvalConfig: the one
+                     standardized protocol every experiment scores under, INCLUDING the
+                     enforced batch/pool ceiling
+                     + prefill_cost / select_prefix_scheduled: the PHYSICAL audit cost
+  metrics.py         ROC AUC, TPR@FPR, standardized partial AUC. Pure numpy.
+  signal.py          the theory side: d' -> batch separation -> predicted pAUC, so an
+                     experiment can PREDICT a detection AUC instead of only measuring one
+  spec_decode.py     the acceptance-rate identity 1-TV(p,q), ProxyReference anchor
+  triage.py          NEGATIVE RESULT: the learned confidence head (DSpark port)
+  infogain.py        NEGATIVE RESULT: the derived matched filter, with oracle arms
+  model_taxonomy.py  model-relationship axes + a distance() derived from them
+  model_registry.py  one ModelIdentity per HF id
+  backends/hf_gpu.py a real model on a GPU + lazy_reference: RAISE on an unpaid
+                     reference row, so a selective budget's cost is MEASURED not assumed
+
+experiments/         one file per claim; exp_*_gpu.py need CUDA, plot_*.py do not
+tests/               test_smoke / test_proxy_spec / test_triage_and_cost / test_infogain
+                     + test_claims.py: every claim still has the artifact it came from
+paper/               paper.tex + make_tables.py + make_figs.py (regenerate from docs/results/)
+docs/results/        every committed run artifact; docs/figures/ every committed figure
 ```
 
-## Run it
+### Which experiment backs which claim
 
-On a CUDA host (validated: single H100-80GB, torch 2.8.0+cu128, transformers 5.x).
-`torch` is the only heavy dependency; reuse a system install if present.
+| claim | experiment | artifact |
+|---|---|---|
+| the ratio artifact | `exp_baseline_headroom_gpu` | `baseline_headroom.json` |
+| the headline grid, re-measured inside the ceiling | `exp_headline_ratio_gpu` | `headline_ratio.json` |
+| d′ predicts when detection arrives | `exp_pool_scaling_gpu` | `pool_scaling.json` |
+| no reversal is real | `exp_reversal_check_gpu` | `reversal_check.json` |
+| prefix scheduler: 16×, and it is geometry | `exp_prefix_cost_gpu` | `prefix_cost_{quant2bit,kvfp8,bugk32}.json` |
+| the confidence head loses | `exp_confidence_head_gpu` | `confidence_head.json` |
+| the matched filter loses, and so does the oracle | `exp_info_directed_gpu` | `info_directed.json` |
+| substitution caught without running `M` | `exp_spec_substitution_gpu` | `exp_spec_substitution_gpu_*.txt` |
+| `KL(M‖q)` is the proxy's whole budget | `exp_detectability_vs_kl` | `exp_detectability_vs_kl_*.txt` |
+| recomputation is necessary (`seed_43`) | `exp_io_detector_gpu` | `exp_io_detector_gpu_*.txt` |
+| no detector is robust across families | `exp_robustness_gpu` | `robustness_sweep.json` |
 
-```bash
-# from inference-verification/
-python -m venv --system-site-packages .venv     # reuse system torch if available
-.venv/bin/pip install "transformers>=4.44" accelerate safetensors
-.venv/bin/python -m experiments.exp_gpu          # downloads Qwen/Qwen3-0.6B on first run (~3 min at defaults)
-.venv/bin/python tests/test_smoke.py             # backend-agnostic sanity checks (no GPU needed)
+`tests/test_claims.py` asserts this table: delete an artifact and a test fails.
 
-# headline numbers below use a larger token pool for clean AUCs (~18 min on an H100):
-IVGYM_PROMPTS=20 IVGYM_TOKENS=128 IVGYM_BATCH=1000 .venv/bin/python -m experiments.exp_gpu
-```
+---
 
-Override with env vars: `IVGYM_MODEL`, `IVGYM_PROMPTS`, `IVGYM_TOKENS`, `IVGYM_BATCH`.
+## Add your own attack / verifier (no edits to the library)
 
-Real-model output (Qwen3-0.6B, 20 prompts × 128 tokens, batch=1000, ~18.3 min on an
-H100-80GB; full log in `docs/results/exp_gpu_qwen3-0.6b.txt`) — **AUC @ FPR ≤ 0.5%**,
-the standardized partial-AUC headline metric (`EvalResult.auc`):
-
-```
-      attack |       token_difr    cross_entropy  activation_difr     token_toploc
-  quant_4bit |           0.9967           0.6555           1.0000           0.9017
-      kv_fp8 |           0.9145           0.7115           1.0000           0.8789
-    temp_1.1 |           0.9205           0.9711           0.5201           0.9451
-     seed_43 |           1.0000           0.9980           0.4987           0.9505
-      bug_k2 |           0.8996           0.4987           0.5064           0.5102
-     bug_k32 |           1.0000           0.6957           0.4987           0.9745
-```
-
-Over a real LLM's logit geometry, with a large enough token pool the picture is
-still clear, though this metric — restricted to the strict low-false-positive
-region a verifier actually has to operate in — reads visibly stricter than the
-full-range AUC an earlier version of this table reported:
-
-- **Token-DiFR** wins or ties every attack (AUC ≥0.90, 1.0 on 2/6) — the strong,
-  general detector that sees both forward-pass and sampling deviations, at the
-  FPR budget that matters.
-- **Activation-DiFR** stays sharply bifurcated: 1.0 on forward-pass attacks
-  (quant/fp8) but collapses to ~chance (0.50) on every sampling-only change
-  (temp/seed/bug) — it never sees the sampler, and at this strict FPR the
-  sampling-only cases show no reliable tail signal in *either* direction (unlike
-  the strong reversed full-range signal these cases show — see the caveat in
-  `harness.EvalConfig`'s docstring on token-pool size vs. tail resolution).
-- **Cross-entropy** is workable on 5/6 (0.66–1.00) but drops to chance on the
-  tiny `bug_k2` (1%-rate flip of the top-2 tokens, AUC 0.50) — it needs the bulk
-  of the distribution to shift to fire, and this attack barely touches it.
-- **Token-TOPLOC** (rank of the claimed token in the verifier's filtered
-  distribution, no seed sync needed) tracks Token-DiFR closely on 5/6 attacks
-  (0.88–0.97) — a cheap, seed-free rank check catches nearly as much as the
-  seed-synced margin score — but is also blind to `bug_k2` (0.51), the one case
-  that needs the seed-synced margin specifically.
-
-At the smaller default pool (12 prompts × 48 tokens, batch=200, ~3 min) the same
-structure is visible but noisier — several AUCs sit near or below 0.5.
-
-> **⚠️ Both of those configurations are above the batch/pool ceiling, and these
-> numbers are inflated by it (measured 2026-07-30).** `harness.batch_means`
-> resamples the batch *without replacement from a fixed token pool*, so as the
-> batch approaches the pool size the batches overlap, honest variance collapses,
-> and the AUC measures whether these two particular pools differ rather than
-> whether a fresh batch would be flagged — which is why `EvalConfig`'s docstring
-> asks for a batch well under ~10% of the honest eval split. The table above runs
-> at **78%** (20 × 128 tokens, batch 1000); `exp_gpu.py`'s default runs at **69%**.
-> `experiments/exp_baseline_headroom_gpu.py` sweeps the pool size at a fixed batch
-> with the same model, the same attack and the same per-token scores, and finds
-> `token_difr` vs `quant_4bit` moving from **0.977 ± 0.010 at a 69% ratio to
-> 0.530 ± 0.011 at 1.8%** — the same measurement, at two ratios. The properly
-> ratioed per-token effect size is d' = 0.072, which needs a batch of ~2 800 (and
-> hence a ≥ 55 000-token pool) to reach AUC 0.90 honestly. Do **not** raise
-> `IVGYM_BATCH` alone to sharpen a number: that buys ratio, not evidence. Raise
-> `IVGYM_PROMPTS` / `IVGYM_TOKENS` with it, or use a stronger deviation. Details,
-> tables and the figure: **[docs/TRIAGE_AND_AUDIT_COST.md](docs/TRIAGE_AND_AUDIT_COST.md)**
-> § "Where the detection baseline went", `docs/figures/fig_baseline_headroom.png`.
-> The relative ordering of the four detectors is not what is in question here —
-> the ratio artifact applies to every column of the table equally, and the
-> qualitative structure below (Activation-DiFR blind to sampling-only attacks,
-> cross-entropy blind to `bug_k2`) is mechanistic — but the absolute AUCs are not
-> the numbers a properly-powered rerun would print.
-
-How attacks map onto the real model: temperature/seed are real `SamplingSpec`
-changes and the sampling bug really hijacks the sampler; the forward-pass attacks
-(quant/fp8) apply their logit/activation perturbation on top of the real Qwen3
-logits. See `ivgym/backends/hf_gpu.py` for the full contract.
-
-## Black-box detectors: validating *that recomputation is necessary*
-
-All the defenses above are **white-box / recomputation** detectors: the verifier
-re-runs the reference model `M` and is handed `ref_logits`. `ivgym/io_detectors.py`
-adds the **black-box / input-output** analogue — an `IODetector` scores
-`(prompt, claimed_tokens)` **without recomputing `M`** (it may call a *cheap,
-different* proxy model, never `M`'s own forward pass). This ports the white-box vs
-black-box detector split from Clymer et al., *Lessons from building a model-organism
-testbed* (2025): a black-box predictor is used as a **validator of white-box-ness** —
-if outputs alone can't tell an attack from honest while recomputation nails it, the
-recomputation defense is providing genuine information beyond behaviour.
-
-`experiments/exp_io_detector_gpu.py` runs this on the real model. The cheap I/O
-detectors (`surface_stat`/`surface_rank` read a cheap proxy over M's real logits;
-`surface_tokens` uses no model at all) and the **`llm_judge`** — a zero-shot Claude
-judge over `(prompt, decoded continuation)`, which only runs on a real-text backend
-— all score the same sequences `token_difr` recomputes. The judge's key resolves from
-`ANTHROPIC_API_KEY`, the repo `.claude/`, or `~/.claude/anthropic_key.sh`.
-
-```bash
-.venv/bin/pip install anthropic                # needed only for the llm_judge
-# headline (~21 min on an H100; ~160 prompts judged by Claude):
-IVGYM_PROMPTS=20 IVGYM_TOKENS=128 IVGYM_BATCH=200 \
-    .venv/bin/python -m experiments.exp_io_detector_gpu
-# set IVGYM_JUDGE=0 to skip the API calls (cheap I/O detectors only)
-```
-
-Detectability = `max(AUC, 1-AUC)` (a black-box signal that *reverses* under an
-attack still separates it); compare every cell to the honest-null floor (a second
-independent honest draw from the same `M`). Real-model output (Qwen3-0.6B, 20×128
-tok, batch=200; full log in `docs/results/exp_io_detector_gpu_qwen3-0.6b.txt`):
-
-```
-          attack |  token_difr |   surface_stat   surface_rank surface_tokens      llm_judge
-   (honest null) |       0.523 |          0.530          0.650          1.000          0.989    <- floor
-      quant_4bit |       0.808 |          0.662          0.651          0.717          1.000
-          kv_fp8 |       0.629 |          0.675          0.768          0.530          0.552
-        temp_1.1 |       0.558 |          0.650          0.756          0.575          1.000
-         seed_43 |       1.000 |          0.784          0.737          0.757          0.511
-          bug_k2 |       0.670 |          0.823          0.657          0.556          0.786
-         bug_k32 |       0.941 |          0.739          0.730          0.603          1.000
-```
-
-- **Role 2 (headline).** **`seed_43` is RECOMPUTE-DOMINANT** — `token_difr` = 1.000
-  while the Claude judge sits at its honest-null floor (0.511, i.e. *below* the 0.989
-  floor → no signal). A wrong sampling seed redraws the *same* distribution, so the
-  continuation reads as a perfectly honest sample to any reader of the outputs, yet a
-  re-run flips the Gumbel winners. `quant_4bit` and `bug_k32` are RECOMPUTE-DOMINANT
-  too. That gap is a quantitative proof the deviation is invisible in the outputs.
-- **Honest caveat.** A *high* I/O-AUC (e.g. `temp_1.1`) is **not** a verifier win —
-  it means the attack is crude enough to catch from outputs alone (a statement about
-  the *attack*, not the verifier).
-- **Read per-sequence-constant detectors via excess over their own floor**, not the
-  absolute cell: `llm_judge` and `surface_tokens` emit one value per sequence broadcast
-  to its tokens, so a token-batch mean over only ~20 sequences inflates their null floor
-  toward 1.0 (a documented finite-pool artifact). The experiment's dominance synthesis
-  compares each detector against its own floor for exactly this reason.
-
-![Fig 3](docs/figures/fig3_io_pareto_gpu.png)
-
-## Client-side proxy verification (a cheap approximation of recomputation)
-
-The white-box `token_difr` detector recomputes `M` for every claimed token —
-correct, but as expensive as re-running inference. A cheaper regime borrows the
-mechanism of **speculative decoding**, but runs it **entirely on the client, with
-no changes to vLLM and no provider-reported trace** (the provider is the untrusted
-party — a verifier that depends on its cooperation is one it can stub out). The
-client holds its own small **proxy** model `q` (a genuinely different, smaller
-model sharing `M`'s tokenizer — e.g. Qwen3-0.6B for Qwen3-4B) and uses the
-speculative-decoding **acceptance rate** as the signal. `ivgym/spec_decode.py`
-implements it in pure numpy, so it runs end-to-end on **CPU**, and consumes a real
-proxy's logits from `ivgym/backends/hf_gpu.py` on a GPU.
-
-The identity that makes it work:
-
-```
-accept_rate = E_{x~q}[ min(1, p(x)/q(x)) ] = Σ_x min(p(x), q(x)) = 1 − TV(p, q)
-```
-
-so the realized acceptance rate is a direct read of `1 − TV(p, q)` — the agreement
-between the served target `p` and the proxy `q`. Because the client owns `q`, it is
-a **trusted anchor**: when a provider serves a corrupted target (quantized / fp8 /
-fewer-layer weights, `p* → p̂`), the acceptance rate shifts from `1 − TV(p*, q)` to
-`1 − TV(p̂, q)`, and the client sees the shift **without recomputing `M`** — by
-comparing to a one-time offline honest reference (`ProxyReference`). The pieces:
-
-| piece | role |
-|---|---|
-| `accept_rate(p,q)` / `per_token_accept_prob` | the `1 − TV(p,q)` signal, from proxy + served tokens |
-| `ProxyReference` | one-time offline honest anchor (mean/std of `accept_rate`, `mean_entropy`, `mean_surprisal`) |
-| `ProxySpecVerifier` | calibrates a threshold on honest samples, flags a served sample |
-| `recompute_divergence` | the full-`M` baseline the cheap proxy **approximates** (AUC ~ 1.0) |
-
-```bash
-python -m experiments.exp_proxy_spec_verify     # CPU sweep (+ real proxy if IVGYM_M/IVGYM_PROXY set)
-python tests/test_proxy_spec.py                 # dependency-free tests
-# real-model GPU runs (H100):
-python -m experiments.exp_spec_substitution_gpu # the win case: model substitution
-IVGYM_M=Qwen/Qwen3-4B IVGYM_PROXY=Qwen/Qwen3-0.6B \
-    python -m experiments.exp_spec_verifier_cost # cost saving vs detection AUC
-```
-
-CPU synthetic sweep (120 samples × 200 positions) — detection AUC, honest vs cheat:
-
-```
-   sigma |  accept_fp  entropy_fp  recompute
-     0.1 |      0.63       0.51       1.00
-    0.25 |      0.98       0.52       1.00
-     0.5 |      1.00       0.64       1.00
-     1.0 |      1.00       1.00       1.00     adv_quant_temp: accept_fp 1.00, entropy_fp 0.48
-```
-
-The draft-anchored **acceptance rate** separates a quantized target and, unlike a
-generic **entropy** fingerprint, **survives the temperature-retune evasion**
-(`adv_quant_temp` tunes `T` to match honest entropy — matching entropy does not
-restore `TV(p̂, q)`). But both fingerprints decay to chance for **small** quant, and
-the full recompute (`recompute_divergence` / `token_difr`) stays at ~1.0 throughout.
-**So quantization/fp8 are not fully catchable without recomputation** — the same
-recompute-dominant boundary the DiFR detectors hit. The cheap proxy **shrinks how
-often the exact recompute must fire**, it does not replace it.
-
-Two real-model GPU experiments (H100, Qwen3 family) close the loop:
-
-- **`experiments/exp_spec_substitution_gpu.py` — the win case: model substitution.**
-  A provider paid to serve Qwen3-4B secretly serves Qwen3-0.6B (6.7× cheaper) and
-  bills for the 4B. The client verifier holds a trusted Qwen3-1.7B draft and never
-  runs `M`: honest accept rate 0.776 vs 0.700 under the substitute → token-batched
-  **AUC 0.998** (per-sequence verdict 0.819), at 1.4× less wall-clock / 2.3× fewer
-  FLOPs than the recompute — with a bigger `M` the saving is the param ratio.
-  Swapping the whole model shifts `TV(p, q)` wholesale, well past honest variance
-  (full log: `docs/results/exp_spec_substitution_gpu_qwen3-4b_sub0.6b_proxy1.7b.txt`).
-- **`experiments/exp_spec_verifier_cost.py` — where it stops: realistic quant.**
-  The `ProxySpecVerifier` end-to-end on real forward-pass cheats: it costs
-  `params(q)/params(M)` of the recompute (6.7× fewer FLOPs for the 4B/0.6B pair),
-  but at realistic corruption strength (`quant_4bit`, `adv_quant_temp`) the measured
-  accept-rate AUC sits near chance while `token_difr` separates every attack
-  (0.87–1.0) — real quant moves `TV(p, q)` less than a real model's honest
-  run-to-run variance, exactly the recompute-dominant boundary the CPU sweep
-  predicts (full log: `docs/results/exp_spec_verifier_cost.txt`).
-
-![SpeculativeVerifier cost vs performance](docs/figures/fig_spec_verifier_cost.png)
-
-The proxy↔`M` agreement that bounds this signal is measured on real Qwen3 models in
-`experiments/exp_family_correlation.py`; the theory is in
-**[docs/ACCEPTANCE_RATE_FINGERPRINT.md](docs/ACCEPTANCE_RATE_FINGERPRINT.md)** and
-**[docs/SPEC_DECODING_AND_PROXY_DETECTION.md](docs/SPEC_DECODING_AND_PROXY_DETECTION.md)**.
-
-## Proxy-triaged selective recompute (spend recompute where it matters)
-
-The cheap proxy above shrinks *how often* the full recompute must fire, but on
-subtle quantization it collapses to chance (the recompute-dominant boundary). A
-middle tier keeps the trusted anchor — full recompute of `M` — but spends it only
-where a cheap signal says it will matter. A forward-pass corruption
-(quantization/fp8) flips the sampled token only at **near-tie** positions; the
-client's own small proxy `q` is an *uncorrupted* estimate of where `M` has those
-ties. So `harness.verify_selective(backend, seqs, spec, defense, budget)` ranks
-tokens by the proxy's tie-ness (`proxy_tie_scores`, reads only `proxy_logits`,
-never `M`), recomputes the `defense` (e.g. `token_difr`) on just the top-`budget`
-fraction (`select_triaged`), and leaves the rest at the "no divergence" value.
-It sits between `io_verify` (no recompute) and `verify` (full recompute).
-
-Two things fall out, both measured on real Qwen3 (`M`=Qwen3-1.7B, proxy=Qwen3-0.6B):
-
-- **It reaches full-recompute detection at a fraction of the M-calls.** The proxy
-  tie-ness ranks quant-corrupted tokens with Spearman ≈ 0.73, so a few audited
-  tokens carry the signal. On the sparse **Token-DiFR flip** signal, tie-triage
-  reaches AUC 0.95 at ~**2.8×** fewer recomputes than random subsampling for
-  subtle 8-bit weight-quant (bigger the sparser the quant):
-  `experiments/exp_tie_triage_margin.py` → **[fig_tie_triage_margin.png](docs/figures/fig_tie_triage_margin.png)**
-  (the denser per-token TV signal gives ~2×: `exp_tie_triage_pareto.py` →
-  [fig_tie_triage_pareto.png](docs/figures/fig_tie_triage_pareto.png)).
-- **It can beat full recompute at a fraction of the cost**, because focusing on the
-  flip-prone tokens *denoises* the batch statistic. End-to-end through the shipped
-  harness on synthetic `quant_4bit` (`experiments/exp_selective_verify_gpu.py`):
-
-  ```
-  attack = quant_4bit;  full-recompute token_difr AUC = 0.749
-    budget  recompute ratio   selective AUC
-       10%            10.0%          0.863
-       25%            25.0%          0.898
-      100%           100.0%          0.749   (= full recompute)
-  ```
-
-> **⚠️ Both bullets are overstated, and the second is probably wrong (2026-07-30).**
-> Two independent problems, both worked out in
-> **[docs/TRIAGE_AND_AUDIT_COST.md](docs/TRIAGE_AND_AUDIT_COST.md)**:
->
-> 1. **`recompute ratio` is not a cost.** Reading `M`'s logits at position `j`
->    needs a prefill over `prompt + claimed[:j]`, so a sequence's real cost is set
->    by its *deepest* audited position and top-k scatters the audit across every
->    sequence. Measured: a **10% token budget really costs 86% of a full audit**,
->    and a "5%" budget takes *more wall-clock than auditing every token*. The
->    savings column above overstates by up to 15×. The fix — DSpark's prefix
->    scheduler, which spends exactly its budget — is in `harness.select_prefix_scheduled`
->    (`verify(..., scheduler="prefix")`).
-> 2. **"Beats full recompute" was a winsorization artifact.** Under a selective
->    audit most of the score array is the verifier's `neutral` placeholder, which
->    dragged the winsorization cap down onto the signal and distorted small-budget
->    AUCs in both directions (up to +0.17 and −0.28). Fixed in `harness` and pinned
->    by `tests/test_triage_and_cost.py`; a properly-measured rerun finds **nothing
->    beats a full audit** — triage buys cost, not detection power. The run above
->    predates the fix and has **not** been re-measured, so read its ≥10%-budget
->    numbers as stale. (The *ranking* claim in the first bullet — that tie-ness
->    finds the tokens that carry the signal — is unaffected and still holds.)
-
-Why subtle quant needs this tier (and no cheaper proxy statistic escapes it) is
-worked out in `experiments/exp_subtle_quant_detectors.py` (the blocker is the
-proxy *anchor*, not the aggregation) and `experiments/exp_real_quant_triage.py`
-(faithful deterministic quant is sparse/heavy-tailed — structurally unlike the
-i.i.d.-Gaussian `attacks.Quantization` model — even matched on mean divergence).
-
-## What a selective audit actually costs (and two ports from DSpark)
-
-The tier above raises an obvious question — what does a "10% budget" cost? —
-which turns out to have an unobvious answer, and answering it properly took two
-components ported out of DSpark (arXiv:2607.05147): a hardware-aware **prefix
-scheduler** and a learned **confidence head**. One transferred; one did not. Full
-write-up, with the retractions, in
-**[docs/TRIAGE_AND_AUDIT_COST.md](docs/TRIAGE_AND_AUDIT_COST.md)**.
-
-```
-.venv/bin/python -m experiments.exp_confidence_head_gpu   # the head (~30 min, H100)
-.venv/bin/python -m experiments.exp_prefix_cost_gpu       # cost model + scheduler (~40 min)
-.venv/bin/python -m experiments.plot_triage               # both figures, no GPU
-```
-
-![What a selective audit costs](docs/figures/fig_prefix_cost.png)
-
-**The scheduler transfers.** Panel A is the accounting gap: top-k's nominal budget
-against what it really costs to prefill. Panel C is a stopwatch confirming the cost
-model is physical, and contains the sharpest single number here — **top-k at a "5%"
-budget takes 1.75 s against 1.48 s for auditing every token.** The prefix schedule
-admits whole prefixes greedily by value per unit of *marginal* cost, so it spends
-exactly what it is budgeted (5% costs 5.0%), runs **16× faster** at that budget,
-and on panel B's honest x-axis — realized cost, not nominal — detects 0.12–0.20 AUC
-better (2–4 sd) than top-k operating points that cost *more*, in the band where
-top-k has already paid for every prefill.
-
-**The confidence head does not.** A calibrated logistic head over proxy-only
-features, BCE-trained on honest data alone, does not beat `entropy` — the
-hand-crafted signal already in the library — either as a ranking key or as the
-value term inside the scheduler, and its calibration stage is near-identity. It is
-kept, and documented as a negative, because the head *rediscovers* near-tie-ness
-and proxy surprisal as the dominant features while putting a **negative** weight on
-entropy — direct evidence that per-token surrogate sensitivity is not the quantity
-that maximizes batch-level detection.
-
-**And the detour that reframed the repo.** Diagnosing why the head's first run had
-no headroom found the batch/pool ratio artifact described in the warning above —
-that several published AUCs here, the README headline included, were measured with
-batches resampled from too small a token pool. That finding
-(`experiments/exp_baseline_headroom_gpu.py`) outlived the experiment that prompted
-it, and is the reason both experiments now default to a 64 × 128 pool at batch 400.
-
-## Add your own attack / defense (no edits to the library)
-
-Write a file that registers your strategies and point the runner at it with
-`--strategies`. Nothing in `ivgym/` is touched — importing your file runs the
-`@register` decorators, which add the strategies to the same registries the
-harness and every backend already use. A complete, runnable template lives in
-[`examples/custom_strategies.py`](examples/custom_strategies.py).
-
-A new **attack** (provider deviation). Subclass `Attack` and override any of the
-hooks; the `@dataclass` form lets you parametrize it:
+Write a file that registers your strategies and point the runner at it. Nothing
+in `ivgym/` is touched — importing your file runs the `@register` decorators.
+Runnable template: [`examples/custom_strategies.py`](examples/custom_strategies.py).
 
 ```python
 from dataclasses import dataclass
@@ -540,100 +415,58 @@ class MyAttack(Attack):
         return None
 ```
 
-A new **defense** (verifier score, higher = more divergent from reference):
-
-```python
-from dataclasses import dataclass
-from ivgym.defenses import Defense, register
-
-@register
-@dataclass
-class MyDefense(Defense):
-    name: str = "my_defense"
-    needs_seed: bool = True          # needs shared Gumbel noise?
-    needs_activation: bool = False   # needs activation fingerprints?
-    def score(self, ctx):
-        ...
-```
-
-`@register` accepts either a class (instantiated with its defaults, as above) or
-a pre-built instance, e.g. `register(MyAttack(name="my_attack_hot", temp=1.3))`.
-
-Then run the sweep — your strategies are scored against everything else, on the
-real model, with no other changes:
-
 ```bash
-# list everything that is registered (built-ins + your file)
 .venv/bin/python -m experiments.run --strategies examples/custom_strategies.py --list
-
-# full sweep including your strategies (default backend: hf_gpu, Qwen/Qwen3-0.6B)
 .venv/bin/python -m experiments.run --strategies examples/custom_strategies.py
-
-# pick the matchups and the batch size
-.venv/bin/python -m experiments.run --strategies examples/custom_strategies.py \
-    --attacks logit_spike quant_4bit --defenses token_difr cross_entropy top1_mismatch_toy
 ```
 
-`experiments/run.py --help` lists every flag (`--model`, `--prompts`, `--tokens`,
-`--batch`, `--n-batches`, `--backend`).
+Two worked **attacker wins** (AUC ≈ 0.5) ship as examples: a SAFE-set substitution
+against the seed-synced verifier
+([`examples/safe_set_strategies.py`](examples/safe_set_strategies.py)) and a
+quantize + temperature-retune cheat against the seed-free verifier
+([`examples/seed_free_strategies.py`](examples/seed_free_strategies.py)).
 
-## Robustness: does the unified detector generalize beyond one model?
+---
 
-The repo was validated on Qwen3-0.6B. `experiments/exp_robustness_gpu.py` re-runs
-the whole unified verification algorithm — every registered attack against every
-Tier-0/Tier-1 verifier — on a **matrix of real models** (Qwen3, Llama-3.2,
-SmolLM2, Pythia; four families, nine sizes, different tokenizers and
-architectures) on an H100, and `analyze_robustness.py` renders the
-orientation-correct cross-model tables. `plot_robustness.py` turns that same
-`docs/results/robustness_sweep.json` into figures (pure numpy + matplotlib, no
-GPU) so the robustness story is visual like every other experiment here:
+## Limitations
 
-```
-.venv/bin/python -m experiments.exp_robustness_gpu    # GPU sweep -> robustness_sweep.json
-.venv/bin/python -m experiments.analyze_robustness    # -> robustness_report.md
-.venv/bin/python -m experiments.plot_robustness       # -> the two figures below (no GPU)
-```
+- **Model scale.** Everything runs on a single H100, so reference models are
+  0.13B–8B. The economically interesting case is a frontier model, where the
+  attacker's incentive is larger and the proxy-to-target ratio much smaller.
+- **Attacks are mostly simulated at the logit level.** Temperature, seed and
+  sampler-bug attacks are real specification changes, but quantization and fp8
+  caches are perturbations on top of real logits rather than genuinely quantized
+  weights. A faithful deterministic quantization is sparse and heavy-tailed,
+  structurally unlike an i.i.d. Gaussian perturbation. Read the quantization
+  numbers as a *model of* the attack, not a measurement of it.
+- **The verifier is passive.** No experiment has the attacker adapting to the
+  specific verifier it faces.
+- **Small-sample statistics remain the weak axis.** Five to nine protocol seeds
+  over 10⁴-token pools can separate triage from random allocation but cannot rank
+  two triage signals against each other. Several comparisons are directional
+  rather than resolved, and are labelled as such.
+- **Most of the record outside the re-measured claims is still over the ceiling.**
+  The cross-family sweep ran at 52% and its absolute levels should be read as an
+  ordering, not a level.
+- **One prompt domain, one GPU.** Cross-GPU and cross-datacenter benign variation —
+  arguably the most important false-positive source in a real deployment — is
+  untested, because there was only one accelerator available.
 
-![Robustness heatmap](docs/figures/fig_robustness_heatmap.png)
+See **[`NEXT_EXPERIMENTS.md`](NEXT_EXPERIMENTS.md)** for what to run about them.
 
-The headline: **no single recompute detector is uniformly robust** —
-`token_difr` alone drops as low as AUC 0.04 on some family/attack cells (e.g.
-`kv_fp8` on SmolLM2-1.7B, where the divergence signal reverses) — but the
-**unified registry, taking the strongest verifier per attack, closes those gaps
-to a minimum detectability of 0.78** across all 63 cells. That is the case for
-keeping the detectors as a pluggable registry rather than betting on one score.
+## Further reading
 
-![Robustness synthesis](docs/figures/fig_robustness_summary.png)
+- **[`paper/paper.pdf`](paper/paper.pdf)** — the full write-up.
+- **[docs/GAME.md](docs/GAME.md)** — the game formalized: players, win conditions,
+  the exact per-token → batch → decide pipeline.
+- **[docs/TRIAGE_AND_AUDIT_COST.md](docs/TRIAGE_AND_AUDIT_COST.md)** — the audit-cost
+  study and the ratio artifact, including the retractions.
+- **[docs/ACCEPTANCE_RATE_FINGERPRINT.md](docs/ACCEPTANCE_RATE_FINGERPRINT.md)**,
+  **[docs/SPEC_DECODING_AND_PROXY_DETECTION.md](docs/SPEC_DECODING_AND_PROXY_DETECTION.md)**
+  — the proxy tier's theory and its boundary.
 
-The synthesis panels show which verifiers are most robust across all cells, which
-attacks are hardest (`bug_k2` and `kv_fp8` lead), the size trend within each
-family, and that **information-directed selective recompute at 25% budget matches
-(here, slightly edges out) full recompute** on the hard forward-pass attacks.
-
-## Moving to real models
-
-The HF GPU backend (`ivgym/backends/hf_gpu.py`) already runs the harness against a
-real model — start there. For the higher-throughput **vLLM** production path,
-implement the three methods in `ivgym/backends/vllm_adapter.py` on a CUDA host.
-Attacks map to real vLLM config (`quantization=...`, `kv_cache_dtype="fp8"`,
-`SamplingParams(temperature=, seed=)`); the verifier does one prefill pass over
-`prompt + claimed_tokens` and reads logits/activations. Defenses and the harness
-need no changes. See the module docstring for the full contract.
-
-## Status / not yet done
-
-- Likelihood-style Token-DiFR transforms (Appendix A) and multi-feature
-  aggregation (the paper monitors several detectors in parallel).
-- Communication-cost Pareto sweep for Activation-DiFR vs TOPLOC (k × J). (TOPLOC
-  itself is now a built-in defense, `ivgym.defenses.TokenTOPLOC` / `token_toploc`
-  — see `experiments/exp_toploc_gpu.py`; the cost-Pareto sweep against
-  Activation-DiFR specifically is still open.)
-- Real vLLM backend implementation + the temp-0 spot-check mode (Appendix D).
-  (The HF GPU backend in `ivgym/backends/hf_gpu.py` now runs the harness against a
-  real model end-to-end; vLLM remains for higher throughput.)
-- `LLMJudgeIODetector` runs only on a real-text backend (`hf_gpu`). It is now
-  exercised end-to-end by `experiments/exp_io_detector_gpu.py` on real Qwen3-0.6B
-  continuations (key resolves from `ANTHROPIC_API_KEY` / repo `.claude/` /
-  `~/.claude/anthropic_key.sh`); it is still not run in CI (no GPU / no key there).
-- I/O detectors are not yet wired into `experiments/run.py` (a `--io-detectors` flag);
-  they run via the standalone `experiments/exp_io_detector_gpu.py`.
+Methodology follows *DiFR: Inference Verification Despite Nondeterminism*
+(Karvonen et al., 2025); the testbed design follows the model-organism pattern of
+Clymer et al. (2025); the acceptance-rate mechanism is speculative decoding
+(Leviathan et al., 2022); the scheduler and confidence head are ports from DSpark
+(2026).

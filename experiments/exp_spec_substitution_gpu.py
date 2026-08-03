@@ -14,7 +14,7 @@ between the provider-SERVED distribution ``p`` (free from a logprob API) and its
 own proxy ``q`` (one cheap forward pass). It NEVER runs M.
 
 Why this is the regime where the speculative verifier wins (unlike the
-forward-pass-noise attacks in exp_spec_verifier_cost, where quant barely moves
+forward-pass-noise attacks (exp_detectability_vs_kl), where quant barely moves
 TV(p,q)): swapping the whole model changes the served *conditional distribution*
 wholesale, so TV(p, q) shifts well past the honest anchor's run-to-run variance
 -- exactly the "acceptance rate collapses across models" intuition that makes

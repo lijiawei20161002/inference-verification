@@ -131,7 +131,7 @@ _PYTHIA_1_4B = ModelIdentity(
 # GPT-2 (OpenAI): a fifth family and a clean, ungated size ladder (124M ->
 # 355M -> 774M) that all share one tokenizer/vocab, so any smaller sibling is a
 # valid same-family cheap proxy for a larger one -- exactly what the cost-curve
-# sweep (exp_cost_curve_gpu) needs. A pre-instruct base-LM architecture, which
+# distance-ladder sweep needs. A pre-instruct base-LM architecture, which
 # is the point: it shows the verification method is architecture-agnostic, not a
 # quirk of modern instruct models.
 _GPT2_124M = ModelIdentity(

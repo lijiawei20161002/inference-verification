@@ -124,8 +124,10 @@ It's the **best of the no-recompute options, not a silver bullet**:
 * it needs a one-time trusted reference;
 * it only fires once the cheat moves `TV` past honest run-to-run variance — **small
   quant is invisible**, and on real models even `quant_4bit`-strength noise stays
-  under that variance (measured in `experiments/exp_spec_verifier_cost.py`: the
-  accept-rate AUC sits near chance while `token_difr` separates every attack); and
+  under that variance — the accept-rate AUC sits near chance while `token_difr`
+  separates every attack. The mechanism is the KL budget: the entire signal
+  available to any proxy detector is `KL(M‖q)`, measured in
+  `experiments/exp_detectability_vs_kl.py`; and
 * it does not dominate `recompute_divergence` (exact full-`M` recompute, AUC 1.0
   throughout).
 
@@ -143,9 +145,8 @@ entropy does not restore `TV(p̂, q)`.
 
 ```bash
 python -m experiments.plot_accept_rate_fingerprint   # regenerates both figures
-python -m experiments.exp_proxy_spec_verify          # CPU sweep (+ real proxy if IVGYM_M/IVGYM_PROXY)
-python tests/test_proxy_spec.py                      # dependency-free tests
+python tests/test_proxy_spec.py                      # dependency-free tests (no GPU)
 # real-model GPU runs:
 python -m experiments.exp_spec_substitution_gpu      # the win case: model substitution
-python -m experiments.exp_spec_verifier_cost         # cost saving vs detection AUC
+python -m experiments.exp_detectability_vs_kl        # the budget: KL(M‖q) bounds the signal
 ```
