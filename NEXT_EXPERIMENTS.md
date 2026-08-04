@@ -44,11 +44,32 @@ different attention kernel (`sdpa` / `flash` / `eager`) → different GPU same
 family → different vendor generation. The first two are runnable *today* on one
 card and are a strict lower bound on the last two.
 
+**Status: the single-card arm is run, and it is not small.** The four
+`exp_specdec_*_gpu` experiments hold the model, the weights, the prefix and the
+arithmetic fixed and change only the *shape* of the forward pass. A rerun at a
+fixed shape is bitwise identical (`max |Δ logit| = 0.0`, every dtype). Changing
+the shape is not: chunked-vs-sequential leaves 13.6% of logit values bitwise
+identical on ~190-token sequences, a batch of 4 leaves 9.5%, and **0.88% of
+generated tokens change their argmax** with no attack anywhere in the system.
+Both knobs act as a *step* — sequence length between 64 and 128, batch size
+between 2 and 4 — which is worse for a verifier than a trend, because a
+calibration set can sit on the other side of a switch from the traffic it audits
+without anything announcing it.
+
+**What is still missing, and it is the part that decides the item.** That 0.88% is
+a token-equality rate, not a `d′` on `evaluate`'s scale. The Tier-1 detectors
+score margins and NLL, not token identity, so the benign shift cannot yet be put
+beside `d′(quant_4bit) = 0.0775`. The remaining work on the single-card arm is
+cheap and entirely mechanical: score a chunked-shape honest pool against a
+sequential-shape reference *through `harness.evaluate`*, and report `d′(benign
+shape)` in the same units. Only then does this item resolve either way.
+
 **Falsifies the deployment story if:** `d′(benign) ≳ d′(quant_4bit)`. Then no pool
 size fixes it, because growing the pool sharpens the false positive exactly as
 fast as the true positive.
 
-**Cost:** hours on one card for the kernel/batch arm; a second card for the rest.
+**Cost:** the shape/batch arm is done; scoring it through `evaluate` is hours on
+one card. A second card for the cross-GPU rest.
 **Why first:** it is the only item that can invalidate results rather than extend
 them, and half of it needs no new hardware.
 

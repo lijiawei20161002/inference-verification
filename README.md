@@ -284,6 +284,63 @@ experiment by construction, and it comes back null.
 
 ---
 
+## The honest null is not one thing: the forward-pass shape moves the logits
+
+Every AUC above is measured against an honest null of *the same model, on the same
+H100, run twice*. That null is exactly reproducible — a rerun at a fixed shape is
+**bitwise identical**, at every dtype and every speculation depth, `max |Δ logit|
+= 0.0`. A deployed verifier does not get that null. It recomputes `M` in whatever
+shape its own stack picks, against tokens a provider produced in another.
+
+Holding the weights, the prefix and the arithmetic fixed and changing *only* how
+the forward pass is scheduled (`exp_specdec_shape_gpu`, Qwen2.5-1.5B, bf16):
+
+| what changed | logit values bitwise identical | max \|Δ logit\| |
+|---|---:|---:|
+| nothing — rerun, same shape | **100%** | **0.0** |
+| chunked verify vs sequential decode, γ=8, ~35-tok prompts | 97.1% | 0.594 |
+| the same, on ~190-tok prompt+completion sequences | 13.6% | 0.844 |
+| batch of 4 instead of batch of 1, same row, same neighbours-blind attention | 9.5% | 0.906 |
+
+Two knobs flip it, and each flips it as a **step, not a trend**: sequence length
+between 64 and 128 tokens, and batch size between 2 and 4 (`exp_specdec_ctxlen_gpu`,
+97% → 13% across one doubling, then flat out to 2 048 tokens). That is discrete
+kernel selection — a different tiling or split-K decomposition, so a different
+reduction order — not error accumulating with depth.
+
+![The forward-pass shape moves the logits](docs/figures/fig_specdec_stepfunctions.png)
+
+In tokens: **0.88% of generated positions change their argmax** under the chunked
+shape and 0.73% under a batch of 8, against 0.00% for a rerun
+(`exp_specdec_fliprate_gpu`, 3 968 real decode positions). The mechanism is
+visible in the margins — 23.4% of those positions have a top-1-minus-top-2 gap
+smaller than the 0.84 perturbation, so for a quarter of all tokens the last bit
+decides the token.
+
+The end-to-end consequence is the cleanest statement of it. Greedy speculative
+decoding is *provably* output-identical to greedy decoding — a draft token is
+accepted iff it equals the target's argmax. Run both on real models
+(`exp_specdec_divergence_gpu`, Qwen2.5-1.5B target, Qwen2.5-0.5B draft): **26 of
+32 prompts diverge within 128 tokens**, at a median index of ~63. The proof is not
+wrong; its premise is. It assumes the target's argmax is the same quantity whether
+the target scores one token or a block of γ at once, and the block is a chunked
+pass.
+
+![Lossless speculative decoding, measured](docs/figures/fig_specdec_survival.png)
+
+**What this does and does not say.** It is not an attack and it is not scored as
+one: no AUC in this repo is re-measured against it, and 0.88% is *not* a `d′` —
+the Tier-1 detectors read margins and NLL, not token equality, so the two numbers
+are not on the same scale. What it bounds is the **benign** floor: a verifier that
+compares tokens against a local recompute will see this rate from an honest
+provider running exactly the algorithm it promised. Converting it to `d′` on
+`evaluate`'s scale, so it can be put beside `quant_4bit`'s 0.0775, is the missing
+step and the first item in
+[`NEXT_EXPERIMENTS.md`](NEXT_EXPERIMENTS.md) — of which this is the single-GPU
+half, now run.
+
+---
+
 ## Two things that did not transfer (kept, because the pattern is the result)
 
 Given a budget, where should it go? Two principled answers were implemented and
@@ -367,6 +424,11 @@ ivgym/
                      reference row, so a selective budget's cost is MEASURED not assumed
 
 experiments/         one file per claim; exp_*_gpu.py need CUDA, plot_*.py do not
+  specdec_common.py  the two forward-pass SHAPES (sequential vs chunked/batched) as
+                     one symmetric API, shared by the four exp_specdec_* experiments.
+                     Torch, so it lives here rather than in the numpy-only core
+  data/              inputs the specdec experiments were measured on: the 32-prompt
+                     bank and the long natural document for the context sweep
 tests/               test_smoke / test_proxy_spec / test_triage_and_cost / test_infogain
                      + test_claims.py: every claim still has the artifact it came from
 paper/               paper.tex + make_tables.py + make_figs.py (regenerate from docs/results/)
@@ -388,6 +450,10 @@ docs/results/        every committed run artifact; docs/figures/ every committed
 | `KL(M‖q)` is the proxy's whole budget | `exp_detectability_vs_kl` | `exp_detectability_vs_kl_*.txt` |
 | recomputation is necessary (`seed_43`) | `exp_io_detector_gpu` | `exp_io_detector_gpu_*.txt` |
 | no detector is robust across families | `exp_robustness_gpu` | `robustness_sweep.json` |
+| the forward-pass shape moves the logits; a rerun does not | `exp_specdec_shape_gpu` | `specdec_shape.json` |
+| ...and it is a kernel-selection step in context length | `exp_specdec_ctxlen_gpu` | `specdec_ctxlen.json` |
+| ...costing a 0.88% benign per-token argmax flip rate | `exp_specdec_fliprate_gpu` | `specdec_fliprate.json` |
+| "lossless" greedy spec-dec diverges from greedy decoding | `exp_specdec_divergence_gpu` | `specdec_divergence.json` |
 
 `tests/test_claims.py` asserts this table: delete an artifact and a test fails.
 
@@ -450,7 +516,11 @@ quantize + temperature-retune cheat against the seed-free verifier
   ordering, not a level.
 - **One prompt domain, one GPU.** Cross-GPU and cross-datacenter benign variation —
   arguably the most important false-positive source in a real deployment — is
-  untested, because there was only one accelerator available.
+  untested, because there was only one accelerator available. The *same*-GPU half
+  of it now is: forward-pass shape and batch composition move the logits far
+  enough to flip 0.88% of tokens (above). That is a lower bound on the
+  cross-machine case, and it is not yet expressed as a `d′` the detection numbers
+  can be compared against.
 
 See **[`NEXT_EXPERIMENTS.md`](NEXT_EXPERIMENTS.md)** for what to run about them.
 

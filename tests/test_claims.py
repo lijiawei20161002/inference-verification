@@ -62,6 +62,14 @@ CLAIMS = [
      "info_directed.json"),
     ("no single recompute detector is robust across model families",
      "robustness_sweep.json"),
+    ("the forward-pass SHAPE moves the logits; a rerun at fixed shape does not",
+     "specdec_shape.json"),
+    ("provably lossless greedy spec-dec diverges from greedy decoding anyway",
+     "specdec_divergence.json"),
+    ("the benign per-token argmax flip rate from chunking alone is ~0.9%",
+     "specdec_fliprate.json"),
+    ("that gap is a kernel-selection STEP in context length, not a trend",
+     "specdec_ctxlen.json"),
 ]
 
 
@@ -156,6 +164,41 @@ def _collect_ratios(obj) -> list[float]:
 
     walk(obj)
     return out
+
+
+def test_specdec_shape_claims_rest_on_a_zero_control():
+    """The shape experiments' entire reading depends on one control.
+
+    "Chunked verification is not bitwise identical to sequential decode" is only
+    a statement about the SHAPE if the same shape run twice IS bitwise identical.
+    Without that control the numbers are equally consistent with ordinary
+    nondeterminism, which is the honest null every AUC in this repo is measured
+    against. So the control is pinned here, not just plotted: if a backend, driver
+    or dtype change ever makes a rerun nonzero, these claims must break loudly
+    rather than quietly become a measurement of something else."""
+    rows = json.loads((RES / "specdec_shape.json").read_text())
+    controls = [r for r in rows if r["tag"] == "rerun_control"]
+    assert controls, "specdec_shape.json has no rerun_control rows"
+    # `max_abs` is the exact invariant and is asserted exactly. `frac_exact` gets
+    # a tolerance because the committed artifact predates the int64 counting in
+    # `specdec_common.compare`: an fp32 mean over ~3e7 ones lands at 1 - 2^-24, so
+    # the control rows read 0.99999994 while their max_abs is a hard 0.0. The
+    # tolerance covers that rounding and nothing else -- one genuinely differing
+    # logit in 3e7 would be ~3e-8 and is deliberately NOT covered.
+    bad = [(r["dtype"], r["gamma"], r["max_abs"], r["frac_exact"])
+           for r in controls
+           if r["max_abs"] != 0.0 or r["frac_exact"] < 1.0 - 1e-7]
+    assert not bad, f"rerun control is not bitwise identical: {bad}"
+
+    treatment = [r for r in rows if r["tag"] == "chunked_vs_sequential"]
+    assert treatment, "specdec_shape.json has no chunked_vs_sequential rows"
+    assert any(r["max_abs"] > 0 for r in treatment), (
+        "no shape effect anywhere: nothing for the control to be a control FOR")
+
+    # And the end-to-end experiment carries the same control, in tokens.
+    flips = json.loads((RES / "specdec_fliprate.json").read_text())["stats"]
+    assert flips["control"]["flip_rate"] == 0.0, "same-shape rerun flipped a token"
+    assert flips["chunked"]["flip_rate"] > 0.0, "no chunked flips: claim has no content"
 
 
 def test_no_figure_is_orphaned():
