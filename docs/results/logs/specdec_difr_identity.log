@@ -1,0 +1,31 @@
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/338 [00:00<?, ?it/s]Loading weights:  24%|██▍       | 81/338 [00:00<00:00, 557.39it/s]Loading weights:  47%|████▋     | 159/338 [00:00<00:00, 664.06it/s]Loading weights:  69%|██████▊   | 232/338 [00:00<00:00, 689.80it/s]Loading weights:  90%|████████▉ | 303/338 [00:00<00:00, 695.88it/s]Loading weights: 100%|██████████| 338/338 [00:00<00:00, 741.09it/s]
+Loading weights:   0%|          | 0/290 [00:00<?, ?it/s]Loading weights:  59%|█████▉    | 172/290 [00:00<00:00, 1713.66it/s]Loading weights: 100%|██████████| 290/290 [00:00<00:00, 2206.41it/s]
+K=1 T=0.7 coupled      token-identical=1.0000 seqs fully identical=8/8
+K=1 T=0.7 exact_rerun  token-identical=1.0000 seqs fully identical=8/8
+K=1 T=0.7 standard     token-identical=0.0449 seqs fully identical=0/8
+K=1 T=1.0 coupled      token-identical=1.0000 seqs fully identical=8/8
+K=1 T=1.0 exact_rerun  token-identical=1.0000 seqs fully identical=8/8
+K=1 T=1.0 standard     token-identical=0.0488 seqs fully identical=0/8
+K=2 T=0.7 coupled      token-identical=0.9258 seqs fully identical=7/8
+K=2 T=0.7 exact_rerun  token-identical=1.0000 seqs fully identical=8/8
+K=2 T=0.7 standard     token-identical=0.0488 seqs fully identical=0/8
+K=2 T=1.0 coupled      token-identical=0.9678 seqs fully identical=6/8
+K=2 T=1.0 exact_rerun  token-identical=1.0000 seqs fully identical=8/8
+K=2 T=1.0 standard     token-identical=0.0547 seqs fully identical=0/8
+K=4 T=0.7 coupled      token-identical=1.0000 seqs fully identical=8/8
+K=4 T=0.7 exact_rerun  token-identical=1.0000 seqs fully identical=8/8
+K=4 T=0.7 standard     token-identical=0.0635 seqs fully identical=0/8
+K=4 T=1.0 coupled      token-identical=1.0000 seqs fully identical=8/8
+K=4 T=1.0 exact_rerun  token-identical=1.0000 seqs fully identical=8/8
+K=4 T=1.0 standard     token-identical=0.0527 seqs fully identical=0/8
+K=8 T=0.7 coupled      token-identical=0.9258 seqs fully identical=7/8
+K=8 T=0.7 exact_rerun  token-identical=1.0000 seqs fully identical=8/8
+K=8 T=0.7 standard     token-identical=0.0566 seqs fully identical=0/8
+K=8 T=1.0 coupled      token-identical=0.9912 seqs fully identical=7/8
+K=8 T=1.0 exact_rerun  token-identical=1.0000 seqs fully identical=8/8
+K=8 T=1.0 standard     token-identical=0.0488 seqs fully identical=0/8
+K=4 T=0.4 coupled      token-identical=0.8906 seqs fully identical=7/8
+K=4 T=0.4 exact_rerun  token-identical=1.0000 seqs fully identical=8/8
+K=4 T=0.4 standard     token-identical=0.1055 seqs fully identical=0/8
+wrote docs/results/specdec_difr_identity.json
