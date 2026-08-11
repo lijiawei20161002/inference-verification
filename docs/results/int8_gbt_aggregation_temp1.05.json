@@ -1,0 +1,186 @@
+{
+ "pair": "q2.5-1.5b",
+ "base": {
+  "K": 4,
+  "T": 1.0,
+  "top_k": 0,
+  "top_p": 1.0,
+  "pbatch": 1
+ },
+ "dev": "temp1.05",
+ "train": "temp1.05",
+ "n_tokens": 3072,
+ "batch": 245,
+ "per_token_auc": {
+  "mism": 0.5107421875,
+  "marg": 0.5108413166469998,
+  "mism_vb": 0.5125325520833334,
+  "marg_vb": 0.5126335355970595,
+  "mism_same": 0.5144856770833334,
+  "marg_same": 0.5145168304443359
+ },
+ "rows": [
+  {
+   "kind": "fixed",
+   "name": "mean mismatch (match rate)",
+   "honest": 0.010416666666666666,
+   "dev": 0.031901041666666664,
+   "d_prime": 0.21160803511547882,
+   "pauc": 0.7285295625427205
+  },
+  {
+   "kind": "fixed",
+   "name": "mean margin (token_difr)",
+   "honest": 0.00044955078124999997,
+   "dev": 0.00439060546875,
+   "d_prime": 0.7465646026791944,
+   "pauc": 0.9681923558897243
+  },
+  {
+   "kind": "fixed",
+   "name": "mean sqrt(margin)",
+   "honest": 0.0020261754504153147,
+   "dev": 0.010928451184321238,
+   "d_prime": 0.42179730957721456,
+   "pauc": 0.9206516290726817
+  },
+  {
+   "kind": "fixed",
+   "name": "mean margin^2",
+   "honest": 2.8069090494791668e-05,
+   "dev": 0.0009078610263020835,
+   "d_prime": 1.9969374551161636,
+   "pauc": 0.9850689223057643
+  },
+  {
+   "kind": "fixed",
+   "name": "mean margin^3",
+   "honest": 2.177863682589844e-06,
+   "dev": 0.00022737781251420898,
+   "d_prime": 5.058331371608513,
+   "pauc": 0.9887907268170426
+  },
+  {
+   "kind": "fixed",
+   "name": "both cross-stack replays mismatch",
+   "honest": 0.005533854166666667,
+   "dev": 0.0283203125,
+   "d_prime": 0.3071623432480221,
+   "pauc": 0.8359649122807018
+  },
+  {
+   "kind": "fixed",
+   "name": "min margin over 2 replays",
+   "honest": 0.00021511067708333335,
+   "dev": 0.0038480761718749997,
+   "d_prime": 1.0162979384464308,
+   "pauc": 0.9755294486215538
+  },
+  {
+   "kind": "fixed",
+   "name": "margin x 1[2nd replay mismatch]",
+   "honest": 0.00021511067708333335,
+   "dev": 0.004214287109375,
+   "d_prime": 1.118743012959622,
+   "pauc": 0.9818515037593984
+  },
+  {
+   "kind": "fixed",
+   "name": "* same-stack margin",
+   "honest": 1.5322265625e-05,
+   "dev": 0.0037013671875,
+   "d_prime": 9.372324659951255,
+   "pauc": 0.9992481203007518
+  },
+  {
+   "kind": "fixed",
+   "name": "* same-stack margin^2",
+   "honest": 1.5491207682291664e-07,
+   "dev": 0.0007296881055989584,
+   "d_prime": 164.48970162741176,
+   "pauc": 0.9993546365914787
+  },
+  {
+   "kind": "fixed",
+   "name": "* cross margin x same-stack mism",
+   "honest": 4.2968750000000004e-05,
+   "dev": 0.0041720052083333336,
+   "d_prime": 2.8644033089007315,
+   "pauc": 0.9966040100250626
+  },
+  {
+   "kind": "gbt",
+   "name": "XGBoost [difr]",
+   "features": [
+    "marg"
+   ],
+   "honest": -0.011245192899271691,
+   "dev": 0.03650990119300938,
+   "d_prime": 0.3822816321521577,
+   "pauc": 0.8617418546365915,
+   "gain": {
+    "marg": 1.443715661764145
+   }
+  },
+  {
+   "kind": "gbt",
+   "name": "XGBoost [xstack]",
+   "features": [
+    "marg",
+    "mism",
+    "marg_vb",
+    "mism_vb",
+    "pos",
+    "role_accept",
+    "role_residual",
+    "role_bonus"
+   ],
+   "honest": -0.015942275411523116,
+   "dev": 0.04880641485966919,
+   "d_prime": 0.39859433381039533,
+   "pauc": 0.9137030075187971,
+   "gain": {
+    "marg": 2.6202023923397064,
+    "mism": 1.4419263005256653,
+    "marg_vb": 2.6178902983665466,
+    "mism_vb": 2.110030174255371,
+    "pos": 0.9667918682098389,
+    "role_accept": 0.5850618779659271,
+    "role_residual": 1.1874157190322876,
+    "role_bonus": 0.7335292398929596
+   }
+  },
+  {
+   "kind": "gbt",
+   "name": "XGBoost [matched]",
+   "features": [
+    "marg",
+    "mism",
+    "marg_vb",
+    "mism_vb",
+    "pos",
+    "role_accept",
+    "role_residual",
+    "role_bonus",
+    "marg_same",
+    "mism_same"
+   ],
+   "honest": -0.02207958960622136,
+   "dev": 0.06358542852449507,
+   "d_prime": 0.5852197970751549,
+   "pauc": 0.978953634085213,
+   "gain": {
+    "marg": 1.3834414184093475,
+    "mism": 1.2469131350517273,
+    "marg_vb": 1.2548989206552505,
+    "mism_vb": 0.8231442719697952,
+    "pos": 0.9429062157869339,
+    "role_accept": 0.6149610131978989,
+    "role_residual": 1.1787974387407303,
+    "role_bonus": 0.7868898063898087,
+    "marg_same": 14.035166263580322,
+    "mism_same": 15.040669918060303
+   }
+  }
+ ]
+}

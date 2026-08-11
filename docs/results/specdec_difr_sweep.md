@@ -125,6 +125,11 @@ anything new:
 - **int8 is at chance** (`d'` = 0.058, pAUC 0.518). A deviation that moves the
   distribution less than the honest cross-stack floor is invisible however well the seed
   is synchronized. This is the same recompute-dominant wall as `kv_fp8` in the headline grid.
+  `int8_gbt_aggregation.md` establishes that this is a property of the *channel*, not of
+  the statistic: no aggregator of the cross-stack per-token features (including
+  gradient-boosted trees over both replays) clears pAUC 0.537, while replaying in the
+  provider's own dtype takes int8 to 0.875 -- coupling the numerics is to int8 what
+  coupling the seed is to speculation.
 - **A 5% temperature retune** is weak on the match rate (0.736) but strong on the
   margin (0.970). Where a deviation shifts *how badly* tokens miss rather than
   *whether* they miss, the binary match rate throws the signal away -- an argument for

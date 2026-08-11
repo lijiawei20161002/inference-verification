@@ -16,6 +16,10 @@ matplotlib>=3.7
 # The cross-validated proxy panel in experiments/exp_proxy_distance_grid.py.
 scikit-learn>=1.3
 
+# The gradient-boosted aggregator probe in experiments/exp_int8_gbt_aggregation.py
+# (native Booster API only -- it does not need the sklearn wrapper).
+xgboost>=2.0
+
 # Optional: the llm_judge Tier-0 verifier (experiments/exp_io_detector_gpu.py).
 # Its key resolves from ANTHROPIC_API_KEY, the repo .claude/, or
 # ~/.claude/anthropic_key.sh. Set IVGYM_JUDGE=0 to skip it entirely.
