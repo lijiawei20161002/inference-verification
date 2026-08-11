@@ -133,6 +133,36 @@ batch, both channels, honest arm unchanged:
 | 4 000 | 0.914 | 1.000 |
 | 8 000 | **0.995** | 1.000 |
 
+### Why the batch buys anything at all
+
+![why a bigger audit batch works](../figures/fig_batch_principle.png)
+
+*`experiments/plot_batch_principle.py` -> `docs/figures/fig_batch_principle.png`, same
+pool and same FPR budget as the table above.*
+
+The mechanism is the whole reason "at chance" was the wrong reading. A single token
+is a coin that lands 'deviant' 50.3% of the time (panel A) -- but 1.63% is not 1.04%,
+and that difference is a **bias**, not noise: it is the systematic bf16-vs-fp16 gap plus
+int8's weight error, and it is there in expectation on every token. Averaging `n` tokens
+does nothing to it. What averaging does is shrink the *estimate's* spread as
+`sigma/sqrt(n)` -- exactly, to three digits, in the bootstrap (panel B).
+
+So the audit's threshold -- the honest 99.5th percentile of the batch mean, which is
+what FPR <= 0.5% means -- falls as `mu_h + z*sigma/sqrt(n)` and flattens onto the honest
+mean, while int8's mean stays put 3.9e-4 nats/token above it (panel C). The bar is
+falling onto a floor that the evidence sits above, so it must eventually pass under it:
+at n ~ 1 574 half of int8 audits convict, and by 8 000 essentially all do. Detection was
+never in question, only the price, and the price is quadratic in the effect size:
+`n* ~ (z_alpha + z_beta)^2 / d'^2`. Halving `d'` costs 4x the tokens; the same-stack
+channel's 12x larger `d'` is what buys the ~10x token saving in the wall figure -- a
+bigger gap, not a smaller noise.
+
+Panel C also shows the CLT lag the caveat below is about: the measured threshold (solid)
+sits *above* the Gaussian one (dashed) at audit-scale batches, because the honest batch
+mean is still right-skewed there (skew 1.9 at n=61, 0.2 at n=8 000). That is why the
+empirical crossing is ~1 574 and not the `(z/d')^2` = 1 236 the normal approximation
+predicts.
+
 So the deployable statistic already convicts int8 at batch 8 000 -- a pool of ~80 000
 tokens at the repo's 10% batch/pool ceiling, i.e. ~420 sequences of 192 tokens. That is a
 routine audit volume for a real provider, not a wall.
