@@ -1,0 +1,106 @@
+====================================================================================
+The benign forward-pass shift on evaluate's d' scale   M=Qwen/Qwen3-1.7B
+  80 prompts x 256 tokens, baseline shape = chunked_b1, shapes = chunked_b4, chunked_b1_sdpa, sequential
+====================================================================================
+
+====================================================================================
+arm 'noisy': verifier_sigma = 0.02, act sigma = 0.05
+====================================================================================
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 9235.48it/s]
+  generated 80x256 honest tokens [897s]
+  replayed + scored shape       chunked_b1 [1072s]
+  replayed + scored shape       chunked_b4 [1248s]
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 6781.01it/s]
+  replayed + scored shape  chunked_b1_sdpa [1424s]
+  replayed + scored shape       sequential [2265s]
+
+  chunked_b1  ->  chunked_b4   (honest vs honest: d' must be ~0)
+            verifier             d prime (benign)  tokens changed
+          token_difr      -0.0061 [-0.0143,+0.0041]          1.78%
+       cross_entropy      +0.0005 [-0.0001,+0.0010]        100.00%
+        token_toploc      -0.0048 [-0.0116,+0.0035]          3.33%
+     activation_difr      +0.0044 [-0.0073,+0.0158]        100.00%
+
+  chunked_b1  ->  chunked_b1_sdpa   (honest vs honest: d' must be ~0)
+            verifier             d prime (benign)  tokens changed
+          token_difr      +0.0019 [-0.0081,+0.0111]          1.79%
+       cross_entropy      +0.0000 [-0.0004,+0.0005]        100.00%
+        token_toploc      +0.0020 [-0.0057,+0.0093]          3.14%
+     activation_difr      -0.0225 [-0.0379,-0.0105]        100.00%
+
+  chunked_b1  ->  sequential   (honest vs honest: d' must be ~0)
+            verifier             d prime (benign)  tokens changed
+          token_difr      -0.0339 [-0.0416,-0.0256]          1.69%
+       cross_entropy      -0.0013 [-0.0019,-0.0008]        100.00%
+        token_toploc      -0.0261 [-0.0324,-0.0187]          3.47%
+     activation_difr      -0.6109 [-0.7238,-0.4950]        100.00%
+
+  control: chunked_b1 replayed twice (must be exactly 0)
+          token_difr d' = +0.000000   tokens changed 0.00%
+       cross_entropy d' = +0.000000   tokens changed 0.00%
+        token_toploc d' = +0.000000   tokens changed 0.00%
+     activation_difr d' = +0.000000   tokens changed 0.00%
+
+====================================================================================
+arm 'clean': verifier_sigma = 0.0, act sigma = 0.0
+====================================================================================
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 8462.95it/s]
+  generated 80x256 honest tokens [3274s]
+  replayed + scored shape       chunked_b1 [3443s]
+  replayed + scored shape       chunked_b4 [3613s]
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 6261.06it/s]
+  replayed + scored shape  chunked_b1_sdpa [3785s]
+  replayed + scored shape       sequential [4621s]
+
+  chunked_b1  ->  chunked_b4   (honest vs honest: d' must be ~0)
+            verifier             d prime (benign)  tokens changed
+          token_difr      -0.0050 [-0.0147,+0.0069]          1.83%
+       cross_entropy      +0.0005 [-0.0001,+0.0011]        100.00%
+        token_toploc      -0.0021 [-0.0102,+0.0078]          3.38%
+     activation_difr      +0.0087 [-0.0040,+0.0231]        100.00%
+
+  chunked_b1  ->  chunked_b1_sdpa   (honest vs honest: d' must be ~0)
+            verifier             d prime (benign)  tokens changed
+          token_difr      +0.0020 [-0.0082,+0.0136]          1.81%
+       cross_entropy      +0.0000 [-0.0004,+0.0005]        100.00%
+        token_toploc      +0.0039 [-0.0049,+0.0131]          3.39%
+     activation_difr      -0.0478 [-0.0668,-0.0325]        100.00%
+
+  chunked_b1  ->  sequential   (honest vs honest: d' must be ~0)
+            verifier             d prime (benign)  tokens changed
+          token_difr      -0.0321 [-0.0399,-0.0224]          1.75%
+       cross_entropy      -0.0013 [-0.0019,-0.0008]        100.00%
+        token_toploc      -0.0251 [-0.0322,-0.0163]          3.34%
+     activation_difr      -1.6314 [-1.9449,-1.3118]        100.00%
+
+  control: chunked_b1 replayed twice (must be exactly 0)
+          token_difr d' = +0.000000   tokens changed 0.00%
+       cross_entropy d' = +0.000000   tokens changed 0.00%
+        token_toploc d' = +0.000000   tokens changed 0.00%
+     activation_difr d' = +0.000000   tokens changed 0.00%
+
+====================================================================================
+What the floor does to the price of a verdict
+====================================================================================
+A verdict separating an attack from honest needs (delta*/d'_attack)^2 tokens.
+If the verifier's audit shape differs from its calibration shape, it must
+separate the attack from a SHIFTED honest null instead: d'_attack - d'_benign.
+
+  against quant_4bit (token_difr, Qwen3-1.7B, pool_scaling.json):  d'_attack = 0.0775, 2,363 tokens with no floor
+     noisy / chunked_b4       d'_benign = -0.0061  ->  effective +0.0836  ->                       2,030  (x0.86)
+     noisy / chunked_b1_sdpa  d'_benign = +0.0019  ->  effective +0.0756  ->                       2,482  (x1.05)
+     noisy / sequential       d'_benign = -0.0339  ->  effective +0.1114  ->                       1,143  (x0.48)
+     clean / chunked_b4       d'_benign = -0.0050  ->  effective +0.0825  ->                       2,087  (x0.88)
+     clean / chunked_b1_sdpa  d'_benign = +0.0020  ->  effective +0.0755  ->                       2,493  (x1.06)
+     clean / sequential       d'_benign = -0.0321  ->  effective +0.1096  ->                       1,182  (x0.50)
+
+  against kv_fp8 (token_difr, README grid):  d'_attack = 0.0150, 63,078 tokens with no floor
+     noisy / chunked_b4       d'_benign = -0.0061  ->  effective +0.0211  ->                      31,800  (x0.50)
+     noisy / chunked_b1_sdpa  d'_benign = +0.0019  ->  effective +0.0131  ->                      82,465  (x1.31)
+     noisy / sequential       d'_benign = -0.0339  ->  effective +0.0489  ->                       5,927  (x0.09)
+     clean / chunked_b4       d'_benign = -0.0050  ->  effective +0.0200  ->                      35,555  (x0.56)
+     clean / chunked_b1_sdpa  d'_benign = +0.0020  ->  effective +0.0130  ->                      84,455  (x1.34)
+     clean / sequential       d'_benign = -0.0321  ->  effective +0.0471  ->                       6,394  (x0.10)
+
+wrote /root/inference-verification/docs/results/benign_shape_dprime.json  total 4799s

@@ -1,0 +1,45 @@
+============================================================================================
+Sequential vs fixed-batch verdicts   (alpha = 0.5%, power = 90%, boundary checked 32 times per fixed batch)
+  scores: Qwen/Qwen3-1.7B pool of 20480 tokens per config, 4000 simulated streams per design
+============================================================================================
+  batch/pool ceiling 10% on a 10,240-token honest split => any design drawing more than 1,024 tokens per stream is unresolvable at this pool
+
+3 cells inside the ceiling, 19 unresolvable at this pool:
+    unresolvable      seed_43 / cross_entropy    b = 1,678,019 = 16386.9% of the pool; would need 201,362,280 honest tokens
+    unresolvable      seed_43 / activation_difr  b = 1,220,994 = 11923.8% of the pool; would need 146,519,280 honest tokens
+    unresolvable      seed_43 / token_toploc     b =   280,666 = 2740.9% of the pool; would need 33,679,920 honest tokens
+    unresolvable     temp_1.1 / accept_rate      b =    90,749 =  886.2% of the pool; would need 10,889,880 honest tokens
+    unresolvable       kv_fp8 / token_toploc     b =    35,430 =  346.0% of the pool; would need 4,251,600 honest tokens
+    unresolvable       kv_fp8 / token_difr       b =    35,066 =  342.4% of the pool; would need 4,207,920 honest tokens
+    unresolvable   quant_4bit / accept_rate      b =    31,350 =  306.2% of the pool; would need 3,762,000 honest tokens
+    unresolvable     temp_1.1 / token_toploc     b =    13,739 =  134.2% of the pool; would need 1,648,680 honest tokens
+    unresolvable   quant_4bit / surface_stat     b =    12,994 =  126.9% of the pool; would need 1,559,280 honest tokens
+    unresolvable     temp_1.1 / surface_stat     b =    12,959 =  126.6% of the pool; would need 1,555,080 honest tokens
+    unresolvable      bug_k32 / surface_stat     b =     6,691 =   65.3% of the pool; would need 802,920 honest tokens
+    unresolvable   quant_4bit / cross_entropy    b =     5,757 =   56.2% of the pool; would need 690,840 honest tokens
+    unresolvable     temp_1.1 / cross_entropy    b =     5,372 =   52.5% of the pool; would need 644,640 honest tokens
+    unresolvable      bug_k32 / surface_tokens   b =     3,764 =   36.8% of the pool; would need 451,680 honest tokens
+    unresolvable   quant_4bit / token_difr       b =     2,494 =   24.4% of the pool; would need 299,280 honest tokens
+    unresolvable      bug_k32 / cross_entropy    b =     2,264 =   22.1% of the pool; would need 271,680 honest tokens
+    unresolvable   quant_4bit / token_toploc     b =     2,013 =   19.7% of the pool; would need 241,560 honest tokens
+    unresolvable      bug_k32 / token_difr       b =     1,886 =   18.4% of the pool; would need 226,320 honest tokens
+    unresolvable      bug_k32 / token_toploc     b =     1,443 =   14.1% of the pool; would need 173,160 honest tokens
+  simulating on 3 worker processes ...
+
+      attack         verifier   d prime    b*(d′)  matched b  e-value E[N]    saving   ceiling
+  quant_4bit  activation_difr   +9.9453         1          2             1     1.98x        ok
+                              b*(d′) realizes FPR 0.0095 / power 1.000 against the 0.005/0.90 spec  |  matched FPR 0.0055 / power 1.000  |  e-value FPR 0.0070 / power 1.000
+      kv_fp8  activation_difr   +2.7596         2          7             6     1.13x        ok
+                              b*(d′) realizes FPR 0.0045 / power 0.048 against the 0.005/0.90 spec  |  matched FPR 0.0030 / power 0.938  |  e-value FPR 0.0055 / power 0.900
+     seed_43       token_difr   +0.2510       226        288           219     1.31x        ok
+                              b*(d′) realizes FPR 0.0145 / power 0.836 against the 0.005/0.90 spec  |  matched FPR 0.0143 / power 0.901  |  e-value FPR 0.0175 / power 0.901
+
+  median token saving across the 3 cells inside the ceiling: 1.31x  (range 1.13-1.98x)
+  The detector is unchanged. This is the same evidence, stopped when it is enough.
+
+  what b*(d′) actually delivers, inside the ceiling (target FPR <= 0.005, power >= 0.90):
+      quant_4bit / activation_difr  FPR 0.0095  power 1.000
+          kv_fp8 / activation_difr  FPR 0.0045  power 0.048
+         seed_43 / token_difr       FPR 0.0145  power 0.836
+
+wrote /root/inference-verification/docs/results/sequential_verdict.json

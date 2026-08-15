@@ -1,0 +1,7 @@
+====================================================================================
+The cost of a verdict   M=Qwen/Qwen3-1.7B  proxy=Qwen/Qwen3-0.6B
+  pool = 400 prompts x 256 tokens per config; target = standardized pAUC 0.9 @ FPR <= 0.5%
+====================================================================================
+Warning: You are sending unauthenticated requests to the HF Hub. Please set a HF_TOKEN to enable higher rate limits and faster downloads.
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 6974.51it/s]
+Loading weights:   0%|          | 0/311 [00:00<?, ?it/s]Loading weights: 100%|██████████| 311/311 [00:00<00:00, 7273.09it/s]

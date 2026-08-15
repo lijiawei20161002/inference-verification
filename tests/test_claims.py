@@ -70,6 +70,12 @@ CLAIMS = [
      "specdec_fliprate.json"),
     ("that gap is a kernel-selection STEP in context length, not a trend",
      "specdec_ctxlen.json"),
+    ("what a verdict costs: tokens x price per token, measured in one run",
+     "cost_of_a_verdict.json"),
+    ("the benign forward-pass shift, finally on evaluate's d' scale",
+     "benign_shape_dprime.json"),
+    ("sequential vs fixed-batch verdicts, and the pool it takes to tell",
+     "sequential_verdict.json"),
 ]
 
 
@@ -118,6 +124,70 @@ def test_headline_grid_arms_are_on_the_right_side_of_the_ceiling():
     assert ratios, "headline_ratio.json records no batch/pool ratio"
     assert max(ratios) > CEILING, "no inflated arm: nothing to correct"
     assert min(ratios) <= CEILING, "no valid arm: nothing to correct it with"
+
+
+def test_sequential_verdict_reports_nothing_above_the_ceiling():
+    """The ceiling applies to a bootstrap over STREAMS exactly as it applies to a
+    batch mean, and the first version of `exp_sequential_verdict` did not check it:
+    it simulated streams of up to 886% of its own pool and reported a median 1.40x
+    saving off the back of them, with realized false-alarm rates from 0.0000 to
+    0.8065 against a 0.005 budget. That is the ratio artifact in a new costume, so
+    it gets the same structural guard the others have.
+
+    A cell may appear in `cells` only if it is flagged `within_ceiling`, and the
+    cells that are not resolvable must still be *named*, with the pool they would
+    need -- an unresolvable cell is a result, and dropping it silently is how a
+    coverage gap turns into an implied claim."""
+    d = json.loads((RES / "sequential_verdict.json").read_text())
+    assert d.get("max_pool_ratio", 1.0) <= CEILING, (
+        f"sequential_verdict.json ran at a {d.get('max_pool_ratio')} ceiling, "
+        f"looser than the {CEILING} the library enforces")
+    reported = [(a, v, c) for a, per in d["cells"].items() for v, c in per.items()]
+    over = [(a, v, c.get("batch_pool_ratio")) for a, v, c in reported
+            if not c.get("within_ceiling")]
+    assert not over, ("sequential_verdict.json reports cells measured above the "
+                      "ceiling: " + ", ".join(f"{a}/{v} at {r:.0%}" for a, v, r in over))
+    for a, v, c in reported:
+        assert c["batch_pool_ratio"] <= CEILING, f"{a}/{v} batch is {c['batch_pool_ratio']:.0%}"
+        assert c["seq_pool_ratio"] <= CEILING, f"{a}/{v} stream is {c['seq_pool_ratio']:.0%}"
+    unres = d.get("unresolvable", [])
+    assert reported or unres, "neither a resolvable cell nor an unresolvable one"
+    for u in unres:
+        assert u.get("honest_pool_needed", 0) > 0, (
+            f"{u['attack']}/{u['verifier']} is dropped without saying what it would take")
+
+
+def test_cost_of_a_verdict_control_is_not_a_detection():
+    """The experiment's own control: honest scored against a disjoint half of the
+    SAME honest pool. Two detectors come back nominally *reachable* there, which
+    is exactly why the control is run -- `surface_tokens` prices a control verdict
+    at 2,182 tokens while its only reachable real cell (bug_k32) costs 3,764, so
+    that cell is separating the pool from itself and must be read as unreachable.
+
+    What has to hold is weaker than "unreachable" and is the property that makes
+    the grid interpretable: no control d' may be significantly different from
+    zero. If one ever is, the honest null is not null and every d' measured
+    against it is measuring the split instead of the deviation."""
+    d = json.loads((RES / "cost_of_a_verdict.json").read_text())
+    bad = [(v, c["d_prime"], c["d_prime_ci"]) for v, c in d["honest_control"].items()
+           if not (c["d_prime_ci"][0] <= 0.0 <= c["d_prime_ci"][1])]
+    assert not bad, ("honest-vs-honest separates significantly, so the null is not "
+                     "null: " + ", ".join(f"{v} d'={p:+.4f} {ci}" for v, p, ci in bad))
+
+
+def test_a_detection_beats_its_own_honest_control():
+    """A cell may only be quoted as a detection if its d' clears the control d' for
+    the SAME detector. bug_k32 / surface_tokens does not (+0.0614 against a control
+    of +0.0807) and the README says so; this pins that no OTHER cell quietly joins
+    it, which a per-cell d' table on its own would never reveal."""
+    d = json.loads((RES / "cost_of_a_verdict.json").read_text())
+    ctl = d["honest_control"]
+    known = {("bug_k32", "surface_tokens")}          # named in the README as void
+    offenders = {(a, v) for a, per in d["cells"].items() for v, c in per.items()
+                 if c["reachable"] and c["d_prime"] <= ctl[v]["d_prime"]}
+    assert offenders <= known, (
+        "cells quoted as detections that do not clear their own honest control: "
+        + ", ".join(f"{a}/{v}" for a, v in sorted(offenders - known)))
 
 
 def test_pool_scaling_has_points_inside_the_ceiling():

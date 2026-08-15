@@ -17,7 +17,7 @@ figure in it regenerates from the committed run artifacts
 
 ## The short version
 
-**Three findings organize everything else.**
+**Four findings organize everything else.**
 
 1. **Recomputation works, but barely, and at a price.** Re-running the reference
    model `M` and comparing per-token sampling margins catches every deviation we
@@ -35,7 +35,14 @@ figure in it regenerates from the committed run artifacts
    evaluation batches from too small a token pool inflates detection AUC without
    bound. The same measurement reads **0.977 and 0.530** depending only on pool
    size. This is now enforced in code (`EvalConfig.max_pool_ratio`) rather than
-   left to the reader.
+   left to the reader — and it keeps recurring: the sequential-testing experiment
+   below shipped a headline built on streams of up to 886% of their own pool.
+4. **What a client buys is a verdict, and a verdict has a price.** Detectors are
+   ranked by accuracy and costed by a rate; neither is what anyone pays.
+   `(δ*/d′)² tokens × price per token` is, and measured that way **14 of 35
+   detector × deviation cells have no price at all**, the "cheap" proxy tier turns
+   out to be 1.05× cheaper per token while needing 13× more of them, and the
+   cheapest verdict in the grid costs 141 µs of H100 time.
 
 ---
 
@@ -284,6 +291,131 @@ experiment by construction, and it comes back null.
 
 ---
 
+## What a verdict costs
+
+Every cost above is a *rate*: FLOPs per sequence, seconds per prefill, prefill
+tokens per audit. None of them is what a client buys. A client buys a **verdict**
+— "is this provider serving what it promised, at a false-accusation rate I can
+live with?" — and its price factors into exactly two measured terms:
+
+```
+cost of a verdict  =  (δ*/d′)² tokens  ×  c(tier) seconds per token
+                       how much evidence     what a token of it costs
+```
+
+`δ* = 3.767` is the batch separation reaching standardized pAUC 0.90 at
+FPR ≤ 0.5% — the same protocol as everything else here, not a new one. Both
+factors measured in one run, one model (`exp_cost_of_a_verdict_gpu`, Qwen3-1.7B
+audited with a Qwen3-0.6B proxy, 80 × 256 tokens per configuration, `d′` with a
+sequence-level bootstrap):
+
+| tier | what it runs per token | µs/token | GFLOP/token |
+|---|---|---:|---:|
+| Tier 1 | recompute `M` | 141.1 | 2.82 |
+| Tier 0 | a cheap proxy | 134.4 | 0.88 |
+| Tier 0 | no model at all | 0.7 | 0.00 |
+
+**The cheap tier is 1.05× cheaper per token.** Its 3.2× FLOP advantage does not
+survive contact with the hardware: both tiers are one batch-1 prefill, which is
+latency-bound on an H100, so the proxy saves FLOPs it was never spending time on.
+Only the tier that runs no model at all is actually cheap, by 200×.
+
+Tokens per verdict, which is where the whole dynamic range lives:
+
+| deviation | token_difr | cross_entropy | token_toploc | activation_difr | accept_rate | surface_stat | surface_tokens |
+|---|---:|---:|---:|---:|---:|---:|---:|
+| quant_4bit | 2 494 | 5 757 | 2 013 | **1** | 31 350 | 12 994 | ∞ |
+| kv_fp8 | 35 066 | ∞ | 35 430 | **2** | ∞ | ∞ | ∞ |
+| temp_1.1 | ∞ | 5 372 | 13 739 | ∞ | 90 749 | 12 959 | ∞ |
+| seed_43 | **226** | 1 678 019 | 280 666 | 1 220 994 | ∞ | ∞ | ∞ |
+| bug_k32 | 1 886 | 2 264 | 1 443 | ∞ | ∞ | 6 691 | 3 764 |
+
+Three things this says that a table of AUCs does not.
+
+**13 of 35 cells cost infinity** — 14 once the control below disqualifies one
+more. A detector with `d′ ≤ 0` is not a weak point on a Pareto curve; it is off
+the curve, and no budget reaches a verdict through it. Ranking detectors by
+accuracy hides that, because "AUC 0.5" and "AUC 0.55" look adjacent while their
+prices are ∞ and 12 994 tokens.
+
+**A cheaper token is not a cheaper verdict.** On `quant_4bit` the proxy is 1.05×
+cheaper per token and needs **13× more of them**, so it is 12× more expensive per
+verdict. The cheap tier is not a weak version of recomputation — it is a detector
+of something else, and the substitution result above is where it wins.
+
+**Price is nearly constant, so `d′` decides everything.** Measured price takes
+only three values across seven detectors; tokens span six orders of magnitude.
+Buy the exponent, not the constant.
+
+The cheapest verdict in the grid is 141 µs of H100 time — one token of
+`activation_difr` on `quant_4bit`, at `d′ = 9.95`. It is also the least
+deployable: `activation_difr` is the one detector that requires the provider to
+expose activations, so it pays for its price in access rather than in compute.
+
+**The control, and the one cell it disqualifies.** Honest scored against a
+disjoint half of the *same* honest pool must not reach a verdict. Five of seven
+detectors are unreachable there. `activation_difr` is nominally reachable at
+2 683 958 tokens — six orders of magnitude past the 1 and 2 it needs on real
+deviations, so it is noise and it is harmless.
+
+`surface_tokens` is not harmless. Its control prices a verdict at **2 182
+tokens**, which is *cheaper* than the 3 764 its only reachable detection
+(`bug_k32`) costs. Read directly: honest-vs-honest separates at `d′ = +0.0807`
+and honest-vs-`bug_k32` at `d′ = +0.0614`. Both intervals cross zero
+([−0.028, +0.258] and [−0.048, +0.251]), so neither is a detection — but only the
+control says so out loud. **The `bug_k32` / `surface_tokens` cell should be read
+as unreachable**, and the reason no detector-only table would have caught it is
+that it is not a property of the detector, it is a property of running the
+detector against a null it cannot beat.
+
+---
+
+## Fewer tokens for the same verdict — and the pool it takes to know
+
+A fixed-`b` test spends all `b` tokens even when the first few hundred settled it.
+A verifier watching a provider continuously is in a *sequential* situation, where
+Wald's classical result promises the same `(α, β)` at 2–3× fewer samples.
+`exp_sequential_verdict` re-analyses the per-token scores above — no GPU, no new
+detector — under a truncated SPRT and an anytime-valid mixture e-process.
+
+**The first version of this experiment was wrong, in the way this repo is most
+often wrong.** Its streams are bootstrapped from a finite token pool, and it drew
+streams of up to **886% of that pool**. That is the batch/pool ceiling again: past
+it the honest variance collapses onto the pool mean and the realized error rates
+stop being properties of the test. They said so plainly and were quoted anyway —
+realized false-alarm rates from 0.0000 to 0.8065 against a 0.005 budget — under a
+headline of "median 1.40× saving". The ceiling is now enforced here as it is in
+`harness.evaluate`, and `tests/test_claims.py` fails if a cell above it is ever
+reported again.
+
+Inside the ceiling, at a 20 480-token pool, **3 of 22 cells are resolvable at
+all**:
+
+| cell | `b*(d′)` | matched `b` | e-value E[N] | saving |
+|---|---:|---:|---:|---:|
+| quant_4bit / activation_difr | 1 | 2 | 1 | 1.98× |
+| kv_fp8 / activation_difr | 2 | 7 | 6 | 1.13× |
+| seed_43 / token_difr | 226 | 288 | 219 | 1.31× |
+
+Sequential testing does help — **1.13–1.98×**, median 1.31× — but the honest
+headline is the other column. The remaining 19 cells are reported as
+*unresolvable at this pool*, each with the pool it would need: the cheapest of
+them wants 173 160 honest tokens, and `seed_43 / cross_entropy` wants 201 million.
+Answering "does stopping early pay?" for the cells anyone cares about is a
+data-collection problem, not an analysis one.
+
+**And `b*(d′)` does not deliver its own spec.** The saving above is measured
+against a fixed design *bisected* to genuinely reach 90% power, because the `b`
+that `signal.batch_for_pauc` nominates does not: inside the ceiling it realizes
+0.05–1.00 power and 0.0045–0.0145 false alarms against targets of 0.90 and 0.005.
+`kv_fp8 / activation_difr` is the sharp case — `d′ = 2.76` nominates `b = 2`, and
+2 tokens deliver **4.8%** power where 7 deliver 94%. The formula is a Gaussian
+model of a batch mean; on winsorized heavy-tailed per-token scores at small `b` it
+is optimistic, and every "tokens per verdict" in the table above should be read as
+a lower bound on the tokens a verdict actually takes.
+
+---
+
 ## The honest null is not one thing: the forward-pass shape moves the logits
 
 Every AUC above is measured against an honest null of *the same model, on the same
@@ -333,11 +465,42 @@ one: no AUC in this repo is re-measured against it, and 0.88% is *not* a `d′` 
 the Tier-1 detectors read margins and NLL, not token equality, so the two numbers
 are not on the same scale. What it bounds is the **benign** floor: a verifier that
 compares tokens against a local recompute will see this rate from an honest
-provider running exactly the algorithm it promised. Converting it to `d′` on
-`evaluate`'s scale, so it can be put beside `quant_4bit`'s 0.0775, is the missing
-step and the first item in
-[`NEXT_EXPERIMENTS.md`](NEXT_EXPERIMENTS.md) — of which this is the single-GPU
-half, now run.
+provider running exactly the algorithm it promised.
+
+### The floor, finally in `d′`
+
+That conversion was the first item in [`NEXT_EXPERIMENTS.md`](NEXT_EXPERIMENTS.md)
+and the single-card half of it is now run. `exp_benign_shape_dprime_gpu` generates
+one honest pool (80 × 256 tokens, Qwen3-1.7B) and has the *verifier* replay it —
+same weights, same claimed tokens, the same memoized noise draw — under four
+schedules it might legitimately pick, scoring each through `harness.evaluate`'s
+own `d′`. Every comparison is honest-against-honest and paired, so the intervals
+are tight:
+
+| the verifier's replay shape | token_difr `d′` | token_toploc `d′` | activation_difr `d′` |
+|---|---:|---:|---:|
+| **the same shape again** (control) | **+0.000000** | **+0.000000** | **+0.000000** |
+| batched with 3 unrelated rows | −0.0061 [−0.0143, +0.0041] | −0.0048 | +0.0044 |
+| a different attention kernel (sdpa vs eager) | +0.0019 [−0.0081, +0.0111] | +0.0020 | −0.0225 |
+| replayed token-by-token through a KV cache | **−0.0339** [−0.0416, −0.0256] | −0.0261 | **−0.6109** |
+
+The control is exactly zero — 0.00% of tokens changed — so every other row is the
+schedule and nothing else.
+
+**The single-card floor does not eat the signal.** The largest *positive*
+benign `d′` is +0.0019, against `quant_4bit`'s 0.0754 [0.0493, 0.1044] measured on
+the same pool in the same run (and 0.0775 independently in `pool_scaling.json`).
+A verifier that batches its audits, or upgrades its attention kernel, does not
+thereby manufacture false accusations at this scale.
+
+**But read the sign, not just the size.** Token-by-token replay shifts the null by
+45% of the attack's `d′` for `token_difr`, and by −0.61 for `activation_difr`. It
+happens to shift *away* from the attack, which makes verdicts cheaper rather than
+false — `exp_benign_shape_dprime_gpu` prices that too, at 1 143 tokens instead of
+2 363. Nothing guarantees that sign for another detector, another deviation or
+another accelerator, and the arm that would stress it — a genuinely different GPU
+— is still unrun. What is now established is the shape of the risk and that its
+single-card magnitude is small, not that it is absent.
 
 ---
 
@@ -396,6 +559,15 @@ setting should take the scheduler and skip the head.
    it tells you the pool the verdict will require.
 6. **Report the batch/pool ratio next to every AUC.** It is one number, and without
    it a detection AUC is not interpretable.
+7. **Price the verdict, not the detector.** A detector 12× cheaper per token that
+   needs 100× more tokens is 8× more expensive per verdict, and one with `d′ ≤ 0`
+   is not slow, it is priceless in the useless direction. 14 of 35 cells here have
+   no price.
+8. **Run the honest-vs-honest control, and run it per detector.** It is what
+   disqualified `bug_k32 / surface_tokens`, and no per-cell `d′` table would have.
+9. **Calibrate in the shape you audit in.** The single-card floor is small
+   (largest positive benign `d′` = +0.0019), but token-by-token replay still moves
+   the null 45% as far as the attack does.
 
 ---
 
@@ -454,6 +626,9 @@ docs/results/        every committed run artifact; docs/figures/ every committed
 | ...and it is a kernel-selection step in context length | `exp_specdec_ctxlen_gpu` | `specdec_ctxlen.json` |
 | ...costing a 0.88% benign per-token argmax flip rate | `exp_specdec_fliprate_gpu` | `specdec_fliprate.json` |
 | "lossless" greedy spec-dec diverges from greedy decoding | `exp_specdec_divergence_gpu` | `specdec_divergence.json` |
+| what a verdict costs: tokens × price, and 13 cells at ∞ | `exp_cost_of_a_verdict_gpu` | `cost_of_a_verdict.json` |
+| ...and the benign replay-shape floor on the same d′ scale | `exp_benign_shape_dprime_gpu` | `benign_shape_dprime.json` |
+| stopping early pays 1.3×, in the 3 of 22 cells a pool this size can resolve | `exp_sequential_verdict` | `sequential_verdict.json` |
 
 `tests/test_claims.py` asserts this table: delete an artifact and a test fails.
 

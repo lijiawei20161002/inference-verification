@@ -56,22 +56,39 @@ between 2 and 4 — which is worse for a verifier than a trend, because a
 calibration set can sit on the other side of a switch from the traffic it audits
 without anything announcing it.
 
-**What is still missing, and it is the part that decides the item.** That 0.88% is
-a token-equality rate, not a `d′` on `evaluate`'s scale. The Tier-1 detectors
-score margins and NLL, not token identity, so the benign shift cannot yet be put
-beside `d′(quant_4bit) = 0.0775`. The remaining work on the single-card arm is
-cheap and entirely mechanical: score a chunked-shape honest pool against a
-sequential-shape reference *through `harness.evaluate`*, and report `d′(benign
-shape)` in the same units. Only then does this item resolve either way.
+**The single-card arm is now closed, and it comes back negative — which is the
+good direction.** `exp_benign_shape_dprime_gpu` scores a replayed honest pool
+(80 × 256, Qwen3-1.7B) through `harness.evaluate` under four verifier-side
+schedules, paired on the same tokens and the same memoized noise draw. Replaying
+the *same* shape returns `d′ = 0.000000` exactly, so the other rows are the
+schedule and nothing else:
 
-**Falsifies the deployment story if:** `d′(benign) ≳ d′(quant_4bit)`. Then no pool
-size fixes it, because growing the pool sharpens the false positive exactly as
-fast as the true positive.
+| replay shape | `d′(benign)`, token_difr |
+|---|---:|
+| batched with 3 unrelated rows | −0.0061 [−0.0143, +0.0041] |
+| a different attention kernel | +0.0019 [−0.0081, +0.0111] |
+| token-by-token through a KV cache | −0.0339 [−0.0416, −0.0256] |
 
-**Cost:** the shape/batch arm is done; scoring it through `evaluate` is hours on
-one card. A second card for the cross-GPU rest.
-**Why first:** it is the only item that can invalidate results rather than extend
-them, and half of it needs no new hardware.
+The largest positive floor is **+0.0019** against `d′(quant_4bit) = 0.0754`
+[0.0493, 0.1044] measured in the same run. Batching audits or swapping attention
+kernels does not manufacture false accusations at this scale.
+
+**What that leaves.** Token-by-token replay is *significantly* non-zero and 45% of
+the attack in magnitude — it just happens to point away from the attack, and for
+`activation_difr` it is −0.61. The finding is therefore "the single-card floor is
+small and, here, helpfully signed", not "there is no floor". Nothing in the
+mechanism argument makes that sign a property of the hardware rather than a
+coincidence of this detector and this deviation.
+
+**Still open, and now the whole of the item:** the cross-GPU arm. Different SKU,
+different driver, different kernel selection. The shapes above are a lower bound
+on it, and they are the part that needed no new hardware.
+
+**Falsifies the deployment story if:** `d′(benign) ≳ d′(quant_4bit)` *with a
+positive sign*. Then no pool size fixes it, because growing the pool sharpens the
+false positive exactly as fast as the true one.
+
+**Cost:** the single-card arm is done (~1.3 GPU-hours). A second card for the rest.
 
 ---
 
@@ -208,19 +225,34 @@ at 0.6B / 1.7B / 4B / 8B and fit d′ versus parameter count. An extrapolation f
 four points is weak evidence, but it is the difference between having a slope and
 having none.
 
-### 8. Sequential verification instead of fixed-batch
+### 8. Sequential verification — run, and now a pool problem
 
-Every verdict here is a fixed-`b` batch. A real verifier watches a provider
-continuously, which is a **sequential** test: a SPRT or e-value accumulates
-evidence across an ongoing relationship and stops as soon as the posterior clears
-a threshold, at typically 2–3× fewer samples than a fixed-`n` test of the same
-power. Given that the binding constraint identified throughout is *how many
-tokens a verdict needs*, this is the one methodological change that could move the
-headline cost without needing a better detector.
+`exp_sequential_verdict` re-analyses the cost-of-a-verdict score arrays under a
+truncated SPRT and an anytime-valid mixture e-process. It works: **1.13–1.98×
+fewer tokens**, median 1.31×, against a fixed design bisected to genuinely reach
+90% power. Two things came out of it that matter more than the ratio.
 
-It also fits the deployment story exactly: the report's own framing is that "any
-protocol promising a verdict on a single completion is not measuring
-quantization" — a sequential test is what replaces it.
+**The ceiling applies to a bootstrap over streams.** The first run drew streams of
+up to 886% of its own token pool and reported a median 1.40× saving off the back
+of them. Enforcing `EvalConfig.max_pool_ratio` leaves **3 of 22 cells resolvable**
+at a 20 480-token pool; the other 19 are now reported as unresolvable with the
+pool each would need (173 160 honest tokens for the cheapest, 201 M for the
+worst). `tests/test_claims.py` fails if an over-ceiling cell is ever reported
+again.
+
+**`b*(d′)` is optimistic.** Inside the ceiling, the batch `signal.batch_for_pauc`
+nominates realizes 0.05–1.00 power against a 0.90 target. `kv_fp8 /
+activation_difr` is the sharp case: `d′ = 2.76` nominates 2 tokens, which deliver
+4.8% power, where 7 deliver 94%. Every "tokens per verdict" in the repo is a lower
+bound.
+
+**What to run.** A deep-pool arm: 400 prompts × 256 tokens over `honest` +
+`quant_4bit` only puts the three headline `quant_4bit` cells inside the ceiling
+for ~3.5 GPU-hours (`IVGYM_TAG=deep400`, then `IVGYM_SOURCE=cost_of_a_verdict_deep400
+IVGYM_MAXMULT=2`). Beyond that the question is whether the saving ratio is
+scale-free in `b` — if it is, the resolvable cells license the rest; if it is not,
+every cell needs its own pool and sequential verification is only affordable where
+`d′` is already large.
 
 ### 9. Multi-provider / cross-checking
 
