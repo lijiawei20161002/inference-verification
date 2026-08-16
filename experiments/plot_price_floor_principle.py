@@ -1,14 +1,15 @@
 """Why "no budget buys a verdict" is a ruler, not a law.
 
-Companion to `paper/cost_accuracy_poster_sci.png`, in the same spirit that
-`plot_batch_principle.py` is a companion to `fig_int8_wall.png`: that poster
+An additional experiment on top of the cost-of-a-verdict run
+(`docs/results/cost_of_a_verdict.json`), in the same spirit that
+`plot_batch_principle.py` is a companion to `fig_int8_wall.png`: that experiment
 reports *that* 14 of 35 (attack, verifier) cells have no finite price, this one
 asks what was actually measured when a cell is priced at infinity.
 
-The poster's price is `b*(d') = (delta*/d')^2`, and `signal.batch_for_pauc`
+That experiment's price is `b*(d') = (delta*/d')^2`, and `signal.batch_for_pauc`
 returns -1 -- unreachable, no budget -- exactly when the point estimate `d' <= 0`.
 That is a decision rule on the SIGN of a noisy statistic. Re-read from the same
-per-token scores the poster was built from:
+per-token scores the experiment was built from:
 
   docs/figures/fig_price_floor_principle.png
       (A) Every cell's `d'` with its 90% sequence-bootstrap interval, against the
@@ -19,9 +20,9 @@ per-token scores the poster was built from:
           There the batch mean's noise shrank as sigma/sqrt(n) while the gap
           stayed put; here the *estimate of d'* does the same as the pool grows,
           and the "threshold" it has to clear is d' = 0. kv_fp8/token_difr sits on
-          the poster's board at 35,066 tokens, and reports "no budget buys a
+          the experiment's board at 35,066 tokens, and reports "no budget buys a
           verdict" in 27% of quarter-pool runs of the same experiment.
-      (C) The consequence, on the poster's own price plane. A pool of m sequences
+      (C) The consequence, on the experiment's own price plane. A pool of m sequences
           resolves `d'` no finer than `1.645 k/sqrt(m)`, so it cannot separate any
           price above `(delta* sqrt(m) / 1.645 k)^2` from infinity. The 10
           unresolved cells are not off the curve, they are off the end of the
@@ -34,7 +35,7 @@ The one real exception is in (C)'s text and it is not a measurement: `seed_43` i
 the same weights at a different sampling seed, so the claimed tokens are a fresh
 draw from the identical distribution and every verifier that is a function of
 (prompt, claimed tokens) alone has d' = 0 by exchangeability, at any pool size.
-The poster prices three of those cells at 280,666 / 1,220,994 / 1,678,019 tokens.
+The experiment prices three of those cells at 280,666 / 1,220,994 / 1,678,019 tokens.
 Those budgets buy nothing. Infinity there is provable, and the sign rule missed it
 while flagging ten cells that are merely unpriced.
 
@@ -61,7 +62,7 @@ CACHE = RES / "price_floor_principle.json"
 
 # Same palette slots and the same meaning as plot_batch_principle.py: the blue is
 # the thing under test, the null wears ink rather than a hue. Orange is reserved
-# for the poster's verdict of "no budget buys this" -- it is a label, not an arm.
+# for the experiment's verdict of "no budget buys this" -- a label, not an arm.
 DEV, HONEST = "#2a78d6", "#52514e"
 INF = "#d1622b"
 INK, INK2, MUTED, GRID = "#0b0b0b", "#52514e", "#8a8880", "#e3e2dd"
@@ -92,7 +93,7 @@ def _dprime(h, a):
 
 
 def measure(meta, by_seq, n_seq):
-    """Everything the three panels read, bootstrapped from the poster's own pool."""
+    """Everything the three panels read, bootstrapped from the experiment's pool."""
     ver, att, dstar = meta["verifiers"], meta["attacks"], meta["delta_star"]
     honest = {v: by_seq(f"honest__{v}") for v in ver}
 
@@ -129,7 +130,7 @@ def measure(meta, by_seq, n_seq):
             cells.append({
                 "attack": atk, "verifier": v, "d_prime": dp,
                 "ci": [float(np.quantile(draws, 0.05)), hi],
-                "b_poster": signal.batch_for_pauc(dp),      # -1 == the poster's inf
+                "b_point": signal.batch_for_pauc(dp),      # -1 == infinity
                 "b_lower": signal.batch_for_pauc(hi),       # bigger d' -> cheaper
                 "sec_per_token": meta["price"][v]["sec_per_token"],
                 "structural_zero": structural,
@@ -197,7 +198,8 @@ def _clean(ax):
 
 # =========================================================================== (A)
 def panel_a(ax, D):
-    """Every cell's effect against the noise the estimate carries. The poster's
+    """Every cell's effect against the noise the estimate carries. The cost
+    experiment's
     infinity/finite boundary is the x = 0 line, and the intervals straddle it."""
     floor, xlo, xhi = D["floor"], -0.125, 0.175
     shown = [c for c in D["cells"] if abs(c["d_prime"]) < xhi]
@@ -217,16 +219,16 @@ def panel_a(ax, D):
         ax.plot([c["d_prime"]], [y], marker="o", ms=4.6, color=col, mec="white",
                 mew=0.8, zorder=5)
 
-    n_inf = sum(c["b_poster"] < 0 for c in D["cells"])
-    n_cross = sum(c["b_poster"] < 0 and c["ci"][1] > 0 for c in D["cells"])
-    ax.annotate(f"the poster prices these {n_inf} at $\\infty$",
+    n_inf = sum(c["b_point"] < 0 for c in D["cells"])
+    n_cross = sum(c["b_point"] < 0 and c["ci"][1] > 0 for c in D["cells"])
+    ax.annotate(f"the experiment prices these {n_inf} at $\\infty$",
                 (0.171, sum(c["d_prime"] <= 0 for c in shown) / 2 - 0.5),
                 ha="right", va="center", color=INF, fontsize=9, weight="bold")
     ax.annotate(f"{len(off)} cells off-scale right, resolved by orders of magnitude:\n"
                 + ",  ".join(f"{SHORT_A[c['attack']]} / {SHORT_V[c['verifier']]}"
                              for c in off)
                 + "\n" + ",  ".join(f"$d'$ = {c['d_prime']:.2f} $\\rightarrow$ "
-                                    f"{c['b_poster']:,} tok" for c in off),
+                                    f"{c['b_point']:,} tok" for c in off),
                 (xlo + 0.003, len(shown) + 9.0), ha="left", va="top", color=INK2,
                 fontsize=7.6, linespacing=1.5)
     ax.annotate("bar = 90% interval,  $\\bullet$ = $d'$,  grey = that verifier's\n"
@@ -253,7 +255,7 @@ def panel_a(ax, D):
     ax.set_xlim(xlo, xhi)
     ax.spines["left"].set_visible(False)
     ax.grid(True, axis="x", color=GRID, lw=0.8, zorder=0)
-    ax.set_xlabel("per-token $d'$ (the poster's own estimate, 80 sequences per arm)",
+    ax.set_xlabel("per-token $d'$ (the experiment's own estimate, 80 sequences per arm)",
                   color=INK2, fontsize=10)
     ax.set_title("A.  Infinity is a sign, and the sign is noise", color=INK,
                  fontsize=11, weight="bold", loc="left", pad=8)
@@ -265,7 +267,7 @@ def panel_b(axes, D):
     k/sqrt(m); the verdict 'no budget' is everything left of zero."""
     key = f"{FOCUS[0]}__{FOCUS[1]}"
     F = D["flip"][key]
-    b_post = next(c["b_poster"] for c in D["cells"]
+    b_post = next(c["b_point"] for c in D["cells"]
                   if (c["attack"], c["verifier"]) == FOCUS)
     lo, hi = -0.105, 0.135
     bins = np.linspace(lo, hi, 96)
@@ -331,7 +333,7 @@ def panel_b(axes, D):
 
     axes[0].set_title("B.  The label flips with the pool, not with the provider",
                       color=INK, fontsize=11, weight="bold", loc="left", pad=44)
-    axes[0].annotate(f"fp8 KV / token DiFR $-$ one cell, on the poster's board at a "
+    axes[0].annotate(f"fp8 KV / token DiFR $-$ one cell, on the experiment's board at a "
                      f"finite {b_post:,} tokens", (0.0, 1.30),
                      xycoords="axes fraction", ha="left", va="bottom", color=INK2,
                      fontsize=9, annotation_clip=False)
@@ -339,7 +341,7 @@ def panel_b(axes, D):
 
 # =========================================================================== (C)
 def panel_c(ax, D):
-    """The poster's own price plane, with the ruler drawn on it."""
+    """The cost experiment's own price plane, with the ruler drawn on it."""
     import matplotlib
     dstar = D["meta"]["delta_star"]
     floor = D["floor"]
@@ -351,7 +353,7 @@ def panel_c(ax, D):
 
     d = np.geomspace(xlo, xhi, 400)
     ax.plot(d, (dstar / d) ** 2, color=INK, lw=2.2, zorder=5,
-            label="the poster's price  $b^{*} = (\\delta^{*}/d')^{2}$")
+            label="the measured price  $b^{*} = (\\delta^{*}/d')^{2}$")
 
     # what an 80-sequence pool can tell apart from infinity, and what 100x buys
     ax.axvspan(xlo, f_hi, color=INF, alpha=0.08, lw=0, zorder=1)
@@ -369,10 +371,10 @@ def panel_c(ax, D):
 
     n_priced = sum(c["regime"] == "priced" for c in D["cells"])
     n_unres = sum(c["regime"] == "unresolved" for c in D["cells"])
-    ghosts = [c for c in D["cells"] if c["structural_zero"] and c["b_poster"] > 0]
+    ghosts = [c for c in D["cells"] if c["structural_zero"] and c["b_point"] > 0]
     for c in D["cells"]:
-        if c["regime"] == "priced" and c["b_poster"] > 0:
-            ax.plot([c["d_prime"]], [c["b_poster"]], marker="o", ms=5.5, color=DEV,
+        if c["regime"] == "priced" and c["b_point"] > 0:
+            ax.plot([c["d_prime"]], [c["b_point"]], marker="o", ms=5.5, color=DEV,
                     mec="white", mew=0.8, zorder=6)
         elif c["regime"] == "unresolved":
             # the data does not say infinity, it says "at least this much"
@@ -383,8 +385,8 @@ def panel_c(ax, D):
                         zorder=6)
             ax.plot([c["ci"][1]], [c["b_lower"]], marker="_", ms=9, color=INF,
                     mew=2.0, zorder=7)
-    for c in ghosts:                        # priced by the poster, provably infinite
-        ax.plot([c["d_prime"]], [c["b_poster"]], marker="x", ms=8, color=INK,
+    for c in ghosts:                        # priced finite, provably infinite
+        ax.plot([c["d_prime"]], [c["b_point"]], marker="x", ms=8, color=INK,
                 mew=1.8, zorder=7)
     ax.plot([], [], marker="o", ms=5.5, color=DEV, ls="none", mec="white",
             label=f"{n_priced} cells with a resolved price")
@@ -393,7 +395,7 @@ def panel_c(ax, D):
     ax.plot([], [], marker="x", ms=8, color=INK, ls="none", mew=1.8,
             label=f"{len(ghosts)} priced, but provably $\\infty$")
 
-    b_anchor = next(c["b_poster"] for c in D["cells"]
+    b_anchor = next(c["b_point"] for c in D["cells"]
                     if (c["attack"], c["verifier"]) == ("quant_4bit", "token_difr"))
     ax.plot([0.075], [b_anchor], marker="o", ms=10, mfc="none", mec=INK, mew=1.4,
             zorder=8)
@@ -432,8 +434,8 @@ def footer(fig, D, r_lo, r_hi):
     b_max = max(c["b_lower"] for c in unres)
     s_min = min(c["b_lower"] * c["sec_per_token"] for c in unres)
     s_max = max(c["b_lower"] * c["sec_per_token"] for c in unres)
-    ghosts = sorted((c for c in D["cells"] if c["structural_zero"] and c["b_poster"] > 0),
-                    key=lambda c: c["b_poster"])
+    ghosts = sorted((c for c in D["cells"] if c["structural_zero"] and c["b_point"] > 0),
+                    key=lambda c: c["b_point"])
     p_min = min(D["exchange"][v]["p"] for v in SEED_BLIND)
 
     fig.add_artist(plt.Line2D([0.008, 0.992], [0.212, 0.212], color=MUTED, lw=0.9))
@@ -461,8 +463,8 @@ def footer(fig, D, r_lo, r_hi):
          f"reads only\n(prompt, claimed tokens) has $d'$ = 0 by exchangeability, at "
          f"$\\it{{any}}$ pool: permutation\n$p \\geq {p_min:.2f}$ for all six, while "
          f"seed-bound token DiFR sees it at $z$ = +10.1.  That is a\nproof, not a "
-         f"measurement.  The poster prices three of those cells at\n"
-         + " / ".join(f"{c['b_poster'] / 1e6:.2f}M" for c in ghosts)
+         f"measurement.  The experiment prices three of those cells at\n"
+         + " / ".join(f"{c['b_point'] / 1e6:.2f}M" for c in ghosts)
          + f" tokens $-$ budgets that buy nothing.  A sign test on $\\hat{{d'}}$\nerrs "
            f"both ways.  The honest grid has three entries, not two: a price,\na price "
            f"floor, or an invariance argument."),
@@ -502,17 +504,17 @@ def main():
                  "price being infinite", color=INK, fontsize=13.5, weight="bold",
                  x=0.008, ha="left", y=0.987)
     fig.text(0.008, 0.955,
-             f"cost_accuracy_poster_sci retires 14 of 35 cells at an infinite price.  "
+             f"The cost-of-a-verdict experiment retires 14 of 35 cells at an infinite price.  "
              f"That price is $b^{{*}} = (\\delta^{{*}}/d')^{{2}}$, $\\delta^{{*}}$ = "
              f"{m['delta_star']:.3f}, and batch_for_pauc returns infinity exactly when "
              f"the point estimate $d' \\leq 0$ $-$ a decision rule on the sign of a "
              f"statistic whose standard error is 0.011 to 0.049 at this pool.\n"
-             f"Re-read here from the poster's own per-token scores "
+             f"Re-read here from that experiment's own per-token scores "
              f"(cost_of_a_verdict_scores.npz: {m['M']} audited by {m['proxy']}, "
              f"{m['n_prompts']} sequences $\\times$ {m['tokens']} tokens per arm, 5 "
              f"deviations $\\times$ 7 verifiers).  The 14 are 13 cells with $d' \\leq 0$ "
              f"plus one whose finite $b^{{*}}$ fails its own honest control.\n"
-             f"Intervals are {N_BOOT:,} sequence bootstraps, the poster's own protocol; "
+             f"Intervals are {N_BOOT:,} sequence bootstraps, that experiment's own protocol; "
              f"pools past {m['n_prompts']} sequences in (C) assume the observed score "
              f"tail is representative.",
              color=INK2, fontsize=8.5, ha="left", va="top", linespacing=1.5)
