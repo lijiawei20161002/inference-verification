@@ -1,0 +1,176 @@
+{
+ "M": "Qwen/Qwen3-1.7B",
+ "proxy": "Qwen/Qwen3-0.6B",
+ "tokens_per_row": 256,
+ "reps": 9,
+ "warmup": 3,
+ "dtype": "bfloat16",
+ "attn": "eager",
+ "keep_full_logits": true,
+ "usd_per_gpu_hour": 2.5,
+ "m_params": 1720574976,
+ "proxy_params": 596049920,
+ "m_nonembed": 1409410048,
+ "proxy_nonembed": 440467456,
+ "flop_ratio_bound": 3.199805181520607,
+ "param_byte_ratio": 2.886628985706432,
+ "batches": [
+  1,
+  2,
+  4,
+  8,
+  16,
+  32,
+  64
+ ],
+ "rows": {
+  "1": {
+   "batch": 1,
+   "tokens": 256,
+   "reference": {
+    "sec_per_pass": 0.04607613605912775,
+    "sec_per_pass_min": 0.04515480005647987,
+    "sec_per_pass_max": 0.04637605103198439,
+    "sec_per_token": 0.00017998490648096777,
+    "usd_per_1m_tokens": 0.12498951838956095
+   },
+   "proxy": {
+    "sec_per_pass": 0.045244220993481576,
+    "sec_per_pass_min": 0.04491993389092386,
+    "sec_per_pass_max": 0.056229200097732246,
+    "sec_per_token": 0.0001767352382557874,
+    "usd_per_1m_tokens": 0.12273280434429681
+   },
+   "gap": 1.0183872116124184,
+   "gap_frac_of_flop_bound": 0.31826537987180264
+  },
+  "2": {
+   "batch": 2,
+   "tokens": 512,
+   "reference": {
+    "sec_per_pass": 0.04625644697807729,
+    "sec_per_pass_min": 0.045993592008017004,
+    "sec_per_pass_max": 0.046447023982182145,
+    "sec_per_token": 9.034462300405721e-05,
+    "usd_per_1m_tokens": 0.06273932153059529
+   },
+   "proxy": {
+    "sec_per_pass": 0.046090523013845086,
+    "sec_per_pass_min": 0.045600657002069056,
+    "sec_per_pass_max": 0.04655889899004251,
+    "sec_per_token": 9.002055276141618e-05,
+    "usd_per_1m_tokens": 0.06251427275098347
+   },
+   "gap": 1.0035999583728388,
+   "gap_frac_of_flop_bound": 0.313644081886232
+  },
+  "4": {
+   "batch": 4,
+   "tokens": 1024,
+   "reference": {
+    "sec_per_pass": 0.04732500296086073,
+    "sec_per_pass_min": 0.047221590066328645,
+    "sec_per_pass_max": 0.047483392991125584,
+    "sec_per_token": 4.6215823203965556e-05,
+    "usd_per_1m_tokens": 0.03209432166942053
+   },
+   "proxy": {
+    "sec_per_pass": 0.04692679306026548,
+    "sec_per_pass_min": 0.04671738692559302,
+    "sec_per_pass_max": 0.047122939955443144,
+    "sec_per_token": 4.582694634791551e-05,
+    "usd_per_1m_tokens": 0.03182426829716355
+   },
+   "gap": 1.0084857684624613,
+   "gap_frac_of_flop_bound": 0.31517099049861846
+  },
+  "8": {
+   "batch": 8,
+   "tokens": 2048,
+   "reference": {
+    "sec_per_pass": 0.04927835299167782,
+    "sec_per_pass_min": 0.04017369193024933,
+    "sec_per_pass_max": 0.050178793957456946,
+    "sec_per_token": 2.4061695796717686e-05,
+    "usd_per_1m_tokens": 0.016709510969942838
+   },
+   "proxy": {
+    "sec_per_pass": 0.036926614004187286,
+    "sec_per_pass_min": 0.03614679106976837,
+    "sec_per_pass_max": 0.03823860501870513,
+    "sec_per_token": 1.8030573244232073e-05,
+    "usd_per_1m_tokens": 0.012521231419605606
+   },
+   "gap": 1.3344942210539508,
+   "gap_frac_of_flop_bound": 0.4170548347008346
+  },
+  "16": {
+   "batch": 16,
+   "tokens": 4096,
+   "reference": {
+    "sec_per_pass": 0.08133172593079507,
+    "sec_per_pass_min": 0.08105693699326366,
+    "sec_per_pass_max": 0.08358711504843086,
+    "sec_per_token": 1.9856378401073016e-05,
+    "usd_per_1m_tokens": 0.013789151667411816
+   },
+   "proxy": {
+    "sec_per_pass": 0.050809968961402774,
+    "sec_per_pass_min": 0.05036435299552977,
+    "sec_per_pass_max": 0.051659840042702854,
+    "sec_per_token": 1.2404777578467474e-05,
+    "usd_per_1m_tokens": 0.008614428873935745
+   },
+   "gap": 1.6007041057745541,
+   "gap_frac_of_flop_bound": 0.5002504886918989
+  },
+  "32": {
+   "batch": 32,
+   "tokens": 8192,
+   "reference": {
+    "sec_per_pass": 0.1638264909852296,
+    "sec_per_pass_min": 0.16246692591812462,
+    "sec_per_pass_max": 0.1658773070666939,
+    "sec_per_token": 1.999835095034541e-05,
+    "usd_per_1m_tokens": 0.013887743715517648
+   },
+   "proxy": {
+    "sec_per_pass": 0.10420308099128306,
+    "sec_per_pass_min": 0.10351247596554458,
+    "sec_per_pass_max": 0.10502320807427168,
+    "sec_per_token": 1.2720102660068733e-05,
+    "usd_per_1m_tokens": 0.008833404625047732
+   },
+   "gap": 1.5721847130310307,
+   "gap_frac_of_flop_bound": 0.49133763583816037
+  },
+  "64": {
+   "batch": 64,
+   "tokens": 16384,
+   "reference": {
+    "sec_per_pass": 0.31951856100931764,
+    "sec_per_pass_min": 0.3176477840170264,
+    "sec_per_pass_max": 0.32133260602131486,
+    "sec_per_token": 1.950186529597886e-05,
+    "usd_per_1m_tokens": 0.013542962011096431
+   },
+   "proxy": {
+    "sec_per_pass": 0.20533148501999676,
+    "sec_per_pass_min": 0.20375938899815083,
+    "sec_per_pass_max": 0.20822908403351903,
+    "sec_per_token": 1.2532439271240037e-05,
+    "usd_per_1m_tokens": 0.008703082827250026
+   },
+   "gap": 1.556110895405059,
+   "gap_frac_of_flop_bound": 0.48631426200315303
+  }
+ },
+ "verdict_consequence": {
+  "attack": "quant_4bit",
+  "proxy_token_penalty": 12.570168404170008,
+  "note": "smallest token penalty among cells both tiers can price",
+  "flop_bound_covers_it": false,
+  "best_measured_gap": 1.6007041057745541
+ },
+ "elapsed_s": 45.74329423904419
+}
