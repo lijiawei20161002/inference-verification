@@ -1,4 +1,11 @@
-"""MATS 10.0 symposium poster: the token verifier and the clock verifier.
+"""MATS 10.0 symposium poster: auditing a computation you cannot see.
+
+The board is framed from the governance setting -- a treaty clause, a promise to
+a regulator and an API bill all reduce to one unverifiable sentence, "model M ran
+under spec phi" -- and then measures the two things an outsider actually holds:
+the tokens that came back (column 2) and their arrival times (column 3). Column 1
+draws that surface; the two channel columns lead with the principle and keep only
+the results that price it.
 
 Built on the MATS **top-banner landscape 36x24** template
 (`MATS_poster_top_banner_landscape36x24.pptx`, symposium template folder). The
@@ -8,10 +15,13 @@ maroon banner, Libre Baskerville for display and Carlito (metric-compatible with
 the template's Calibri) for body.
 
 Every number on the board is read from a committed artifact in `docs/results/`
-or, where the figure quotes a derived table, from the document that derived it
-(named in the caption). Nothing is typed in twice: the headline grid, the
-verdict prices, the pool-scaling curve and the clock roofline all come out of
-JSON at render time, so a rerun that moves a number moves the poster.
+(named in the caption). Nothing is typed in twice: the byte ratios, the headline
+grid, the verdict prices, the pooling law's inputs and residual, and the clock
+roofline all come out of JSON at render time, so a rerun that moves a number
+moves the poster. Figure 3 is the one drawn curve -- the pooling law's normal
+approximation with this experiment's measured mean, spread and d' substituted in,
+because the raw bootstrap of a score that is exactly zero on 98% of tokens is a
+comb of discreteness artefacts rather than a picture of the principle.
 
 Column origins and section heights are calibrated to the 36x24 landscape board,
 so `--size` is for proofing at a smaller scale rather than for reflowing onto
@@ -26,6 +36,7 @@ from __future__ import annotations
 import argparse
 import json
 import sys
+from math import erf
 from pathlib import Path
 
 import matplotlib
@@ -344,14 +355,15 @@ la.axis("off")
 la.set_facecolor("none")
 
 TX, TW = 8.55, 26.20
-TITLE = "Did the provider run the model it billed you for?"
+TITLE = "How do you audit a computation you cannot see?"
 ts = T_TITLE
 while text_w(TITLE, ts, "bold", family=SERIF) > TW and ts > 30:
     ts -= 1
 fig.text(fx(TX), fy(0.52), TITLE, size=ts, color=WHITE, weight="bold",
          family=SERIF, va="top")
-fig.text(fx(TX), fy(1.50), "Two channels for inference verification — the tokens "
-         "it returned, and the clock — and what a verdict costs in each",
+fig.text(fx(TX), fy(1.50), "A treaty clause, a promise to a regulator and an API "
+         "bill are the same claim. An outsider has two ways to test it: the "
+         "bytes that came back, and the clock.",
          size=T_SUB, color=CREAM, va="top")
 fig.text(fx(TX), fy(2.22), "Jiawei Li¹      ·      mentored by Gabriel Kulp² "
          "and Roy Rinberg²", size=T_AUTH, color=WHITE, va="top")
@@ -365,32 +377,134 @@ CW = 10.57
 Y0 = 4.62
 
 # ==========================================================================
-# COLUMN 1 -- motivation, the money, the game, the method diagram
+# COLUMN 1 -- the governed promise, the boundary, and the two observables
 # ==========================================================================
 x, y = CX[0], Y0
 
-y = section(x, y, CW, "MOTIVATION")
-y = lead_line(x, y, "Every compute-governance proposal assumes a claim nobody "
-              "can currently check.", CW)
+
+def box(a, cx, cy, w, h, label, sub=None, fc=WHITE, ec=GREY, lc=INK, lw=1.6,
+        fs=15, subfs=12.5, subc=GREY, rad=1.2, ls="-", zo=2):
+    a.add_patch(FancyBboxPatch((cx - w / 2, cy - h / 2), w, h,
+                               boxstyle=f"round,pad=0,rounding_size={rad}",
+                               facecolor=fc, edgecolor=ec, linewidth=lw,
+                               linestyle=ls, zorder=zo))
+    dy = 0 if sub is None else h * 0.26
+    a.text(cx, cy + dy, label, ha="center", va="center", fontsize=fs,
+           color=lc, weight="bold", zorder=zo + 1)
+    if sub:
+        a.text(cx, cy - h * 0.15, sub, ha="center", va="center",
+               fontsize=subfs, color=subc, zorder=zo + 1, linespacing=1.35)
+
+
+def arrow(a, x0, y0, x1, y1, c=INK, lw=2.2, mut=16, ls="-"):
+    a.annotate("", xy=(x1, y1), xytext=(x0, y0),
+               arrowprops=dict(arrowstyle="-|>", color=c, lw=lw,
+                               mutation_scale=mut, linestyle=ls,
+                               shrinkA=0, shrinkB=0), zorder=4)
+
+
+y = section(x, y, CW, "THE AUDIT PROBLEM")
+y = lead_line(x, y, "Two governments agree to stop training something. Who "
+              "checks — and with what?", CW)
 y = para(x, y + 0.08,
-         "Model registration, compute thresholds, third-party audits, "
-         "export-control attestations, EU AI Act GPAI duties — each presumes a "
-         "statement of the form “model $M$ ran under specification "
-         "$\\varphi$.” Nothing in the API stack between a client and a GPU "
-         "produces that statement. The client sees tokens; the provider sees "
-         "the weights; a regulator inherits whichever it chooses to believe.",
-         CW, color=GREY)
+         "Every compute-governance instrument ends in a promise about work done "
+         "inside a building the auditor cannot enter. Nothing in the stack "
+         "between a GPU and the outside world emits a statement about what the "
+         "silicon actually did, so the auditor is left with whatever crosses "
+         "the boundary.", CW, color=GREY)
 
-y = section(x, y + 0.34, CW, "THE BUSINESS OF CHEATING")
-y = para(x, y,
-         "You rent inference. The provider commits to $M$ under a sampling "
-         "spec $\\varphi$ and bills per token. A 4-bit copy, a smaller "
-         "sibling, or a truncated context is pure margin — and invisible in "
-         "the tokens the client is paying for. But the deviations worth doing "
-         "are exactly the ones that read fewer bytes, which is why they leave "
-         "a second trace.", CW, color=GREY)
+# ---- Figure 1: three promises, one sentence, one boundary, two wires
+F1_H = 5.52
+y += 0.16
+panel(x, y, CW, F1_H)
+ax = axes_at(x, y, CW, F1_H)
+ax.set_xlim(0, 100), ax.set_ylim(0, 100)
 
-y += 0.24
+ax.text(50, 99.5, "Three promises. One sentence. Two ways to test it.",
+        ha="center", va="top", fontsize=16.5, weight="bold", color=INK)
+
+for cx, head, sub in [
+        (17.6, "A TREATY", "U.S. and China agree:\nneither trains above $X$"),
+        (50.0, "A COMMITMENT", "a lab tells its regulator:\nthis model is frozen"),
+        (82.4, "A BILL", "a provider charges you\nfor model $M$")]:
+    box(ax, cx, 87.5, 31, 13.5, head, sub, fc=WHITE, ec=MAROON, lc=MAROON,
+        fs=13.5, subfs=11.5, lw=1.5)
+for x0, x1 in ((17.6, 41.0), (50.0, 50.0), (82.4, 59.0)):
+    arrow(ax, x0, 80.6, x1, 75.0, c=MAROON, lw=1.8, mut=13)
+
+box(ax, 50, 70.5, 74, 8.4, "“model $M$ ran under spec $\\varphi$ — and nothing "
+    "else did”", "the sentence all three need, and no part of the stack produces",
+    fc=CREAM, ec=MAROON, lc=MAROON, subc=MAROON, fs=15.5, subfs=11.5, lw=1.8)
+
+# the boundary of what an auditor can see
+ax.add_artist(Line2D([53.5, 53.5], [11.0, 61.0], color=INK, lw=3.0,
+                     ls=(0, (5, 3)), zorder=3))
+ax.text(53.5, 61.8, "the boundary", ha="center", va="bottom", fontsize=11.5,
+        color=INK, weight="bold")
+
+ax.add_patch(Rectangle((2.5, 12.0), 46.5, 47.0, facecolor="#ECEAE7",
+                       edgecolor="none", zorder=0))
+ax.text(25.75, 56.5, "INSIDE  ·  what nobody outside sees", ha="center",
+        va="top", fontsize=12.5, color=GREY, weight="bold")
+for cy, lab in [(47.0, "which weights were loaded"),
+                (37.8, "at what precision, in what kernel"),
+                (28.6, "how much context was really attended"),
+                (19.4, "whether any of it was a training step")]:
+    box(ax, 25.75, cy, 42, 7.2, lab, fc=WHITE, ec=C_DEAD, lc=GREY, fs=12,
+        lw=1.2, ls=(0, (3, 2.4)), rad=0.8)
+
+ax.text(78.5, 56.5, "OUTSIDE  ·  the auditor's entire budget", ha="center",
+        va="top", fontsize=12.5, color=GREY, weight="bold")
+for cy, col, head, tag in [(47.0, C_TOK, "CHANNEL 1 — WHAT IT SAID", "bytes out"),
+                           (25.5, C_CLK, "CHANNEL 2 — WHEN IT SAID IT",
+                            "the clock")]:
+    arrow(ax, 49.5, cy, 57.2, cy, c=col, lw=2.6, mut=17)
+    ax.text(53.4, cy + 1.4, tag, ha="center", va="bottom", fontsize=11,
+            color=col, weight="bold")
+    box(ax, 79.0, cy, 42, 6.6, head, fc=col, ec=col, lc=WHITE, fs=13, rad=0.8)
+
+# what each channel literally is: nine tokens, and the nine gaps between them
+for i in range(9):
+    ax.add_patch(Rectangle((59.5 + i * 4.4, 37.4), 3.3, 4.6, facecolor="#DCE8F3",
+                           edgecolor=C_TOK, lw=1.2, zorder=2))
+ax.text(79.0, 34.8, "the tokens themselves — recompute and score them",
+        ha="center", va="top", fontsize=11, color=GREY)
+
+TICKS = [0.0, 4.0, 8.6, 12.4, 17.6, 21.4]
+ax.add_artist(Line2D([59.0, 85.0], [15.0, 15.0], color=GREY, lw=1.2, zorder=2))
+for t in TICKS:
+    ax.add_artist(Line2D([59.5 + t, 59.5 + t], [15.0, 19.6], color=C_CLK, lw=2.2,
+                         zorder=3))
+ax.annotate("", xy=(59.5 + TICKS[5], 17.3), xytext=(59.5 + TICKS[4], 17.3),
+            arrowprops=dict(arrowstyle="<|-|>", color=C_CLK, lw=1.1,
+                            mutation_scale=8), zorder=4)
+ax.text(84.0, 17.3, "$\\Delta t$", ha="left", va="center", fontsize=12,
+        color=C_CLK, weight="bold")
+ax.text(79.0, 12.8, "only the gaps between them — a stream already paid for",
+        ha="center", va="top", fontsize=11, color=GREY)
+
+ax.add_patch(Rectangle((2.5, 1.0), 96, 8.0, facecolor=WHITE, edgecolor=MAROON,
+                       lw=1.4, zorder=1))
+ax.text(50, 5.0, "Two observables, and no cooperation from the other side. This "
+        "board measures what each one can prove,\nand what a verdict costs in "
+        "each.", ha="center", va="center", fontsize=12.5, color=MAROON,
+        weight="bold", zorder=3, linespacing=1.45)
+
+y += F1_H
+y = caption(x, y + 0.10, CW, "Figure 1",
+            "The auditable surface of an inference provider. The same shape "
+            "recurs one level up — a no-training clause is a promise about "
+            "which computation ran on a fleet — so the honest place to start is "
+            "the case where the auditor holds a spec and receives a stream, and "
+            "every claim can be measured on real hardware.")
+
+y = section(x, y + 0.26, CW, "WHY THE PROMISE IS WORTH BREAKING")
+y = para(x, y, "A 4-bit copy, a smaller sibling or a truncated context is pure "
+         "margin, and invisible in the tokens the client pays for. But the "
+         "deviations worth doing are exactly the ones that *read fewer bytes* — "
+         "which is why they leave a second trace.", CW, size=T_TAB, color=GREY)
+
+y += 0.18
 
 
 def _cell(label, ctx, mode="graph", B=1):
@@ -411,118 +525,59 @@ y = table(x, y, CW,
           [5.6, 2.5, 2.5],
           aligns=["left", "right", "right"])
 y = caption(x, y + 0.08, CW, "Table 1",
-            "Weight + KV bytes per decode step, computed from the timing grid's "
-            "own byte counts (clock_channel.json, H100 PCIe, B=1). The last row "
-            "is the control: a deviation that saves no bytes has no clock "
-            "signature at all, and the poster's two channels split exactly "
-            "there.")
+            "Weight + KV bytes per decode step, from the timing grid's own byte "
+            "counts (clock_channel.json, H100 PCIe, B=1). The last row is the "
+            "control: a deviation that saves no bytes leaves no clock signature "
+            "at all — and the two channels split exactly there.")
 
-y = section(x, y + 0.34, CW, "CONTRIBUTIONS")
-y = numbered(x, y, CW, [
-    ("One protocol, one grid.",
-     "8 detectors × 6 deviations on real models under a single standardized "
-     "pAUC @ FPR ≤ 0.5% with an enforced batch/pool ceiling. Re-measured "
-     "inside it, 16 of 24 previously published cells fall."),
-    ("Price the verdict, not the detector.",
-     "$(\\delta^*/d')^2$ tokens × seconds per token. Detector rankings and "
-     "FLOP counts are not what a client buys; 14 of 35 cells have no finite "
-     "price at all."),
-    ("A second, orthogonal channel — and the honest version of it.",
-     "Absolute latency tests do not survive measurement; a *differential* "
-     "clock test does, at 36–152 tokens of stream against the token "
-     "channel's 2,013–35,066."),
-])
-
-FIG1_H = 4.30
-y += 0.08
-panel(x, y, CW, FIG1_H)
-ax = axes_at(x, y, CW, FIG1_H)
+# ---- Figure 2: the two channels are blind in opposite directions
+y = section(x, y + 0.28, CW, "THE TWO CHANNELS ARE BLIND IN OPPOSITE DIRECTIONS")
+F2A_H = 2.90
+y += 0.06
+panel(x, y, CW, F2A_H)
+ax = axes_at(x, y, CW, F2A_H)
 ax.set_xlim(0, 100), ax.set_ylim(0, 100)
-
-
-def box(a, cx, cy, w, h, label, sub=None, fc=WHITE, ec=GREY, lc=INK, lw=1.6,
-        fs=15, subfs=12.5, subc=GREY, rad=1.2):
-    a.add_patch(FancyBboxPatch((cx - w / 2, cy - h / 2), w, h,
-                               boxstyle=f"round,pad=0,rounding_size={rad}",
-                               facecolor=fc, edgecolor=ec, linewidth=lw, zorder=2))
-    dy = 0 if sub is None else h * 0.27
-    a.text(cx, cy + dy, label, ha="center", va="center", fontsize=fs,
-           color=lc, weight="bold", zorder=3)
-    if sub:
-        a.text(cx, cy - h * 0.15, sub, ha="center", va="center",
-               fontsize=subfs, color=subc, zorder=3, linespacing=1.35)
-
-
-def arrow(a, x0, y0, x1, y1, c=INK, lw=2.2, mut=16, ls="-"):
-    a.annotate("", xy=(x1, y1), xytext=(x0, y0),
-               arrowprops=dict(arrowstyle="-|>", color=c, lw=lw,
-                               mutation_scale=mut, linestyle=ls,
-                               shrinkA=0, shrinkB=0), zorder=4)
-
-
-ax.text(50, 99, "The game: one specification, two observables",
-        ha="center", va="top", fontsize=16.5, weight="bold", color=INK)
-
-box(ax, 20, 83, 34, 17, "CLIENT  (verifier)",
-    "holds $\\varphi$ and a trusted proxy $q$;\nnever sees the weights",
-    fc=WHITE, ec=INK, fs=14, subfs=11.5)
-box(ax, 78, 83, 38, 17, "PROVIDER  (attacker)",
-    "runs whatever it likes;\nbills as if it ran $M$ under $\\varphi$",
-    fc="#F3E3E7", ec=MAROON, lc=MAROON, fs=14, subfs=11.5)
-arrow(ax, 37.5, 86, 58.5, 86)
-ax.text(48, 88, "prompt, spec $\\varphi$", ha="center", va="bottom",
-        fontsize=11.5, color=GREY)
-arrow(ax, 58.5, 80, 37.5, 80, c=INK)
-ax.text(48, 78, "tokens, and their arrival times", ha="center", va="top",
-        fontsize=11.5, color=GREY)
-
-ax.add_artist(Line2D([50, 50], [67, 15], color=RULE_C, lw=1.4, ls=(0, (4, 4))))
+ax.add_artist(Line2D([50, 50], [4, 96], color=RULE_C, lw=1.4, ls=(0, (4, 4))))
 
 for cx, col, head, what, sees, blind in [
-    (24.5, C_TOK, "CHANNEL 1 — WHAT IT SAID",
+    (25.0, C_TOK, "CHANNEL 1 — WHAT IT SAID",
      "Recompute $M$ on the claimed tokens and read the\n"
-     "per-token margin, NLL or top-$k$ location — or skip\n"
-     "$M$ entirely and score against the proxy $q$.",
+     "per-token margin — or skip $M$ and score against a\n"
+     "cheap trusted proxy $q$.",
      "the sampler, the seed, the exact distribution;\n"
      "wholesale substitution at AUC 0.998 with no $M$",
      "an fp8 KV cache — it moves the served\n"
      "distribution less than $M$'s own rerun noise"),
-    (75.5, C_CLK, "CHANNEL 2 — WHEN IT SAID IT",
+    (75.0, C_CLK, "CHANNEL 2 — WHEN IT SAID IT",
      "Read the arrival times of a stream already bought.\n"
-     "Zero audit FLOPs, zero cooperation, zero added\n"
-     "latency — but only differences survive the stack.",
+     "Zero audit FLOPs, zero cooperation from the\n"
+     "provider, zero added latency.",
      "which positions were attended, and which\n"
      "parameters were read at prefill",
      "anything reading the same bytes: wrong seed,\n"
      "wrong temperature, a top-$k$ bug"),
 ]:
-    box(ax, cx, 63, 45, 7.5, head, fc=col, ec=col, lc=WHITE, fs=13.5, rad=0.8)
-    left = cx - 22.5
-    ax.text(left, 55, what, ha="left", va="top", fontsize=11.5, color=INK,
+    box(ax, cx, 91, 46, 11, head, fc=col, ec=col, lc=WHITE, fs=13.5, rad=0.8)
+    left = cx - 23.0
+    ax.text(left, 79, what, ha="left", va="top", fontsize=11.5, color=INK,
             linespacing=1.5)
-    ax.text(left, 38, "sees", ha="left", va="top", fontsize=11.5, color=col,
+    ax.text(left, 50, "sees", ha="left", va="top", fontsize=11.5, color=col,
             weight="bold")
-    ax.text(left + 7.5, 38, sees, ha="left", va="top", fontsize=11.5, color=INK,
+    ax.text(left + 7.5, 50, sees, ha="left", va="top", fontsize=11.5, color=INK,
             linespacing=1.5)
     ax.text(left, 26, "blind", ha="left", va="top", fontsize=11.5, color=C_DEAD,
             weight="bold")
-    ax.text(left + 7.5, 26, blind, ha="left", va="top", fontsize=11.5,
+    ax.text(left + 8.2, 26, blind, ha="left", va="top", fontsize=11.5,
             color=GREY, linespacing=1.5)
 
-ax.add_artist(Rectangle((2, 1), 96, 11, facecolor=CREAM, edgecolor=MAROON,
-                        lw=1.4, zorder=1))
-ax.text(50, 6.5, "One protocol scores both:  standardized pAUC @ FPR ≤ 0.5%,  "
-        "held-out honest calibration,\nbatch/pool ratio ≤ 10% enforced in code",
-        ha="center", va="center", fontsize=12.5, color=MAROON, weight="bold",
-        zorder=3, linespacing=1.5)
+y += F2A_H
+y = caption(x, y + 0.10, CW, "Figure 2",
+            "Complementary by mechanism, not by accident: a deviation either "
+            "changes the distribution the tokens were drawn from, or the bytes "
+            "the GPU had to move, or both. One protocol scores both channels — "
+            "standardized pAUC @ FPR ≤ 0.5%, held-out honest calibration, "
+            "batch/pool ratio ≤ 10% enforced in code.")
 
-y += FIG1_H
-y = caption(x, y + 0.12, CW, "Figure 1",
-            "The two channels are complementary by mechanism, not by accident. "
-            "A deviation either changes the distribution the tokens were drawn "
-            "from, or it changes the bytes the GPU had to move, or both — "
-            "and the two rows with the most money in them fall on opposite "
-            "sides of that line.")
 col_end(1, y)
 
 # ==========================================================================
@@ -530,20 +585,18 @@ col_end(1, y)
 # ==========================================================================
 x, y = CX[1], Y0
 
-y = section(x, y, CW, "CHANNEL 1  ·  THE TOKEN VERIFIER", color=C_TOK)
-y = lead_line(x, y, "One token carries almost nothing. The verdict is bought in "
-              "bulk, and $d'$ sets the price.", CW)
+y = section(x, y, CW, "CHANNEL 1  ·  READ WHAT CAME BACK", color=C_TOK)
+y = lead_line(x, y, "One token proves almost nothing. A verdict is bought in "
+              "bulk — and the price is fixed before you start.", CW)
 y = para(x, y + 0.08,
-         "Re-running $M$ and comparing per-token sampling margins catches every "
-         "deviation tried here — on some model. But the per-token effect size "
-         "from realistic quantization is $d' \\approx 0.08$, so a batch of $b$ "
-         "tokens separates by only $d'\\sqrt{b}$. That one number, measurable "
-         "before any budget is committed, predicts the detection AUC to within "
-         "0.012.", CW, color=GREY)
+         "Re-run $M$ on the tokens the provider claims it produced and compare "
+         "the per-token sampling margin. The honest and the cheating stream "
+         "overlap almost completely: the audit rests on one number, the "
+         "per-token separation $d'$.", CW, color=GREY)
 
-# ---- Figure 2: the batch principle, on this repo's own scores
-F2_H = 3.72
-y += 0.20
+# ---- Figure 3: the batching principle, on this repo's own scores
+F2_H = 4.35
+y += 0.18
 panel(x, y, CW, F2_H)
 
 honest = SC["honest__token_difr"]
@@ -553,114 +606,101 @@ hw = np.clip(honest, None, hi)
 aw = np.clip(attack, None, hi)
 dprime = (aw.mean() - hw.mean()) / hw.std()
 GAP = aw.mean() - hw.mean()
+ZERO = (hw == 0).mean()          # tokens whose margin carries nothing at all
+# The law's own accuracy, recomputed from the pool-scaling run rather than typed
+# in: mean |measured pAUC - pAUC predicted from d' alone| inside the ratio ceiling.
+PSR = np.mean([abs(r["auc"] - r["predicted"]) for r in PS["rows"]
+               if r["in_ceiling"]])
+PSN = sum(1 for r in PS["rows"] if r["in_ceiling"])
 
-fig.text(fx(x + 0.30), fy(y + 0.24), "A.  Averaging shrinks the noise, not the gap",
-         size=14, weight="bold", color=INK, va="top")
-fig.text(fx(x + CW * 0.545), fy(y + 0.24),
-         "B.  $d'$ predicts the price, before a budget is spent",
-         size=14, weight="bold", color=INK, va="top")
+fig.text(fx(x + CW / 2), fy(y + 0.18),
+         "Averaging shrinks the noise. It never shrinks the gap.",
+         size=16.5, weight="bold", color=INK, va="top", ha="center")
+lx = x + 0.34
+for c, lab in ((GREY, "honest provider"), (C_TOK, "provider serving 4-bit weights")):
+    fig.add_artist(Rectangle((fx(lx), fy(y + 0.60)), fw(0.16), fh(0.11),
+                             facecolor=c, alpha=0.45, edgecolor=c, lw=1.4,
+                             transform=fig.transFigure, zorder=3))
+    fig.text(fx(lx + 0.22), fy(y + 0.545), lab, size=12, color=c,
+             weight="bold", va="center")
+    lx += 0.30 + text_w(lab, 12, "bold")
 
-rng = np.random.default_rng(7)
-BOOT = 20000
+# The three rows are the pooling law itself, with this experiment's measured
+# per-token mean and spread substituted in: the sampling distribution of the
+# audit statistic at pool size b. Drawing the raw bootstrap instead puts a comb
+# of discreteness artefacts on the board -- 98% of per-token margins are exactly
+# zero -- which is a fact about the score, not about the principle on show. The
+# law's own accuracy against measured pAUC is the residual quoted in the caption.
 BATCHES = [100, 600, 2494]
-PA_H = (F2_H - 1.14) / 3
-draws = {}
-for n in BATCHES:
-    draws[n] = (hw[rng.integers(0, hw.size, (BOOT, n))].mean(1),
-                aw[rng.integers(0, aw.size, (BOOT, n))].mean(1))
-allv = np.concatenate([np.concatenate(v) for v in draws.values()])
-SPAN = tuple(np.percentile(allv, [0.4, 99.4]))
-SPAN = (SPAN[0], SPAN[1] + 0.42 * (SPAN[1] - SPAN[0]))     # room for the labels
-grid = np.linspace(*SPAN, 260)
+CALLOUT = 0.55
+PA_H = (F2_H - 1.42 - CALLOUT) / 3
+Z = 2.5758                                     # one-sided FPR of 0.5%
+SE0_H, SE0_A = hw.std() / np.sqrt(BATCHES[0]), aw.std() / np.sqrt(BATCHES[0])
+SPAN = (hw.mean() - 3.7 * SE0_H, aw.mean() + 3.7 * SE0_A)
+SPAN = (SPAN[0], SPAN[1] + 0.30 * (SPAN[1] - SPAN[0]))     # room for the labels
+grid = np.linspace(*SPAN, 700)
+sf = lambda z: 0.5 * (1.0 - erf(z / np.sqrt(2.0)))
 
 for k, n in enumerate(BATCHES):
-    axk = axes_at(x + 0.30, y + 0.52 + k * PA_H, CW * 0.42, PA_H * 0.82,
+    axk = axes_at(x + 0.34, y + 0.74 + k * PA_H, CW - 0.72, PA_H * 0.86,
                   frame=True)
-    hm, am = draws[n]
-    for arr, c in ((hm, GREY), (am, C_TOK)):
-        d = np.histogram(arr, bins=grid, density=True)[0].astype(float)
-        d /= max(d.max(), 1e-12)
-        axk.fill_between(grid[:-1], 0, d, color=c, alpha=0.32, lw=0, zorder=2)
-        axk.plot(grid[:-1], d, color=c, lw=1.7, zorder=3)
-    for m, c in ((hw.mean(), GREY), (aw.mean(), C_TOK)):
-        axk.plot([m, m], [0, 1.30], color=c, lw=1.2, ls=(0, (1, 2.5)), zorder=1)
-    thr = np.quantile(hm, 0.995)
-    axk.plot([thr, thr], [0, 1.06], color=INK, lw=1.5, ls=(0, (3, 2)), zorder=4)
-    power = (am > thr).mean()
-    axk.set_xlim(*SPAN), axk.set_ylim(0, 1.42)
+    se_h, se_a = hw.std() / np.sqrt(n), aw.std() / np.sqrt(n)
+    for mu, se, c in ((hw.mean(), se_h, GREY), (aw.mean(), se_a, C_TOK)):
+        d = np.exp(-0.5 * ((grid - mu) / se) ** 2)
+        axk.fill_between(grid, 0, d, color=c, alpha=0.30, lw=0, zorder=2)
+        axk.plot(grid, d, color=c, lw=2.0, zorder=3)
+        axk.plot([mu, mu], [0, 1.26], color=c, lw=1.2, ls=(0, (1, 2.5)), zorder=1)
+    thr = hw.mean() + Z * se_h
+    axk.plot([thr, thr], [0, 1.06], color=INK, lw=1.6, ls=(0, (3, 2)), zorder=4)
+    power = sf((thr - aw.mean()) / se_a)
+    axk.set_xlim(*SPAN), axk.set_ylim(0, 1.46)
     axk.set_yticks([]), axk.spines["left"].set_visible(False)
-    axk.tick_params(labelsize=11, pad=1, length=3)
+    axk.tick_params(labelsize=11.5, pad=1, length=3)
     if k < 2:
         axk.set_xticklabels([])
-    axk.text(0.99, 0.99, f"$b$ = {n:,} tokens", transform=axk.transAxes,
-             fontsize=12.5, color=INK, weight="bold", ha="right", va="top")
-    axk.text(0.99, 0.66, f"{power*100:.0f}% of 4-bit audits convict",
-             transform=axk.transAxes, fontsize=11.5, color=C_TOK, ha="right",
+    axk.text(0.995, 0.99, f"pool $b$ = {n:,} tokens", transform=axk.transAxes,
+             fontsize=13.5, color=INK, weight="bold", ha="right", va="top")
+    axk.text(0.995, 0.60, f"{power*100:.0f}% of cheating providers convicted",
+             transform=axk.transAxes, fontsize=12, color=C_TOK, ha="right",
              va="top")
     if k == 0:
-        axk.text(0.015, 0.99, "honest", transform=axk.transAxes, fontsize=11.5,
-                 color=GREY, weight="bold", va="top")
-        axk.text(0.015, 0.66, "4-bit weights", transform=axk.transAxes,
-                 fontsize=11.5, color=C_TOK, weight="bold", va="top")
-    if k == 1:
-        axk.annotate("", xy=(hw.mean(), 1.16), xytext=(aw.mean(), 1.16),
-                     arrowprops=dict(arrowstyle="<|-|>", color=INK, lw=1.3,
-                                     mutation_scale=10), zorder=5)
-        axk.text(aw.mean() + 0.02, 1.16, f"gap = {GAP:.3f} nats", fontsize=10.5,
-                 color=INK, va="center")
-    if k == 2:
-        axk.set_xlabel("mean token-DiFR margin over the audit batch",
-                       fontsize=12.5, color=GREY, labelpad=1)
-        axk.annotate("threshold: the honest 99.5th pct;\nit walks left as $b$ "
-                     "grows", xy=(thr, 0.20), xytext=(0.46, 0.26),
-                     textcoords=axk.transAxes, fontsize=10.5, color=INK,
-                     va="center", ha="left", linespacing=1.3,
+        axk.annotate("convict to the right of this bar", xy=(thr, 1.04),
+                     xytext=(thr + 0.10, 1.30), fontsize=11, color=INK,
+                     va="center", ha="left",
                      arrowprops=dict(arrowstyle="-", color=INK, lw=0.9))
+    if k == 2:
+        axk.set_xlabel("average per-token margin over the audited pool",
+                       fontsize=13, color=GREY, labelpad=1)
+        axk.annotate("", xy=(hw.mean(), 1.22), xytext=(aw.mean(), 1.22),
+                     arrowprops=dict(arrowstyle="<|-|>", color=INK, lw=1.3,
+                                     mutation_scale=11), zorder=5)
+        axk.text(aw.mean() + 0.09, 1.22, f"the gap never moved: {GAP:.3f} nats",
+                 fontsize=11, color=INK, va="center")
 
-axc = axes_at(x + CW * 0.575, y + 0.58, CW * 0.375, F2_H - 1.35, frame=True)
-rows = [r for r in PS["rows"] if r["in_ceiling"]]
-bb = np.array([r["batch"] for r in rows], float)
-au = np.array([r["auc"] for r in rows])
-sd = np.array([r["sd"] for r in rows])
-pr = np.array([r["predicted"] for r in rows])
-grid = np.logspace(np.log10(bb.min() * 0.7), np.log10(bb.max() * 1.5), 200)
-axc.plot(grid, np.interp(np.log10(grid), np.log10(bb), pr), color=INK, lw=1.8,
-         ls=(0, (5, 3)), zorder=3, label="predicted from $d'$ alone")
-axc.errorbar(bb, au, yerr=sd, fmt="o", color=C_TOK, ms=8, lw=0, elinewidth=1.6,
-             capsize=3, zorder=4, label="measured pAUC")
-axc.axhline(0.9, color=C_CLK, lw=1.2, ls=":", zorder=1)
-axc.text(bb.min() * 0.75, 0.905, "the 0.90 target", fontsize=11, color=C_CLK,
-         va="bottom")
-axc.set_xscale("log")
-axc.set_xticks([200, 500, 1000, 2000])
-axc.set_xticklabels(["200", "500", "1k", "2k"])
-axc.minorticks_off()
-axc.set_xlabel("audit batch (tokens pooled per verdict)", fontsize=12.5,
-               color=GREY, labelpad=2)
-axc.set_ylabel("standardized pAUC @ FPR $\\leq$ 0.5%", fontsize=12.5, color=GREY,
-               labelpad=2)
-axc.set_ylim(0.48, 0.97)
-axc.tick_params(labelsize=11.5)
-axc.legend(fontsize=11, frameon=False, loc="upper left", handlelength=1.6,
-           bbox_to_anchor=(0.02, 0.90), labelspacing=0.3)
+fig.add_artist(Rectangle((fx(x + 0.34), fy(y + F2_H - 0.14)), fw(CW - 0.68),
+                         fh(CALLOUT - 0.10), facecolor=CREAM, edgecolor=MAROON,
+                         lw=1.4, transform=fig.transFigure, zorder=1))
+fig.text(fx(x + CW / 2), fy(y + F2_H - 0.14 - (CALLOUT - 0.10) / 2),
+         f"{ZERO*100:.0f}% of individual tokens carry no signal at all.  Noise "
+         f"falls as $1/\\sqrt{{b}}$, so the bill is $b = (\\delta^*/d')^2$ "
+         f"tokens:\nfix the confidence an auditor needs, and $d'$ fixes the "
+         f"price.", size=13, color=MAROON, weight="bold", ha="center",
+         va="center", zorder=3, linespacing=1.45)
 
 y += F2_H
-y = caption(x, y + 0.10, CW, "Figure 2",
-            f"(A) 12,000 bootstrap audits per row from the experiment's own "
-            f"per-token scores (cost_of_a_verdict_scores.npz; Qwen3-1.7B, "
-            f"80×256 tokens per arm, per-token $d'$ = {dprime:.3f}). The "
-            f"gap between the two means never moves; only the sampling noise "
-            f"does. (B) The same law tested on a 56,160-token pool "
-            f"(pool_scaling.json): five points inside the 10% ceiling, mean "
-            f"absolute residual 0.012.")
+y = caption(x, y + 0.10, CW, "Figure 3",
+            f"The pooling law with this experiment's own measured inputs — "
+            f"Qwen3-1.7B under 4-bit weights, per-token $d'$ = {dprime:.3f} "
+            f"(cost_of_a_verdict_scores.npz). Against *measured* pAUC at {PSN} "
+            f"pool sizes on a 56,160-token pool the law holds to a mean absolute "
+            f"residual of {PSR:.3f} (pool_scaling.json) — which is what lets an "
+            f"auditor price a verdict before spending a budget.")
 
 # ---- Table: the headline grid
 y = section(x, y + 0.26, CW, "WHAT CATCHES WHAT", color=C_TOK)
-y = para(x, y, "Standardized pAUC @ FPR ≤ 0.5%, Qwen3-0.6B, 22,464-token honest "
-         "pool, batch 1,000, 5 protocol seeds — a legitimate 8.9% batch/pool "
-         "ratio. Every detector is structurally blind to a different class, and "
-         "which one wins is set by the attack, not the model: use a portfolio.",
-         CW, size=T_TAB, color=GREY)
+y = para(x, y, "Every detector is structurally blind to a different class of "
+         "deviation, and which one wins is set by the *attack*, not the model. "
+         "An auditor has to hold a portfolio.", CW, size=T_TAB, color=GREY)
 
 y += 0.18
 defs = HR["defenses"]
@@ -688,49 +728,85 @@ for i, a in enumerate(atks):
 axh.set_xticks([]), axh.set_yticks([])
 y += grid_h
 y = caption(x, y + 0.02, CW, "Table 2",
-            "headline_ratio.json. Re-scored from the *same* per-token scores "
-            "as the previously published 78%-ratio table, 16 of 24 cells fall, "
-            "by a median of 0.137. Under a wrong seed the provider redraws from "
-            "exactly the honest distribution, so cross-entropy and top-loc can "
-            "see nothing in principle — yet at 78% they read 0.987 and 0.828. "
-            "An over-ratio pool does not exaggerate a signal; it invents one.")
+            "headline_ratio.json. Re-scored from the *same* per-token scores as "
+            "a previously published table that resampled from too small a pool, "
+            "16 of 24 cells fall, by a median of 0.137: an over-ratio pool does "
+            "not exaggerate a signal, it invents one.")
 
-# ---- Table: tokens per verdict
-y = section(x, y + 0.24, CW, "THE PRICE OF A VERDICT", color=C_TOK)
-y = para(x, y, "Tokens a verdict needs, $(\\delta^*/d')^2$ at $\\delta^*$ = "
-         f"{CV['delta_star']:.2f}, times what a token costs. Tier 1 recomputes "
-         "$M$ at 141.1 µs/token; the “cheap” proxy tier is only 1.05× cheaper "
-         "per token, because both are one latency-bound batch-1 prefill.",
-         CW, size=T_TAB, color=GREY)
+# ---- Figure 4: what a verdict costs, from outside and from inside
+y = section(x, y + 0.24, CW, "WHAT ONE VERDICT COSTS", color=C_TOK)
+y = para(x, y, "Detectors are usually ranked by accuracy. An auditor buys "
+         "neither an AUC nor a FLOP count — it buys tokens. Below: the cheapest "
+         "honest verdict for each deviation, and what the *same* verdict costs "
+         "if the provider is made to open up.", CW, size=T_TAB, color=GREY)
 
-y += 0.18
 CTRL = CV["honest_control"]
-vlist = ["token_difr", "cross_entropy", "token_toploc", "activation_difr",
-         "accept_rate", "surface_stat"]
-hdr = ["deviation"] + [NICE_V[v].replace("\n", " ") for v in vlist]
-trows, tcols = [], []
-for a in CV["attacks"]:
-    r, c = [NICE_A[a]], [None]
-    for v in vlist:
-        cell = CV["cells"][a][v]
-        ok = cell["reachable"] and cell["d_prime"] > CTRL[v]["d_prime"]
-        if not ok:
-            r.append("—"), c.append(C_DEAD)
-        else:
-            n = cell["tokens_per_verdict"]
-            r.append(f"{n:,}")
-            c.append(C_TOK if n <= 3 else None)
-    trows.append(r), tcols.append(c)
-y = table(x, y, CW, hdr, trows, [3.0] + [1.55] * len(vlist), size=T_TAB - 1,
-          head_bg=C_TOK, colors=tcols)
-y = caption(x, y + 0.08, CW, "Table 3",
-            "cost_of_a_verdict.json, Qwen3-1.7B audited with a Qwen3-0.6B "
-            "proxy. A dash is a cell with no price — $d'$ that fails its own "
-            "detector's honest-vs-honest control, so no budget reaches a "
-            "verdict through it. Ranking by AUC hides all 14 — 0.50 and 0.55 "
-            "look adjacent while their prices are ∞ and 12,994 tokens — and a "
-            "cheap token is not a cheap verdict: the proxy is 1.05× cheaper per "
-            "token on 4-bit weights and needs 13× more of them.")
+BB = [v for v in CV["verifiers"] if v != "activation_difr"]
+
+
+def _price(a, vs):
+    best = None
+    for v in vs:
+        c = CV["cells"][a][v]
+        if c["reachable"] and c["d_prime"] > CTRL[v]["d_prime"]:
+            if best is None or c["tokens_per_verdict"] < best[1]:
+                best = (v, c["tokens_per_verdict"])
+    return best
+
+
+F4_H = 2.72
+y += 0.12
+panel(x, y, CW, F4_H)
+axp = axes_at(x + 2.62, y + 0.46, CW - 3.10, F4_H - 1.06, frame=True)
+alist = ["quant_4bit", "kv_fp8", "bug_k32", "temp_1.1", "seed_43"]
+axp.set_xscale("log"), axp.set_xlim(0.6, 2.5e6)
+axp.set_ylim(-0.7, len(alist) + 0.42)
+axp.set_yticks([])
+axp.set_xticks([1, 1e2, 1e4]), axp.minorticks_off()
+axp.set_xticklabels(["1 token", "100", "10,000"])
+axp.tick_params(labelsize=12)
+axp.set_xlabel("tokens of stream the auditor must buy for one verdict",
+               fontsize=12.5, color=GREY, labelpad=2)
+for i, a in enumerate(alist):
+    r = len(alist) - 1 - i
+    # the row label is drawn in DATA coords so it can never drift off its bar
+    axp.text(0.45, r, NICE_A[a], fontsize=13, color=INK, weight="bold",
+             ha="right", va="center", clip_on=False)
+    bb_ = _price(a, BB)
+    axp.barh(r, bb_[1], height=0.42, color=C_TOK, zorder=3)
+    axp.text(bb_[1] * 1.30, r, f"{bb_[1]:,}", fontsize=12.5, color=C_TOK,
+             weight="bold", va="center")
+    axp.text(bb_[1] * 1.30 * 10 ** (0.06 * len(f"{bb_[1]:,}")), r,
+             "·  " + NICE_V[bb_[0]].replace("\n", " "), fontsize=11, color=GREY,
+             va="center")
+    ins = CV["cells"][a]["activation_difr"]
+    if (ins["reachable"] and ins["d_prime"] > CTRL["activation_difr"]["d_prime"]
+            and ins["tokens_per_verdict"] < bb_[1]):
+        axp.plot([ins["tokens_per_verdict"]], [r + 0.36], marker="v", ms=12,
+                 color=MAROON, zorder=5, clip_on=False)
+        axp.text(ins["tokens_per_verdict"] * 1.7, r + 0.37,
+                 f"{ins['tokens_per_verdict']}", fontsize=12, color=MAROON,
+                 weight="bold", va="center")
+    else:
+        axp.text(2.0e6, r, "no verdict from inside", fontsize=11,
+                 color=C_DEAD, va="center", ha="right")
+
+axp.legend(handles=[Rectangle((0, 0), 1, 1, facecolor=C_TOK, edgecolor="none",
+                              label="from outside — black-box audit"),
+                    Line2D([0], [0], marker="v", ms=11, lw=0,
+                           markerfacecolor=MAROON, markeredgecolor=MAROON,
+                           label="with inside access to activations")],
+           fontsize=12, frameon=False, loc="upper right", handlelength=1.3,
+           labelspacing=0.3, borderaxespad=0.05, ncol=2, columnspacing=1.6)
+
+y += F4_H
+y = caption(x, y + 0.08, CW, "Figure 4",
+            f"cost_of_a_verdict.json; Qwen3-1.7B, $\\delta^*$ = "
+            f"{CV['delta_star']:.2f}, 141 µs of H100 per recomputed token. "
+            f"Opening the provider up is worth 2,000× against quantization and "
+            f"*nothing* against a tampered sampler, which redraws from the "
+            f"honest distribution. Across the whole grid 14 of 35 cells have no "
+            f"price at all — and ranking by AUC hides every one of them.")
 col_end(2, y)
 
 # ==========================================================================
@@ -738,46 +814,61 @@ col_end(2, y)
 # ==========================================================================
 x, y = CX[2], Y0
 
-y = section(x, y, CW, "CHANNEL 2  ·  THE CLOCK VERIFIER", color=C_CLK)
-y = lead_line(x, y, "A token cannot arrive before its bytes have moved — "
-              "so the saving and the evidence are one quantity.", CW)
+y = section(x, y, CW, "CHANNEL 2  ·  READ WHEN IT CAME BACK", color=C_CLK)
+y = lead_line(x, y, "A token cannot arrive before its bytes have moved. The "
+              "saving and the evidence are the same quantity.", CW)
 y = para(x, y + 0.08,
-         "A batch-1 decode step is memory-bound: the margin is bytes not read, "
-         "and bytes not read is time not spent. Zero audit FLOPs, zero "
-         "cooperation, evidence arriving with a stream already bought. Measured "
-         "on 126 timing cells, the *premise* holds and the naive test does not.",
-         CW, color=GREY)
+         "One token at a time a GPU is memory-bound, not compute-bound: it must "
+         "drag every weight it claims to be using across the bus before it can "
+         "emit anything. Read fewer bytes and tokens arrive sooner — so the "
+         "*clock* is evidence, at no audit FLOPs and no cooperation.", CW,
+         color=GREY)
 
-# ---- Figure 3: the clock, in three measured pictures
-F3_H = 3.82
-y += 0.20
+# ---- Figure 5: the premise, drawn; then the premise, measured
+F3_H = 4.08
+y += 0.18
 panel(x, y, CW, F3_H)
 
-fig.text(fx(x + 0.20), fy(y + 0.22), "A.  A token is a read", size=14,
-         weight="bold", color=INK, va="top")
-fig.text(fx(x + CW * 0.300), fy(y + 0.22), "B.  The floor is a stack constant",
-         size=14, weight="bold", color=INK, va="top")
-fig.text(fx(x + CW * 0.660), fy(y + 0.22), "C.  What a differential test costs",
-         size=14, weight="bold", color=INK, va="top")
+fig.text(fx(x + 0.24), fy(y + 0.20), "A.  Why the clock knows anything",
+         size=14.5, weight="bold", color=INK, va="top")
+fig.text(fx(x + CW * 0.475), fy(y + 0.20), "B.  The premise, measured on an H100",
+         size=14.5, weight="bold", color=INK, va="top")
 
-ax1 = axes_at(x + 0.20, y + 0.50, CW * 0.235, F3_H - 1.00)
+ax1 = axes_at(x + 0.24, y + 0.52, CW * 0.40, F3_H - 0.98)
 ax1.set_xlim(0, 100), ax1.set_ylim(0, 100)
-box(ax1, 44, 90, 80, 17, "WEIGHTS", "1.72B params × 2 B = 3.44 GB",
-    fc="#E8EFF6", ec=C_TOK, lc=C_TOK, fs=13.5, subfs=11)
-arrow(ax1, 38, 80, 38, 69, c=INK)
-ax1.add_patch(Circle((38, 55), 12, facecolor=WHITE, edgecolor=C_CLK, lw=2.8,
+box(ax1, 50, 94, 92, 11, "THE WEIGHTS IT CLAIMS TO RUN",
+    "read once, in full, for every single token", fc="#E8EFF6", ec=C_TOK,
+    lc=C_TOK, subc=C_TOK, fs=12.5, subfs=10.5)
+arrow(ax1, 22, 88, 22, 80, c=INK, lw=2.0)
+ax1.add_patch(Circle((22, 71), 8.5, facecolor=WHITE, edgecolor=C_CLK, lw=2.6,
                      zorder=2))
-ax1.add_artist(Line2D([38, 38], [55, 64], color=C_CLK, lw=2.6, zorder=3))
-ax1.add_artist(Line2D([38, 45], [55, 51], color=C_CLK, lw=2.6, zorder=3))
-ax1.text(62, 55, "read every byte,\nonce per token\n\nHBM, 1.85 TB/s",
-         fontsize=10.5, color=GREY, ha="left", va="center", linespacing=1.45)
-arrow(ax1, 38, 41, 38, 30, c=INK)
-box(ax1, 44, 19, 80, 16, "1 token", "what the client is charged for",
-    fc=C_TOK, ec=C_TOK, lc=WHITE, fs=13.5, subfs=11, subc="#DCE8F3")
-ax1.text(4, 4, "$t_{\\mathrm{token}}\\;\\geq\\;$bytes read $/$ bandwidth",
-         fontsize=13, color=INK, ha="left", va="center", weight="bold")
+ax1.add_artist(Line2D([22, 22], [71, 77], color=C_CLK, lw=2.4, zorder=3))
+ax1.add_artist(Line2D([22, 27], [71, 68], color=C_CLK, lw=2.4, zorder=3))
+ax1.text(35, 71, "the bus is the bottleneck:\nHBM at 1.85 TB/s", fontsize=10.5,
+         color=GREY, ha="left", va="center", linespacing=1.4)
+arrow(ax1, 22, 62, 22, 55, c=INK, lw=2.0)
+box(ax1, 50, 48, 92, 11, "ONE TOKEN, ON THE CLIENT'S CLOCK",
+    "the only thing the client is charged for", fc=C_CLK, ec=C_CLK, lc=WHITE,
+    subc="#F6E2D6", fs=12.5, subfs=10.5)
+ax1.text(50, 37, "$t_{\\mathrm{token}}\\;\\geq\\;$bytes read $/$ bandwidth",
+         fontsize=14, color=INK, ha="center", va="center", weight="bold")
 
-ax2 = axes_at(x + CW * 0.330, y + 0.56, CW * 0.235, F3_H - 1.14, frame=True)
+HB = _cell("Qwen3-1.7B", 256)["bytes_read"] / 1e9
+NB = _cell("Qwen3-1.7B-NF4", 256)["bytes_read"] / 1e9
+ax1.text(4, 29, "bytes it actually has to read, per token", fontsize=11,
+         color=INK, weight="bold", va="center")
+for i, (val, lab, c) in enumerate([(HB, "honest", C_TOK), (NB, "4-bit", MAROON)]):
+    w = 55 * val / HB
+    ax1.add_patch(Rectangle((20, 18 - i * 10), w, 7.0, facecolor=c,
+                            edgecolor="none", zorder=2))
+    ax1.text(18, 21.5 - i * 10, lab, fontsize=11.5, color=c, ha="right",
+             va="center", weight="bold")
+    ax1.text(21.5 + w, 21.5 - i * 10, f"{val:.2f} GB", fontsize=11.5, color=c,
+             va="center", weight="bold")
+ax1.text(4, 2, "the cheat's whole margin is bytes it did not read",
+         fontsize=11.5, color=INK, ha="left", va="bottom", weight="bold")
+
+ax2 = axes_at(x + CW * 0.505, y + 0.60, CW * 0.435, F3_H - 1.20, frame=True)
 graph = [c for c in CC["cells"] if c["mode"] == "graph" and c["B"] == 1
          and c["ctx"] == min(k["ctx"] for k in CC["cells"])]
 seen, pts = set(), []
@@ -792,64 +883,38 @@ ms = np.array([p[1] for p in pts])
 A = np.vstack([np.ones_like(gb), gb]).T
 const, slope = np.linalg.lstsq(A, ms, rcond=None)[0]
 xs = np.linspace(0, gb.max() * 1.15, 50)
-ax2.plot(xs, const + slope * xs, color=C_TOK, lw=2.0, ls=(0, (5, 3)), zorder=2)
-ax2.plot(xs, xs / 1.85, color=C_CLK, lw=2.0, zorder=2)
-ax2.scatter(gb, ms, s=90, color=C_TOK, zorder=4)
+ax2.plot(xs, const + slope * xs, color=C_TOK, lw=2.2, ls=(0, (5, 3)), zorder=2)
+ax2.plot(xs, xs / 1.85, color=C_CLK, lw=2.2, zorder=2)
+ax2.scatter(gb, ms, s=105, color=C_TOK, zorder=4)
 for g, m, lab in pts:
     ax2.annotate(lab.replace("Qwen3-", ""), (g, m), textcoords="offset points",
-                 xytext=(6, -12), fontsize=11.5, color=INK)
-ax2.text(0.30, 0.10, "the roofline\n(bytes / 1.85 TB/s)", transform=ax2.transAxes,
-         fontsize=12, color=C_CLK, linespacing=1.3)
-ax2.text(0.03, 0.90, f"observed = {const:.2f} ms\n+ bytes / "
-         f"{1/slope:.2f} TB/s", transform=ax2.transAxes, fontsize=12.5,
-         color=C_TOK, weight="bold", linespacing=1.35, va="top")
+                 xytext=(7, -13), fontsize=12, color=INK)
+ax2.text(0.030, 0.975, f"observed  =  {const:.2f} ms\n"
+         f"                +  1 GB per {slope:.2f} ms", transform=ax2.transAxes,
+         fontsize=12.5, color=C_TOK, weight="bold", va="top", linespacing=1.4)
+ax2.text(0.60, 0.11, "what the bus alone\nwould give", transform=ax2.transAxes,
+         fontsize=11.5, color=C_CLK, linespacing=1.35)
 ax2.set_xlabel("weight bytes per decode step (GB)", fontsize=12.5, color=GREY,
                labelpad=2)
 ax2.set_ylabel("observed ms per output token", fontsize=12.5, color=GREY,
                labelpad=2)
 ax2.set_xlim(0, gb.max() * 1.15), ax2.set_ylim(0, ms.max() * 1.25)
-ax2.tick_params(labelsize=11.5)
-
-ax3 = axes_at(x + CW * 0.690, y + 0.56, CW * 0.280, F3_H - 1.14, frame=True)
-sig = np.logspace(-1, 2, 100)
-DSTAR = CV["delta_star"]
-for gap, lab, c in [(53.6 / 2, "clock: half the context", C_CLK),
-                    (53.6, "clock: full truncation", "#1E6B3A")]:
-    ax3.plot(sig, (DSTAR * sig / gap) ** 2, color=c, lw=2.4, label=lab)
-for tok, lab in [(35066, "returned tokens, fp8 KV:  35,066"),
-                 (2013, "returned tokens, 4-bit:  2,013")]:
-    ax3.axhline(tok, color=GREY, lw=1.3, ls=(0, (4, 3)))
-    ax3.text(88, tok * 1.9, lab, fontsize=10, color=GREY, ha="right")
-ax3.axhline(1, color=INK, lw=0.9)
-ax3.text(88, 1.7, "one probe pair", fontsize=10, color=INK, ha="right")
-ax3.axvline(0.12, color=C_CLK, lw=1.6, alpha=0.75)
-ax3.annotate("measured $\\sigma$", xy=(0.12, 1.5e1), xytext=(0.22, 1.2e2),
-             fontsize=10, color=C_CLK, va="center",
-             arrowprops=dict(arrowstyle="-", color=C_CLK, lw=0.9))
-ax3.legend(fontsize=10, frameon=False, loc="lower right", handlelength=1.4,
-           borderaxespad=0.3, labelspacing=0.25)
-ax3.set_xscale("log"), ax3.set_yscale("log")
-ax3.set_xlim(0.1, 100), ax3.set_ylim(1e-4, 3e5)
-ax3.set_yticks([1e-3, 1e-1, 1e1, 1e3, 1e5])
-ax3.set_xlabel("client-side jitter $\\sigma$ on one gap (ms)", fontsize=12.5,
-               color=GREY, labelpad=2)
-ax3.set_ylabel("tokens of stream per verdict", fontsize=12.5, color=GREY,
-               labelpad=2)
-ax3.tick_params(labelsize=11.5)
+ax2.tick_params(labelsize=12)
 
 y += F3_H
-y = caption(x, y + 0.08, CW, "Figure 3",
-            f"(B) clock_channel.json, H100 PCIe, CUDA-graph stack, B=1. The "
-            f"weight read runs at {1/slope/1.85*100:.0f}% of copy bandwidth but "
-            f"sits on a {const:.2f} ms constant that is pure stack and on no "
-            f"spec sheet — in eager HF the same GPU gives ~30 ms/token, flat in "
-            f"bytes: no channel at all. (C) Priced on the repo's own cost law.")
+y = caption(x, y + 0.08, CW, "Figure 5",
+            f"(B) clock_channel.json, H100 PCIe, CUDA graphs, B=1, one point "
+            f"per model. Time is linear in bytes — but at "
+            f"{1/slope/1.85*100:.0f}% of copy bandwidth, on a {const:.2f} ms "
+            f"software constant that is on no spec sheet. Under eager PyTorch "
+            f"the same GPU gives ~30 ms/token, flat in bytes: no channel at "
+            f"all.")
 
 # ---- Table: what measurement did to the naive clock
-y = section(x, y + 0.24, CW, "WHAT MEASUREMENT AMENDED", color=C_CLK)
+y = section(x, y + 0.22, CW, "EVERY OBVIOUS CLOCK TEST FAILS", color=C_CLK)
 y += 0.02
 y = table(x, y, CW,
-          ["the naive clock test says", "measured"],
+          ["what the premise seems to promise", "what 126 timing cells say"],
           [["Fewer bytes → proportionally less time",
             "NF4 delivers 14% of it"],
            ["4-bit weights are 3.9× faster, so 6 tokens convict",
@@ -858,51 +923,67 @@ y = table(x, y, CW,
             "int4 KV is 1.6× steeper"],
            ["Jitter is positive, so take the minimum gap",
             "73% of honest gaps are 0 ms"],
-           ["The floor is on the spec sheet",
-            "4.15 ms of it is the stack"],
            ["One clock: the inter-token gap",
             "prefill is 25,000× cheaper"]],
-          [6.3, 4.27], aligns=["left", "right"], size=T_TAB - 1, head_bg=C_CLK)
-y = caption(x, y + 0.08, CW, "Table 4",
+          [6.1, 4.47], aligns=["left", "right"], size=T_TAB - 1, head_bg=C_CLK)
+y = caption(x, y + 0.08, CW, "Table 3",
             "clock_channel.json (126 configurations) and clock_algos.json. The "
-            "premise survives all six rows; the naive *test* survives none — "
-            "and every failure attacks an absolute threshold, not a difference.")
+            "premise survives every row; the naive *test* survives none — and "
+            "every failure attacks an absolute threshold.")
 
-# ---- Table: the surviving verifier
-y = section(x, y + 0.22, CW, "THE VERIFIER THAT SURVIVES", color=C_CLK)
-y = para(x, y, "$D = \\mathrm{ITL}(\\mathrm{ctx}_{hi}) - "
-         "\\mathrm{ITL}(\\mathrm{ctx}_{lo})$ over two matched probes: the stack "
-         "constant, the network offset and any padding cancel exactly, and "
-         "co-tenancy only *raises* the slope, so the honest floor is one-sided. "
-         "A provider billing for 32,768 tokens and holding fewer, at 50 ms of "
-         "wire jitter:", CW, size=T_TAB, color=GREY)
-y += 0.14
-y = table(x, y, CW,
-          ["context it actually holds", "$d'$ / probe pair", "pAUC @ 32",
-           "tokens"],
-          [["512 of 32,768", "0.89", "0.996", "36"],
-           ["2,048", "0.82", "0.987", "42"],
-           ["8,192", "0.68", "0.940", "62"],
-           ["16,384  (half)", "0.43", "0.714", "152"]],
-          [4.0, 2.3, 2.2, 2.07], size=T_TAB - 1, head_bg=C_CLK)
-y = caption(x, y + 0.08, CW, "Table 5",
-            "slope_verifier.json, 42 cells through harness.evaluate on the "
-            "house protocol. Re-measured an hour later in a fresh process the "
-            "same cells drift by 0.01% in slope, so the test is "
-            "self-calibrating and *relative*: it catches a provider that "
-            "starts truncating. Evading it costs up to 53 ms per output token — "
-            "the provider keeps its 3.7 GB of KV cache and gives back the speed.")
+# ---- Figure 6: the differential test, drawn
+y = section(x, y + 0.22, CW, "THE TEST THAT SURVIVES: SUBTRACT", color=C_CLK)
+F6_H = 1.76
+y += 0.06
+panel(x, y, CW, F6_H)
+ax6 = axes_at(x, y, CW, F6_H)
+ax6.set_xlim(0, 100), ax6.set_ylim(0, 100)
+for cy, lab, wdt in [(74, "probe A  —  a short context", 17),
+                     (34, "probe B  —  the context it billed for", 39)]:
+    ax6.text(3, cy + 15, lab, fontsize=12, color=INK, weight="bold", va="center")
+    ax6.add_patch(Rectangle((3, cy), wdt, 11, facecolor=C_CLK, alpha=0.9,
+                            edgecolor="none", zorder=2))
+    ax6.text(3 + wdt + 2, cy + 5.5, "$t_A$" if wdt < 20 else "$t_B$",
+             fontsize=13, color=C_CLK, weight="bold", va="center")
+ax6.text(3, 12, "each arrival time is  software + network + bytes",
+         fontsize=11.5, color=GREY, va="center")
+ax6.add_patch(Rectangle((49, 4), 48, 92, facecolor=CREAM, edgecolor=MAROON,
+                        lw=1.5, zorder=1))
+ax6.text(73, 80, "$D \\;=\\; t_B - t_A$", fontsize=17, color=MAROON,
+         weight="bold", ha="center", va="center", zorder=3)
+ax6.text(51.5, 55, "the software constant, the network offset and\nany padding "
+         "all cancel exactly", fontsize=11.5, color=INK, va="center",
+         linespacing=1.5, zorder=3)
+ax6.text(51.5, 34, "a busy neighbour can only push $D$ up", fontsize=11.5,
+         color=INK, va="center", zorder=3)
+ax6.text(51.5, 14, "→  so the honest floor is one-sided, and the\n"
+         "     test calibrates itself against the provider", fontsize=11.5,
+         color=MAROON, weight="bold", va="center", linespacing=1.5, zorder=3)
+y += F6_H
+y = caption(x, y + 0.08, CW, "Figure 6",
+            "slope_verifier.json, 42 cells, same protocol as the token channel. A "
+            "provider billing for 32,768 tokens of context and holding 512 is "
+            "caught at pAUC 0.996 on *36 tokens* of stream (8,192 → 62; half the "
+            "context → 152) at 50 ms of wire jitter, against 2,013–35,066 for "
+            "the token channel.")
 
-# ---- Limitations
-y = section(x, y + 0.20, CW, "LIMITATIONS")
+# ---- The close: what any of this buys a governance regime
+y = section(x, y + 0.24, CW, "WHAT AN AUDITOR ACTUALLY GETS")
 y = para(x, y,
-         "The wire is unmeasured: every jitter figure is device-side (sd "
-         "0.11–0.8 ms), a lower bound on a client's — hence the sweep in 3C. "
-         "One H100, HF eager and CUDA graphs only; vLLM's paged attention may "
-         "restore fp8-KV detectability. Models are 0.13B–8B, where the "
-         "attacker's incentive is smallest, and quantization attacks are "
-         "logit-level. No provider here adapts.",
-         CW, size=T_TAB, color=GREY)
+         "*A price, not a ranking:* every verdict costed in tokens × seconds — "
+         "and 14 of 35 cells cost infinity.\n"
+         "*One protocol, one grid:* 8 detectors × 6 deviations; under an "
+         "enforced pool ceiling, 16 of 24 cells fall.\n"
+         "*A second channel:* the differential clock, 36–152 tokens of stream, "
+         "and no cooperation from the provider.", CW, size=T_TAB, color=INK)
+y = para(x, y + 0.10,
+         "None of this is a treaty regime — but it prices one. A clause that "
+         "names a detector cannot be enforced; a clause that names a pool size, "
+         "a false-alarm rate and a probe pair can be. The gaps are honest ones: "
+         "a no-training clause is a claim about a fleet over months, not a "
+         "stream over seconds; jitter here is device-side on one H100; models "
+         "are 0.13B–8B, where the incentive to cheat is smallest; and no "
+         "provider on this board adapts.", CW, size=T_TAB, color=GREY)
 
 col_end(3, y)
 
