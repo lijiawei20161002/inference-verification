@@ -254,7 +254,47 @@ scale-free in `b` — if it is, the resolvable cells license the rest; if it is 
 every cell needs its own pool and sequential verification is only affordable where
 `d′` is already large.
 
-### 9. Multi-provider / cross-checking
+### 9. The clock channel on a production stack
+
+**Claim at risk:** everything in `docs/CLOCK_MEASURED.md`, which is now the measured
+replacement for the four clock figures' modelled floors.
+
+`exp_clock_channel_gpu` timed 126 cells on an H100 PCIe in two HF stacks and found
+(a) observed ITL = 4.15 ms + bytes / 1.22 TB/s, so the floor is a *stack* property,
+(b) the context term is per-position and per-layer, not per-byte — KV bytes vary 6.9x
+across five architectures and the slope per layer varies 1.26x — and (c) real NF4
+weights deliver 14% of their predicted time saving and are *slower* than bf16 for
+every B >= 4. All of that is HF eager and HF + CUDA graphs.
+
+**Experiment.** Rerun the identical grid behind vLLM (paged attention,
+flash-decoding, fused kernels, `kv_cache_dtype=fp8`, `quantization=awq/gptq`). Two
+outcomes and both are informative: if the context term becomes bandwidth-bound, KV
+*precision* re-enters the channel and the differential verifier gets a second
+deviation to read; if it does not, the position-not-bytes result generalizes and the
+context-slope floor test is the whole channel.
+
+**Falsifies the current record if:** the stack constant is small enough that an
+absolute floor test is viable, in which case `fig_clock_basic` panel 3 is right and
+`CLOCK_MEASURED` section 1 is an artifact of HF.
+
+**Cost:** ~half a GPU-day, most of it vLLM startup per config.
+
+### 10. The wire: what a client actually observes
+
+**Claim at risk:** the only unmeasured input left in the clock channel. Every jitter
+number in `CLOCK_MEASURED` is device-side (sd 0.11-0.8 ms) and is a strict lower
+bound on a client's. The differential verifier's price table sweeps sigma from 0.1 to
+100 ms rather than assuming one, so the sweep is honest, but nobody knows where on it
+a real endpoint sits.
+
+**Experiment.** Time ~50 streaming completions against two or three public endpoints.
+Report the inter-token gap distribution, its sd, the coalescing quantum, and the
+fraction of *zero* gaps -- section 5 predicts the last one is large, because
+speculation and SSE framing both deliver tokens in clumps.
+
+**Cost:** dollars, not GPU-hours. Cheapest load-bearing item on this list.
+
+### 11. Multi-provider / cross-checking
 
 If a client uses several providers for the same spec, honest providers agree with
 each other up to nondeterminism and a cheating one does not — without anyone
