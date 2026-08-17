@@ -16,12 +16,21 @@ the template's Calibri) for body.
 
 Every number on the board is read from a committed artifact in `docs/results/`
 (named in the caption). Nothing is typed in twice: the byte ratios, the headline
-grid, the verdict prices, the pooling law's inputs and residual, and the clock
-roofline all come out of JSON at render time, so a rerun that moves a number
-moves the poster. Figure 3 is the one drawn curve -- the pooling law's normal
-approximation with this experiment's measured mean, spread and d' substituted in,
-because the raw bootstrap of a score that is exactly zero on 98% of tokens is a
-comb of discreteness artefacts rather than a picture of the principle.
+grid, the verdict prices, the pooling law's inputs and residual, and every
+latency in the clock column all come out of JSON at render time, so a rerun that
+moves a number moves the poster. Figure 3 is the one drawn curve -- the pooling
+law's normal approximation with this experiment's measured mean, spread and d'
+substituted in, because the raw bootstrap of a score that is exactly zero on 98%
+of tokens is a comb of discreteness artefacts rather than a picture of the
+principle.
+
+Column 3 goes one step further and re-scores the clock rather than illustrating
+it: `experiments.plot_slope_verifier.detection` is imported and run here, so
+Figure 6B's pAUC curves come out of the same `harness.evaluate` -- same
+standardized pAUC @ FPR <= 0.5%, same honest calibration split, same pool
+ceiling -- that the returned-token verifiers are scored with in column 2. That
+costs a few seconds of render time and buys the guarantee that the two channels
+on this board are measured against each other on one protocol.
 
 Column origins and section heights are calibrated to the 36x24 landscape board,
 so `--size` is for proofing at a smaller scale rather than for reflowing onto
@@ -44,7 +53,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.lines import Line2D
-from matplotlib.patches import Circle, FancyBboxPatch, Rectangle
+from matplotlib.patches import FancyBboxPatch, Rectangle
 
 ROOT = Path(__file__).resolve().parents[1]
 RES = ROOT / "docs" / "results"
@@ -98,7 +107,18 @@ HR = json.loads((RES / "headline_ratio.json").read_text())
 CV = json.loads((RES / "cost_of_a_verdict.json").read_text())
 PS = json.loads((RES / "pool_scaling.json").read_text())
 CC = json.loads((RES / "clock_channel.json").read_text())
+KVQ = json.loads((RES / "clock_channel_kvq.json").read_text())
 SC = np.load(RES / "cost_of_a_verdict_scores.npz")
+
+# The clock column is scored, not drawn, so it needs one thing the other two do
+# not: the protocol itself. `detection` is imported from the experiment that
+# published the slope verifier rather than reimplemented, so Figure 6B's pAUC
+# curves are the run's own curves -- same `harness.evaluate`, same standardized
+# pAUC @ FPR <= 0.5%, same honest calibration split as the token channel -- and
+# the board cannot drift from the artifact. Everything else in the column is a
+# measured latency read straight out of the committed timing grids.
+from experiments.plot_clock_measured import price as clock_price   # (delta*/d')^2
+from experiments.plot_slope_verifier import SIGMA_MAIN, detection, load_all
 
 NICE_A = {"quant_4bit": "4-bit weights", "kv_fp8": "fp8 KV cache",
           "temp_1.1": "wrong temperature", "seed_43": "wrong seed",
@@ -810,180 +830,312 @@ y = caption(x, y + 0.08, CW, "Figure 4",
 col_end(2, y)
 
 # ==========================================================================
-# COLUMN 3 -- the clock verifier
+# COLUMN 3 -- the clock verifier, and only what was measured of it
 # ==========================================================================
 x, y = CX[2], Y0
+
+
+def _cells(label, ctx, mode="graph", B=1, src=None):
+    return [c for c in (src or CC["cells"]) if c["label"] == label
+            and c["ctx"] == ctx and c["mode"] == mode and c["B"] == B]
+
+
+def _avg(label, ctx, key, mode="graph", B=1):
+    """Mean of `key` over every cell at this configuration -- the grid re-measures
+    a few contexts in a second arm and one row must not be double-weighted."""
+    return float(np.mean([c[key] for c in _cells(label, ctx, mode, B)]))
+
+
+def _lsq(xv, yv):
+    A = np.vstack([np.ones_like(xv), xv]).T
+    return np.linalg.lstsq(A, np.asarray(yv, float), rcond=None)[0]
+
+
+# the slope verifier's own cells, and its verdicts re-scored through the protocol
+SV, SVC, _SV_MAIN = load_all()
+DET = detection(SVC, SIGMA_MAIN, seed=0)
+WCELL = lambda lab: next(c for c in SVC if c["label"] == lab)
+LO, HI = WCELL("probe_lo"), WCELL("honest_hi")
+WS = sorted(DET)                                # context a truncating provider keeps
+CLAIM = SV["claimed_ctx"]
+D_HON = HI["mean"] - LO["mean"]                 # the honest probe-pair statistic
+# tokens of stream for a pAUC-0.90 verdict: (delta*/d')^2 pairs, 2 tokens a pair
+TOKS = {Wk: int(round(float(clock_price(DET[Wk]["d_prime"])) * 2))
+        for Wk in WS}
+SHADE = {Wk: 1.0 - 0.45 * i / max(len(WS) - 1, 1) for i, Wk in enumerate(WS)}
+
+
+def clk(Wk):
+    """One hue for the whole deviation family, dark = keeps least of the context."""
+    r, g, b = plt.matplotlib.colors.to_rgb(C_CLK)
+    return tuple(1 - (1 - c) * SHADE[Wk] for c in (r, g, b))
+
 
 y = section(x, y, CW, "CHANNEL 2  ·  READ WHEN IT CAME BACK", color=C_CLK)
 y = lead_line(x, y, "A token cannot arrive before its bytes have moved. The "
               "saving and the evidence are the same quantity.", CW)
 y = para(x, y + 0.08,
-         "One token at a time a GPU is memory-bound, not compute-bound: it must "
-         "drag every weight it claims to be using across the bus before it can "
-         "emit anything. Read fewer bytes and tokens arrive sooner — so the "
-         "*clock* is evidence, at no audit FLOPs and no cooperation.", CW,
+         "One token at a time a GPU is memory-bound: it must drag every weight "
+         "it claims and read every position it charged for before it can emit "
+         "anything, so $t_{\\mathrm{token}} \\geq$ bytes $/$ bandwidth. Nothing "
+         "below is drawn — the whole column is timed on one H100.", CW,
          color=GREY)
 
-# ---- Figure 5: the premise, drawn; then the premise, measured
-F3_H = 4.08
-y += 0.18
+# ---- Figure 5: the premise, measured, and the reason it is not a test
+F3_H = 2.84
+y += 0.14
 panel(x, y, CW, F3_H)
 
-fig.text(fx(x + 0.24), fy(y + 0.20), "A.  Why the clock knows anything",
-         size=14.5, weight="bold", color=INK, va="top")
-fig.text(fx(x + CW * 0.475), fy(y + 0.20), "B.  The premise, measured on an H100",
-         size=14.5, weight="bold", color=INK, va="top")
+fig.text(fx(x + 0.28), fy(y + 0.17), "A.  The channel is real: the time is in "
+         "the bytes", size=14, weight="bold", color=INK, va="top")
+fig.text(fx(x + CW * 0.615), fy(y + 0.17), "B.  The floor is not",
+         size=14, weight="bold", color=INK, va="top")
 
-ax1 = axes_at(x + 0.24, y + 0.52, CW * 0.40, F3_H - 0.98)
-ax1.set_xlim(0, 100), ax1.set_ylim(0, 100)
-box(ax1, 50, 94, 92, 11, "THE WEIGHTS IT CLAIMS TO RUN",
-    "read once, in full, for every single token", fc="#E8EFF6", ec=C_TOK,
-    lc=C_TOK, subc=C_TOK, fs=12.5, subfs=10.5)
-arrow(ax1, 22, 88, 22, 80, c=INK, lw=2.0)
-ax1.add_patch(Circle((22, 71), 8.5, facecolor=WHITE, edgecolor=C_CLK, lw=2.6,
-                     zorder=2))
-ax1.add_artist(Line2D([22, 22], [71, 77], color=C_CLK, lw=2.4, zorder=3))
-ax1.add_artist(Line2D([22, 27], [71, 68], color=C_CLK, lw=2.4, zorder=3))
-ax1.text(35, 71, "the bus is the bottleneck:\nHBM at 1.85 TB/s", fontsize=10.5,
-         color=GREY, ha="left", va="center", linespacing=1.4)
-arrow(ax1, 22, 62, 22, 55, c=INK, lw=2.0)
-box(ax1, 50, 48, 92, 11, "ONE TOKEN, ON THE CLIENT'S CLOCK",
-    "the only thing the client is charged for", fc=C_CLK, ec=C_CLK, lc=WHITE,
-    subc="#F6E2D6", fs=12.5, subfs=10.5)
-ax1.text(50, 37, "$t_{\\mathrm{token}}\\;\\geq\\;$bytes read $/$ bandwidth",
-         fontsize=14, color=INK, ha="center", va="center", weight="bold")
+CTX0 = min(c["ctx"] for c in CC["cells"])
+MODELS = ["Qwen3-0.6B", "Qwen3-1.7B", "Qwen3-4B"]
+NF4 = "Qwen3-1.7B-NF4"
+BW = CC["card"]["bw_copy_tb_s"]
+gb = np.array([_cells(m, CTX0)[0]["weight_bytes"] / 1e9 for m in MODELS])
+gb4 = _cells(NF4, CTX0)[0]["weight_bytes"] / 1e9
+XMAX = gb.max() * 1.17
+# weight + KV bytes per step, exactly as Table 1 counts them one column left
+BYTE_R = (_cells(MODELS[1], CTX0)[0]["bytes_read"]
+          / _cells(NF4, CTX0)[0]["bytes_read"])
 
-HB = _cell("Qwen3-1.7B", 256)["bytes_read"] / 1e9
-NB = _cell("Qwen3-1.7B-NF4", 256)["bytes_read"] / 1e9
-ax1.text(4, 29, "bytes it actually has to read, per token", fontsize=11,
-         color=INK, weight="bold", va="center")
-for i, (val, lab, c) in enumerate([(HB, "honest", C_TOK), (NB, "4-bit", MAROON)]):
-    w = 55 * val / HB
-    ax1.add_patch(Rectangle((20, 18 - i * 10), w, 7.0, facecolor=c,
-                            edgecolor="none", zorder=2))
-    ax1.text(18, 21.5 - i * 10, lab, fontsize=11.5, color=c, ha="right",
-             va="center", weight="bold")
-    ax1.text(21.5 + w, 21.5 - i * 10, f"{val:.2f} GB", fontsize=11.5, color=c,
-             va="center", weight="bold")
-ax1.text(4, 2, "the cheat's whole margin is bytes it did not read",
-         fontsize=11.5, color=INK, ha="left", va="bottom", weight="bold")
-
-ax2 = axes_at(x + CW * 0.505, y + 0.60, CW * 0.435, F3_H - 1.20, frame=True)
-graph = [c for c in CC["cells"] if c["mode"] == "graph" and c["B"] == 1
-         and c["ctx"] == min(k["ctx"] for k in CC["cells"])]
-seen, pts = set(), []
-for c in graph:
-    if c["label"] in seen or "NF4" in c["label"]:
-        continue
-    seen.add(c["label"])
-    pts.append((c["weight_bytes"] / 1e9, c["min"], c["label"]))
-pts.sort()
-gb = np.array([p[0] for p in pts])
-ms = np.array([p[1] for p in pts])
-A = np.vstack([np.ones_like(gb), gb]).T
-const, slope = np.linalg.lstsq(A, ms, rcond=None)[0]
-xs = np.linspace(0, gb.max() * 1.15, 50)
+ax2 = axes_at(x + 1.02, y + 0.56, CW * 0.505, F3_H - 1.08, frame=True)
+ms = np.array([_avg(m, CTX0, "mean") for m in MODELS])
+ms4 = _avg(NF4, CTX0, "mean")
+const, slope = _lsq(gb, ms)
+xs = np.linspace(0, XMAX, 50)
 ax2.plot(xs, const + slope * xs, color=C_TOK, lw=2.2, ls=(0, (5, 3)), zorder=2)
-ax2.plot(xs, xs / 1.85, color=C_CLK, lw=2.2, zorder=2)
+ax2.plot(xs, xs / BW, color=GREY, lw=1.8, zorder=2)
 ax2.scatter(gb, ms, s=105, color=C_TOK, zorder=4)
-for g, m, lab in pts:
+for g, m, lab in zip(gb, ms, MODELS):
     ax2.annotate(lab.replace("Qwen3-", ""), (g, m), textcoords="offset points",
-                 xytext=(7, -13), fontsize=12, color=INK)
-ax2.text(0.030, 0.975, f"observed  =  {const:.2f} ms\n"
-         f"                +  1 GB per {slope:.2f} ms", transform=ax2.transAxes,
-         fontsize=12.5, color=C_TOK, weight="bold", va="top", linespacing=1.4)
-ax2.text(0.60, 0.11, "what the bus alone\nwould give", transform=ax2.transAxes,
-         fontsize=11.5, color=C_CLK, linespacing=1.35)
-ax2.set_xlabel("weight bytes per decode step (GB)", fontsize=12.5, color=GREY,
-               labelpad=2)
-ax2.set_ylabel("observed ms per output token", fontsize=12.5, color=GREY,
-               labelpad=2)
-ax2.set_xlim(0, gb.max() * 1.15), ax2.set_ylim(0, ms.max() * 1.25)
-ax2.tick_params(labelsize=12)
+                 xytext=(9, -11), fontsize=12, color=INK)
+# the deviation, on the same axes: it reads a 0.6B's bytes and costs more time
+ax2.scatter([gb4], [ms4], s=115, marker="D", color=MAROON, zorder=5,
+            edgecolor=WHITE, linewidth=1.2)
+ax2.annotate("the 4-bit provider", (gb4, ms4), textcoords="offset points",
+             xytext=(-2, 12), ha="center", va="bottom", fontsize=11,
+             color=MAROON, weight="bold")
+ax2.text(0.035, 0.975, f"observed  =  {const:.2f} ms  +  1 GB per {slope:.2f} ms\n"
+         f"the weight read runs at {1/slope/BW*100:.0f}% of this card's measured "
+         f"{BW:.2f} TB/s", transform=ax2.transAxes, fontsize=11.5, color=C_TOK,
+         weight="bold", va="top", linespacing=1.4)
+ax2.text(0.985, 0.055, "what the bus alone would give", transform=ax2.transAxes,
+         fontsize=11, color=GREY, ha="right", va="bottom")
+ax2.set_xlabel("weight bytes per decode step (GB)", fontsize=12, color=GREY,
+               labelpad=1)
+ax2.set_ylabel("ms per output token", fontsize=12, color=GREY, labelpad=2)
+ax2.set_xlim(0, XMAX), ax2.set_ylim(0, ms.max() * 1.32)
+ax2.tick_params(labelsize=11.5)
+
+# the same GPU, the same weights, one stack down: the constant moves 5x
+ax3 = axes_at(x + CW * 0.675, y + 0.56, CW * 0.275, F3_H - 1.08, frame=True)
+msE = np.array([_avg(m, CTX0, "mean", mode="eager") for m in MODELS])
+sdE = np.array([_avg(m, CTX0, "sd", mode="eager") for m in MODELS])
+ms4E = _avg(NF4, CTX0, "mean", mode="eager")
+constE, slopeE = _lsq(gb, msE)
+ax3.errorbar(gb, msE, yerr=sdE, fmt="o", ms=9, color=C_CLK, lw=1.6, capsize=4,
+             zorder=4)
+ax3.scatter([gb4], [ms4E], s=110, marker="D", color=MAROON, zorder=5,
+            edgecolor=WHITE, linewidth=1.2)
+ax3.axhline(constE, color=C_CLK, lw=1.6, ls=(0, (5, 3)), zorder=2)
+ax3.plot(xs, const + slope * xs, color=C_TOK, lw=1.8, ls=(0, (5, 3)), zorder=2)
+ax3.text(0.96, constE + 0.9, f"eager: {constE:.0f} ms of stack",
+         transform=ax3.get_yaxis_transform(), size=11.5, color=C_CLK,
+         weight="bold", ha="right", va="bottom")
+ax3.annotate(f"CUDA graphs: {const:.2f} ms",
+             (XMAX * 0.55, const + slope * XMAX * 0.55),
+             textcoords="offset points", xytext=(0, -13), ha="center", va="top",
+             fontsize=11, color=C_TOK)
+ax3.annotate("4-bit", (gb4, ms4E), textcoords="offset points", xytext=(9, 1),
+             va="center", fontsize=11, color=MAROON, weight="bold")
+ax3.set_xlabel("the same weight bytes (GB)", fontsize=12, color=GREY, labelpad=1)
+ax3.set_ylabel("ms per output token", fontsize=11.5, color=GREY, labelpad=2)
+ax3.set_xlim(0, XMAX), ax3.set_ylim(0, max(msE.max(), ms4E) * 1.14)
+ax3.tick_params(labelsize=11.5)
 
 y += F3_H
-y = caption(x, y + 0.08, CW, "Figure 5",
-            f"(B) clock_channel.json, H100 PCIe, CUDA graphs, B=1, one point "
-            f"per model. Time is linear in bytes — but at "
-            f"{1/slope/1.85*100:.0f}% of copy bandwidth, on a {const:.2f} ms "
-            f"software constant that is on no spec sheet. Under eager PyTorch "
-            f"the same GPU gives ~30 ms/token, flat in bytes: no channel at "
-            f"all.")
+GAP_G = _avg(MODELS[1], 1024, "mean") - _avg(MODELS[0], 1024, "mean")
+SD_G = _avg(MODELS[1], 1024, "sd")
+GAP_E = (_avg(MODELS[1], 1024, "mean", mode="eager")
+         - _avg(MODELS[0], 1024, "mean", mode="eager"))
+SD_E = _avg(MODELS[1], 1024, "sd", mode="eager")
+y = caption(x, y + 0.07, CW, "Figure 5",
+            f"clock_channel.json, H100 PCIe, B=1, {CTX0}-token context, "
+            f"{CC['reps']}×{CC['steps']} timed steps per cell. *(A)* The 4-bit provider reads "
+            f"{BYTE_R:.2f}× fewer bytes and still costs "
+            f"{ms4 / (const + slope * gb4):.2f}× what this line prices them at: "
+            f"dequantization spends the saving. *(B)* is the same GPU and the same weights "
+            f"one stack down: the additive constant moves {const:.2f} → "
+            f"{constE:.0f} ms, and the 1.7B→0.6B signal falls from {GAP_G:.2f} "
+            f"ms on {SD_G:.2f} ms of device noise to {GAP_E:.2f} on {SD_E:.2f}. "
+            f"The slope is physics; the intercept is a stack, and it is on no "
+            f"spec sheet.")
 
 # ---- Table: what measurement did to the naive clock
-y = section(x, y + 0.22, CW, "EVERY OBVIOUS CLOCK TEST FAILS", color=C_CLK)
+y = section(x, y + 0.20, CW, "EVERY OBVIOUS CLOCK TEST FAILS", color=C_CLK)
 y += 0.02
+REALISED = (ms[1] - ms4) / (ms[1] - ms[1] / BYTE_R)     # of the predicted saving
+B_SLOW = min(B for B in (2, 4, 8, 16, 32, 64)
+             if _cells(NF4, 1024, B=B) and _avg(NF4, 1024, "mean", B=B)
+             > _avg(MODELS[1], 1024, "mean", B=B))
+GAP_B1 = _avg(MODELS[1], 1024, "mean", B=1) - _avg(MODELS[0], 1024, "mean", B=1)
+GAP_B64 = _avg(MODELS[1], 1024, "mean", B=64) - _avg(MODELS[0], 1024, "mean", B=64)
+SD_B64 = _avg(MODELS[1], 1024, "sd", B=64) / _avg(MODELS[1], 1024, "sd", B=1)
+# The int4 cache's own context slope, on minima and from 1024 up: the 256-cell
+# pays a one-off quanto JIT compile that is not a property of the cache.
+KVS = {}
+for mode in ("eager", "kvq4"):
+    ks = sorted((c for c in KVQ["cells"] if c["mode"] == mode and c["ctx"] > CTX0),
+                key=lambda c: c["ctx"])
+    KVS[mode] = _lsq(np.array([c["ctx"] for c in ks], float),
+                     [c["min"] for c in ks])[1]
+ZG = CC["specdec"]["frac_gaps_zero"]
 y = table(x, y, CW,
           ["what the premise seems to promise", "what 126 timing cells say"],
           [["Fewer bytes → proportionally less time",
-            "NF4 delivers 14% of it"],
-           ["4-bit weights are 3.9× faster, so 6 tokens convict",
-            "1.10×, and slower at B≥4"],
+            f"4-bit returns {REALISED*100:.0f}% of it, and is slower at B ≥ "
+            f"{B_SLOW}"],
+           ["Batching amortizes the weight read away",
+            f"the gap is flat ({GAP_B1:.2f} → {GAP_B64:.2f} ms); the noise "
+            f"grows {SD_B64:.0f}×"],
            ["Half the KV bytes → half the slope",
-            "int4 KV is 1.6× steeper"],
+            f"a real int4 cache is {KVS['kvq4']/KVS['eager']:.1f}× steeper"],
            ["Jitter is positive, so take the minimum gap",
-            "73% of honest gaps are 0 ms"],
-           ["One clock: the inter-token gap",
-            "prefill is 25,000× cheaper"]],
-          [6.1, 4.47], aligns=["left", "right"], size=T_TAB - 1, head_bg=C_CLK)
+            f"{ZG*100:.0f}% of an honest server's gaps are 0 ms"]],
+          [5.55, 5.02], aligns=["left", "right"], size=T_TAB - 1, head_bg=C_CLK)
 y = caption(x, y + 0.08, CW, "Table 3",
-            "clock_channel.json (126 configurations) and clock_algos.json. The "
-            "premise survives every row; the naive *test* survives none — and "
-            "every failure attacks an absolute threshold.")
+            "clock_channel.json, _arch.json and _kvq.json (126 configurations, "
+            "a real NF4 provider, a real quanto int4 cache, real speculative "
+            "decoding). The premise survives every row; the naive *absolute* "
+            "test survives none.")
 
-# ---- Figure 6: the differential test, drawn
-y = section(x, y + 0.22, CW, "THE TEST THAT SURVIVES: SUBTRACT", color=C_CLK)
-F6_H = 1.76
+# ---- Figure 6: the differential test, measured, and priced by the same law
+y = section(x, y + 0.18, CW, "THE TEST THAT SURVIVES: SUBTRACT", color=C_CLK)
+F6_H = 2.98
 y += 0.06
 panel(x, y, CW, F6_H)
-ax6 = axes_at(x, y, CW, F6_H)
-ax6.set_xlim(0, 100), ax6.set_ylim(0, 100)
-for cy, lab, wdt in [(74, "probe A  —  a short context", 17),
-                     (34, "probe B  —  the context it billed for", 39)]:
-    ax6.text(3, cy + 15, lab, fontsize=12, color=INK, weight="bold", va="center")
-    ax6.add_patch(Rectangle((3, cy), wdt, 11, facecolor=C_CLK, alpha=0.9,
-                            edgecolor="none", zorder=2))
-    ax6.text(3 + wdt + 2, cy + 5.5, "$t_A$" if wdt < 20 else "$t_B$",
-             fontsize=13, color=C_CLK, weight="bold", va="center")
-ax6.text(3, 12, "each arrival time is  software + network + bytes",
-         fontsize=11.5, color=GREY, va="center")
-ax6.add_patch(Rectangle((49, 4), 48, 92, facecolor=CREAM, edgecolor=MAROON,
-                        lw=1.5, zorder=1))
-ax6.text(73, 80, "$D \\;=\\; t_B - t_A$", fontsize=17, color=MAROON,
-         weight="bold", ha="center", va="center", zorder=3)
-ax6.text(51.5, 55, "the software constant, the network offset and\nany padding "
-         "all cancel exactly", fontsize=11.5, color=INK, va="center",
-         linespacing=1.5, zorder=3)
-ax6.text(51.5, 34, "a busy neighbour can only push $D$ up", fontsize=11.5,
-         color=INK, va="center", zorder=3)
-ax6.text(51.5, 14, "→  so the honest floor is one-sided, and the\n"
-         "     test calibrates itself against the provider", fontsize=11.5,
-         color=MAROON, weight="bold", va="center", linespacing=1.5, zorder=3)
+fig.text(fx(x + 0.30), fy(y + 0.17), f"A.  A provider that bills for "
+         f"{CLAIM:,} tokens of context and holds $W$", size=14, weight="bold",
+         color=INK, va="top")
+fig.text(fx(x + CW * 0.655), fy(y + 0.17), "B.  What that verdict costs",
+         size=14, weight="bold", color=INK, va="top")
+
+axa = axes_at(x + 1.00, y + 0.56, CW * 0.505, F6_H - 1.10, frame=True)
+CELLS6 = [LO] + [WCELL(f"window_{Wk}") for Wk in WS] + [HI]
+ectx = np.array([c["effective_ctx"] for c in CELLS6], float)
+eitl = np.array([c["mean"] for c in CELLS6])
+XR, YR = CLAIM * 1.34, HI["mean"] * 1.20
+axa.plot(ectx, eitl, "-", color=C_TOK, lw=2.0, zorder=3)
+axa.plot([LO["effective_ctx"], HI["effective_ctx"]],
+         [LO["mean"], HI["mean"]], "o", ms=11, color=C_TOK, zorder=6,
+         mec=WHITE, mew=1.2)
+axa.plot([CLAIM, CLAIM], [0, HI["mean"]], color=RULE_C, lw=1.2, ls=(0, (4, 3)),
+         zorder=1)
+for ky, mk, mc, lab in (
+        (0.955, "o", C_TOK, f"the probe pair: A reads {LO['effective_ctx']}, "
+                            f"B bills {CLAIM:,}"),
+        (0.868, "D", clk(WS[len(WS) // 2]),
+         f"one server, {len(WS)} windows: reads $W$, bills {CLAIM:,}")):
+    axa.plot([0.035], [ky], mk, ms=9 if mk == "o" else 8, color=mc,
+             transform=axa.transAxes, clip_on=False, zorder=6)
+    axa.text(0.072, ky, lab, transform=axa.transAxes, fontsize=11, color=INK,
+             va="center")
+# the D column: one measured probe-pair statistic per provider, decluttered so
+# the two heavily truncated rows do not sit on top of each other
+axa.text(CLAIM * 1.05, YR * 0.965, "$D = t_B - t_A$", fontsize=11.5, color=GREY,
+         va="top")
+rows = [(HI["mean"], C_TOK, f"{D_HON:.1f} ms")] + [
+    (WCELL(f"window_{Wk}")["mean"], clk(Wk),
+     f"{WCELL(f'window_{Wk}')['mean'] - LO['mean']:.1f}") for Wk in WS]
+place, last = {}, None
+for val, col, lab in sorted(rows, key=lambda r: r[0]):
+    yy = val if last is None else max(val, last + YR * 0.085)
+    place[lab] = (yy, col)
+    last = yy
+for val, col, lab in rows:
+    yy, _ = place[lab]
+    axa.text(CLAIM * 1.05, yy, lab, fontsize=11.5, color=col, weight="bold",
+             va="center")
+axa.annotate("", xy=(CLAIM * 1.015, HI["mean"]),
+             xytext=(CLAIM * 1.015, LO["mean"]),
+             arrowprops=dict(arrowstyle="<|-|>", color=C_TOK, lw=1.4,
+                             mutation_scale=10), zorder=6)
+for Wk in WS:
+    c, cc = WCELL(f"window_{Wk}"), clk(Wk)
+    axa.annotate("", xy=(CLAIM, c["mean"]), xytext=(c["effective_ctx"], c["mean"]),
+                 arrowprops=dict(arrowstyle="-|>", color=cc, lw=1.7,
+                                 linestyle=(0, (3, 2)), mutation_scale=12,
+                                 shrinkA=4, shrinkB=0), zorder=4)
+    axa.plot([c["effective_ctx"]], [c["mean"]], "D", ms=8, color=cc, zorder=5,
+             mec=WHITE, mew=1.0)
+axa.set_xlim(0, XR), axa.set_ylim(0, YR)
+axa.set_xticks([0, 8192, 16384, 24576, CLAIM])
+axa.set_xticklabels(["0", "8k", "16k", "24k", "32k"])
+axa.set_xlabel("context the provider actually attended (tokens)", fontsize=12,
+               color=GREY, labelpad=1)
+axa.set_ylabel("ms per output token", fontsize=12, color=GREY, labelpad=2)
+axa.tick_params(labelsize=11.5)
+
+axb = axes_at(x + CW * 0.665, y + 0.56, CW * 0.285, F6_H - 1.10, frame=True)
+BS = sorted({t.batch_size for Wk in WS for t in DET[Wk]["res"]})
+for Wk in WS:
+    r = DET[Wk]["res"]
+    axb.plot([t.batch_size for t in r], [t.auc for t in r], "-o", ms=5.0,
+             color=clk(Wk), lw=1.9, zorder=4)
+# the target rule is drawn short so it clears the key rather than striking it
+axb.plot([BS[2], BS[-1] * 1.3], [0.90, 0.90], color=INK, lw=1.2, ls=(0, (3, 2)),
+         zorder=3)
+axb.text(BS[-1] * 0.88, 0.886, "pAUC 0.90", fontsize=10.5, color=INK,
+         ha="right", va="top")
+axb.set_xscale("log", base=2)
+axb.set_xlim(BS[0] * 0.8, BS[-1] * 1.4), axb.set_ylim(0.45, 1.14)
+axb.set_yticks([0.5, 0.75, 1.0])
+axb.set_xlabel("probe pairs per verdict", fontsize=12, color=GREY, labelpad=1)
+axb.set_ylabel("pAUC @ FPR $\\leq$ 0.5%", fontsize=12, color=GREY, labelpad=2)
+axb.tick_params(labelsize=11.5)
+ly = 0.965
+for Wk in WS:
+    axb.add_patch(Rectangle((0.035, ly - 0.018), 0.058, 0.036, facecolor=clk(Wk),
+                            edgecolor="none", transform=axb.transAxes, zorder=6))
+    axb.text(0.120, ly, f"holds {Wk:,}  ·  {TOKS[Wk]} tokens",
+             transform=axb.transAxes, fontsize=10.5, color=INK, va="center")
+    ly -= 0.080
+
 y += F6_H
-y = caption(x, y + 0.08, CW, "Figure 6",
-            "slope_verifier.json, 42 cells, same protocol as the token channel. A "
-            "provider billing for 32,768 tokens of context and holding 512 is "
-            "caught at pAUC 0.996 on *36 tokens* of stream (8,192 → 62; half the "
-            "context → 152) at 50 ms of wire jitter, against 2,013–35,066 for "
-            "the token channel.")
+y = caption(x, y + 0.07, CW, "Figure 6",
+            f"slope_verifier_window.json, {len(LO['itl_ms']):,} timed decode "
+            f"steps per cell, scored through the *same* harness.evaluate as every "
+            f"token verifier. *(A)* is measurement only: the subtraction cancels "
+            f"Figure 5's stack constant, and hiding from it costs the "
+            f"{D_HON - (WCELL(f'window_{WS[0]}')['mean'] - LO['mean']):.0f} ms per "
+            f"token that truncation saved. *(B)* adds the column's one modelled "
+            f"input, σ = {SIGMA_MAIN:.0f} ms of client-side wire jitter — "
+            f"pessimistic, and one-sided: a busy neighbour only pushes $D$ up, "
+            f"toward the honest side, so co-tenancy costs power, never a false "
+            f"accusation. Read at prefill rather than in the gap the same premise is "
+            f"25,000× cheaper again on the substitution row (clock_algos.json).")
 
 # ---- The close: what any of this buys a governance regime
-y = section(x, y + 0.24, CW, "WHAT AN AUDITOR ACTUALLY GETS")
+y = section(x, y + 0.20, CW, "WHAT AN AUDITOR ACTUALLY GETS")
 y = para(x, y,
          "*A price, not a ranking:* every verdict costed in tokens × seconds — "
          "and 14 of 35 cells cost infinity.\n"
          "*One protocol, one grid:* 8 detectors × 6 deviations; under an "
          "enforced pool ceiling, 16 of 24 cells fall.\n"
-         "*A second channel:* the differential clock, 36–152 tokens of stream, "
-         "and no cooperation from the provider.", CW, size=T_TAB, color=INK)
-y = para(x, y + 0.10,
-         "None of this is a treaty regime — but it prices one. A clause that "
-         "names a detector cannot be enforced; a clause that names a pool size, "
-         "a false-alarm rate and a probe pair can be. The gaps are honest ones: "
-         "a no-training clause is a claim about a fleet over months, not a "
-         "stream over seconds; jitter here is device-side on one H100; models "
-         "are 0.13B–8B, where the incentive to cheat is smallest; and no "
-         "provider on this board adapts.", CW, size=T_TAB, color=GREY)
+         f"*A second channel, on the same board:* {TOKS[WS[0]]}–{TOKS[WS[-1]]} "
+         f"tokens of stream, no audit FLOPs, no cooperation.", CW, size=T_TAB,
+         color=INK)
+y = para(x, y + 0.09,
+         "None of this is a treaty regime — but it prices one. A clause naming a "
+         "detector cannot be enforced; one naming a pool size, a false-alarm rate "
+         "and a probe pair can be. The gaps are honest: a fleet over months is "
+         "not a stream over seconds; the wire is modelled, the device measured; "
+         "models are 0.13B–8B; no provider here adapts.", CW, size=T_TAB,
+         color=GREY)
 
 col_end(3, y)
 
