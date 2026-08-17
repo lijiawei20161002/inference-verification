@@ -4,8 +4,9 @@ The board is framed from the governance setting -- a treaty clause, a promise to
 a regulator and an API bill all reduce to one unverifiable sentence, "model M ran
 under spec phi" -- and then measures the two things an outsider actually holds:
 the tokens that came back (column 2) and their arrival times (column 3). Column 1
-draws that surface; the two channel columns lead with the principle and keep only
-the results that price it.
+draws that surface; the two verifier columns -- the token verifier and the clock
+verifier, each carrying its own mark from the boundary figure down through its
+column head -- lead with the principle and keep only the results that price it.
 
 Built on the MATS **top-banner landscape 36x24** template
 (`MATS_poster_top_banner_landscape36x24.pptx`, symposium template folder). The
@@ -53,7 +54,7 @@ matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.lines import Line2D
-from matplotlib.patches import FancyBboxPatch, Rectangle
+from matplotlib.patches import Ellipse, FancyBboxPatch, Rectangle
 
 ROOT = Path(__file__).resolve().parents[1]
 RES = ROOT / "docs" / "results"
@@ -252,14 +253,30 @@ def rule(x, y, w, lw=1.4, color=RULE_C):
                           transform=fig.transFigure, zorder=5))
 
 
-def section(x, y, w, title, color=MAROON):
-    """The template's section head: maroon Libre Baskerville, hairline under."""
+def section(x, y, w, title, color=MAROON, mark=None):
+    """The template's section head: maroon Libre Baskerville, hairline under.
+
+    `mark` is one of the two verifiers' glyphs (below), stamped in the head's
+    right margin. The glyphs are drawn in axes coordinates, so the head gets a
+    square scratch axes to carry one -- square because `_half` reads the axes
+    aspect to keep the dial round, and twice the mark's own size because a patch
+    is clipped to its axes and the strokes would otherwise be shaved off.
+    """
     size = T_SEC
     while text_w(title, size, "bold", family=SERIF) > w and size > 20:
         size -= 1
     fig.text(fx(x), fy(y), title, size=size, color=color, weight="bold",
              family=SERIF, va="top")
-    y += size * 1.06 / 72
+    lh = size * 1.06 / 72
+    if mark is not None:
+        s = 2 * lh
+        a = fig.add_axes([fx(x + w - s), fy(y + lh / 2 + s / 2), fw(s), fh(s)],
+                         zorder=6)
+        a.set_xlim(0, 100), a.set_ylim(0, 100)
+        a.set_axis_off()
+        a.patch.set_visible(False)
+        mark(a, 50, 50, size_in=lh * 0.86, color=color, lw=2.0)
+    y += lh
     rule(x, y, w, 1.6, RULE_C)
     return y + 0.17
 
@@ -385,9 +402,10 @@ fig.text(fx(TX), fy(1.50), "A treaty clause, a promise to a regulator and an API
          "bill are the same claim. An outsider has two ways to test it: the "
          "bytes that came back, and the clock.",
          size=T_SUB, color=CREAM, va="top")
-fig.text(fx(TX), fy(2.22), "Jiawei Li¹      ·      mentored by Gabriel Kulp² "
-         "and Roy Rinberg²", size=T_AUTH, color=WHITE, va="top")
+fig.text(fx(TX), fy(2.22), "Jiawei Li¹      ·      mentored by Gabriel Kulp²    "
+         "  ·      with Roy Rinberg³", size=T_AUTH, color=WHITE, va="top")
 fig.text(fx(TX), fy(2.82), "¹MATS 10.0 Scholar      ²MATS 10.0 Mentor      "
+         "³MATS 10.0 Extension Scholar      "
          "Code + every run artifact: github.com/lijiawei20161002/inference-verification",
          size=T_AFFIL, color=CREAM, va="top")
 
@@ -421,6 +439,44 @@ def arrow(a, x0, y0, x1, y1, c=INK, lw=2.2, mut=16, ls="-"):
                arrowprops=dict(arrowstyle="-|>", color=c, lw=lw,
                                mutation_scale=mut, linestyle=ls,
                                shrinkA=0, shrinkB=0), zorder=4)
+
+
+# ---- the two verifiers' marks
+# Both channel panels are drawn on 0-100 x 0-100 axes of different aspect, so a
+# glyph sized in data units would come out ovoid on one panel and squat on the
+# other. Size them in INCHES instead and convert per axes, so the dial is round
+# and the two marks are the same optical square wherever they are stamped.
+def _half(a, size_in):
+    bb = a.get_position()
+    return 50.0 * size_in / (bb.width * W), 50.0 * size_in / (bb.height * H)
+
+
+def clock_glyph(a, cx, cy, size_in=0.25, color=WHITE, lw=1.7, zo=6):
+    """A dial reading 12:15 — the clock verifier: only when a token arrived."""
+    hx, hy = _half(a, size_in)
+    a.add_patch(Ellipse((cx, cy), 2 * hx, 2 * hy, facecolor="none",
+                        edgecolor=color, lw=lw, zorder=zo))
+    for dx, dy in ((0.0, 0.62), (0.50, 0.0)):
+        a.add_artist(Line2D([cx, cx + dx * hx], [cy, cy + dy * hy], color=color,
+                            lw=lw, solid_capstyle="round", zorder=zo + 1))
+
+
+def token_glyph(a, cx, cy, size_in=0.25, color=WHITE, lw=1.7, zo=6):
+    """Three cells of a returned stream, one of them scored — the token
+    verifier: only what a token was.
+
+    Three outlines at head size are the tightest thing on the board, so the
+    cells run WIDER than the dial's diameter (2.42 half-widths against 2) and
+    carry a gap of nearly half a cell: below that the row closes up into one
+    dark block and the scored cell stops reading as the odd one out.
+    """
+    hx, hy = _half(a, size_in)
+    wc, gp, hc = hx * 0.62, hx * 0.28, hy * 1.34
+    x0 = cx - (3 * wc + 2 * gp) / 2
+    for i in range(3):
+        a.add_patch(Rectangle((x0 + i * (wc + gp), cy - hc / 2), wc, hc,
+                              facecolor=color if i == 1 else "none",
+                              edgecolor=color, lw=lw, zorder=zo))
 
 
 y = section(x, y, CW, "THE AUDIT PROBLEM")
@@ -475,13 +531,15 @@ for cy, lab in [(47.0, "which weights were loaded"),
 
 ax.text(78.5, 56.5, "OUTSIDE  ·  the auditor's entire budget", ha="center",
         va="top", fontsize=12.5, color=GREY, weight="bold")
-for cy, col, head, tag in [(47.0, C_TOK, "CHANNEL 1 — WHAT IT SAID", "bytes out"),
-                           (25.5, C_CLK, "CHANNEL 2 — WHEN IT SAID IT",
-                            "the clock")]:
+for cy, col, head, tag, mark in [
+        (47.0, C_TOK, "TOKEN VERIFIER — WHAT IT SAID", "bytes out", token_glyph),
+        (25.5, C_CLK, "CLOCK VERIFIER — WHEN IT SAID IT", "the clock",
+         clock_glyph)]:
     arrow(ax, 49.5, cy, 57.2, cy, c=col, lw=2.6, mut=17)
     ax.text(53.4, cy + 1.4, tag, ha="center", va="bottom", fontsize=11,
             color=col, weight="bold")
     box(ax, 79.0, cy, 42, 6.6, head, fc=col, ec=col, lc=WHITE, fs=13, rad=0.8)
+    mark(ax, 60.8, cy)
 
 # what each channel literally is: nine tokens, and the nine gaps between them
 for i in range(9):
@@ -551,7 +609,7 @@ y = caption(x, y + 0.08, CW, "Table 1",
             "at all — and the two channels split exactly there.")
 
 # ---- Figure 2: the two channels are blind in opposite directions
-y = section(x, y + 0.28, CW, "THE TWO CHANNELS ARE BLIND IN OPPOSITE DIRECTIONS")
+y = section(x, y + 0.28, CW, "THE TWO VERIFIERS ARE BLIND IN OPPOSITE DIRECTIONS")
 F2A_H = 2.90
 y += 0.06
 panel(x, y, CW, F2A_H)
@@ -559,8 +617,8 @@ ax = axes_at(x, y, CW, F2A_H)
 ax.set_xlim(0, 100), ax.set_ylim(0, 100)
 ax.add_artist(Line2D([50, 50], [4, 96], color=RULE_C, lw=1.4, ls=(0, (4, 4))))
 
-for cx, col, head, what, sees, blind in [
-    (25.0, C_TOK, "CHANNEL 1 — WHAT IT SAID",
+for cx, col, head, mark, what, sees, blind in [
+    (25.0, C_TOK, "TOKEN VERIFIER — WHAT IT SAID", token_glyph,
      "Recompute $M$ on the claimed tokens and read the\n"
      "per-token margin — or skip $M$ and score against a\n"
      "cheap trusted proxy $q$.",
@@ -568,7 +626,7 @@ for cx, col, head, what, sees, blind in [
      "wholesale substitution at AUC 0.998 with no $M$",
      "an fp8 KV cache — it moves the served\n"
      "distribution less than $M$'s own rerun noise"),
-    (75.0, C_CLK, "CHANNEL 2 — WHEN IT SAID IT",
+    (75.0, C_CLK, "CLOCK VERIFIER — WHEN IT SAID IT", clock_glyph,
      "Read the arrival times of a stream already bought.\n"
      "Zero audit FLOPs, zero cooperation from the\n"
      "provider, zero added latency.",
@@ -578,6 +636,7 @@ for cx, col, head, what, sees, blind in [
      "wrong temperature, a top-$k$ bug"),
 ]:
     box(ax, cx, 91, 46, 11, head, fc=col, ec=col, lc=WHITE, fs=13.5, rad=0.8)
+    mark(ax, cx - 20.4, 91)
     left = cx - 23.0
     ax.text(left, 79, what, ha="left", va="top", fontsize=11.5, color=INK,
             linespacing=1.5)
@@ -605,7 +664,8 @@ col_end(1, y)
 # ==========================================================================
 x, y = CX[1], Y0
 
-y = section(x, y, CW, "CHANNEL 1  ·  READ WHAT CAME BACK", color=C_TOK)
+y = section(x, y, CW, "TOKEN VERIFIER  ·  READ WHAT CAME BACK", color=C_TOK,
+            mark=token_glyph)
 y = lead_line(x, y, "One token proves almost nothing. A verdict is bought in "
               "bulk — and the price is fixed before you start.", CW)
 y = para(x, y + 0.08,
@@ -871,7 +931,8 @@ def clk(Wk):
     return tuple(1 - (1 - c) * SHADE[Wk] for c in (r, g, b))
 
 
-y = section(x, y, CW, "CHANNEL 2  ·  READ WHEN IT CAME BACK", color=C_CLK)
+y = section(x, y, CW, "CLOCK VERIFIER  ·  READ WHEN IT CAME BACK", color=C_CLK,
+            mark=clock_glyph)
 y = lead_line(x, y, "A token cannot arrive before its bytes have moved. The "
               "saving and the evidence are the same quantity.", CW)
 y = para(x, y + 0.08,
@@ -1126,7 +1187,7 @@ y = para(x, y,
          "and 14 of 35 cells cost infinity.\n"
          "*One protocol, one grid:* 8 detectors × 6 deviations; under an "
          "enforced pool ceiling, 16 of 24 cells fall.\n"
-         f"*A second channel, on the same board:* {TOKS[WS[0]]}–{TOKS[WS[-1]]} "
+         f"*A second verifier, on the same board:* {TOKS[WS[0]]}–{TOKS[WS[-1]]} "
          f"tokens of stream, no audit FLOPs, no cooperation.", CW, size=T_TAB,
          color=INK)
 y = para(x, y + 0.09,
