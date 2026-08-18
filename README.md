@@ -1,13 +1,28 @@
 # Inference Verification Gym (`ivgym`)
 
-**Can a client check that an inference provider ran the model it charged for?**
+**How do you audit a computation you cannot see?**
 
-You rent inference. The provider promises a specific model under specific
-sampling settings and bills you accordingly. Nothing stops it from quietly
-serving a 4-bit copy, a smaller model, or a different sampler and pocketing the
-difference. `ivgym` is a testbed that pits provider-side deviations (*attacks*)
-against verifier-side detectors, on real models on a GPU, under one fixed
-evaluation protocol — so "who catches whom" is a grid rather than an anecdote.
+A treaty clause that caps training compute, a lab's commitment to its
+regulator that a deployed model is frozen, and an inference bill reduce to the
+same unverifiable sentence: *model `M` ran under spec `φ` — and nothing else
+did* — on hardware the auditor cannot enter. Nothing in the stack between a GPU
+and the outside world emits a statement about what the silicon actually did,
+so a verifier is left with whatever crosses the boundary. Nothing stops the
+party controlling that hardware from quietly serving a 4-bit copy, a smaller
+model, or a different sampler.
+
+`ivgym` studies the tractable instance of that problem — an inference
+provider claiming a model and a sampling spec — because it is the one where
+every claim can be tested on real hardware, and the same shape recurs one
+level up: a treaty party training above a cap, a lab quietly unfreezing a
+model, and a provider serving a cheaper copy are the same move, made by
+whoever controls hardware someone else cannot inspect. Two observables cross
+that boundary: **the tokens** that came back, and **when** they arrived.
+`ivgym` pits provider-side deviations (*attacks*) against verifier-side
+detectors on both channels — a token verifier that recomputes the reference
+model, and a clock verifier that reads nothing but inter-token arrival times —
+on real models on a GPU, under one fixed evaluation protocol, so "who catches
+whom" is a grid rather than an anecdote.
 
 The full write-up is **[`paper/paper.pdf`](paper/paper.pdf)**. Every table and
 figure in it regenerates from the committed run artifacts
@@ -17,7 +32,7 @@ figure in it regenerates from the committed run artifacts
 
 ## The short version
 
-**Four findings organize everything else.**
+**Five findings organize everything else.**
 
 1. **Recomputation works, but barely, and at a price.** Re-running the reference
    model `M` and comparing per-token sampling margins catches every deviation we
@@ -31,13 +46,23 @@ figure in it regenerates from the committed run artifacts
    than `M`'s own run-to-run nondeterminism. *Deviations that change what the
    model can do are cheap to catch; deviations that change only how precisely it
    does it are not.*
-3. **The dominant error here is statistical, not cryptographic.** Resampling
+3. **The clock is a second verifier, and it's free.** A token cannot arrive
+   before its bytes have moved, so a provider reading fewer bytes than it billed
+   for — a truncated context, a smaller model — leaves a timing trace that costs
+   the auditor zero FLOPs and needs no cooperation. Every *absolute* version of
+   that test fails on measurement (the per-token floor sits on a 4.15 ms serving-
+   stack constant no spec sheet reports), but a *differential* one — subtracting a
+   short-context probe's inter-token time from a long one's — cancels the stack,
+   cannot be pushed toward a false accusation by other tenants' load, and catches
+   a provider truncating its billed context at **36–152 tokens of stream**, scored
+   through the same protocol as every token detector.
+4. **The dominant error here is statistical, not cryptographic.** Resampling
    evaluation batches from too small a token pool inflates detection AUC without
    bound. The same measurement reads **0.977 and 0.530** depending only on pool
    size. This is now enforced in code (`EvalConfig.max_pool_ratio`) rather than
    left to the reader — and it keeps recurring: the sequential-testing experiment
    below shipped a headline built on streams of up to 886% of their own pool.
-4. **What a client buys is a verdict, and a verdict has a price.** Detectors are
+5. **What a client buys is a verdict, and a verdict has a price.** Detectors are
    ranked by accuracy and costed by a rate; neither is what anyone pays.
    `(δ*/d′)² tokens × price per token` is, and measured that way **14 of 35
    detector × deviation cells have no price at all**, the "cheap" proxy tier turns
@@ -256,6 +281,78 @@ reads as a perfectly ordinary sample to any reader of the text, while a re-run
 flips which Gumbel candidate won. That gap is a quantitative proof the deviation
 is invisible in the outputs. The converse matters too: a *high* black-box AUC is
 not a verifier win, it is a statement that the attack was crude.
+
+---
+
+## The second observable: the clock
+
+Everything above reads the tokens that came back. A batch-1 decode step is
+memory-bound — the provider must move every weight byte it claims and read
+every context position it billed for before a token can exist, so
+`t_token ≥ bytes / bandwidth`. Serving a 0.6B model as a 1.7B reads 2.83× fewer
+bytes, 4-bit weights 2.55× fewer, half a claimed context 1.35× fewer, while a
+wrong seed, a wrong temperature, or a top-k bug reads *identical* bytes. The
+channel's blind spot is the exact complement of the token channel's: the
+sampler deviations the clock cannot see (a wrong seed, caught by `token_difr`
+at 226 tokens) are the ones the token channel catches cheapest, and the byte
+deviations the token channel reads worst (`kv_fp8` at 35,066 tokens) are the
+ones with a timing trace. The clock also costs the auditor **zero FLOPs, zero
+added latency, and no cooperation from the provider** — the verdict is read off
+a stream already bought.
+
+**Measured on 126 real serving configurations on one H100 PCIe** (two stack
+modes, five architectures, real `bitsandbytes` NF4 weights, a real quanto int4
+KV cache, real speculative decoding — `exp_clock_channel_gpu`, full account in
+[docs/CLOCK_MEASURED.md](docs/CLOCK_MEASURED.md)), every *absolute* version of
+this test fails:
+
+- **The floor is a stack property, not a spec sheet.** `ms/token = 4.15 + bytes
+  / 1.22 TB/s`. The slope is physics (66% of the card's measured copy
+  bandwidth); the 4.15 ms intercept is pure serving stack — the same GPU one
+  stack down (eager instead of CUDA graphs) costs ~30 ms/token, *flat in
+  bytes*. A client that doesn't know the stack can't turn a millisecond
+  measurement into an accusation.
+- **Fewer bytes is not proportionally less time.** Real NF4 weights save 2.55×
+  the bytes and deliver **14%** of the predicted time saving — dequantization
+  spends the rest — and are *slower* than bf16 at every batch size ≥ 4.
+- **A byte-saving KV cache is not a latency deviation.** A real int4 KV cache,
+  identical positions, 4× fewer cache bytes, is *slower*: single-query
+  attention is per-position, not per-byte, so the context slope steepens
+  instead of falling.
+- **Honest servers already live below the "floor."** Under real speculative
+  decoding, **73% of visible inter-token gaps are 0 ms** — tokens arrive in
+  clumps, so any minimum-gap statistic accuses almost every real provider.
+
+**What survives: subtract.** All four obstacles attack an *absolute* latency
+test, and none of them attack a *difference*. The surviving verifier sends two
+probes matched in everything but prompt length and reads
+`D = ITL(ctx_hi) − ITL(ctx_lo)` — the stack constant and any fixed network
+offset cancel exactly. Co-tenancy is a one-sided nuisance (load only pushes `D`
+up, toward the honest side), and an endpoint's own honest slope, re-measured an
+hour later in a fresh process, drifts by **0.01%** — three orders of magnitude
+tighter than the cross-architecture law — so the floor is calibrated on the
+auditor's own honest traffic rather than a spec sheet. Priced through the
+identical `harness.evaluate` every token detector is scored by
+(`exp_slope_verifier_gpu`, [docs/CLOCK_MEASURED.md §6d](docs/CLOCK_MEASURED.md)):
+
+| context held | d′ per probe pair | pAUC @ 32 pairs | tokens of stream for pAUC 0.90 |
+|---:|---:|---|---:|
+| 512 | 0.89 | 0.996 | 36 |
+| 2,048 | 0.82 | 0.987 | 42 |
+| 8,192 | 0.68 | 0.940 | 62 |
+| 16,384 (half) | 0.43 | 0.714 | 152 |
+
+Against the token channel's 2,013 tokens for `quant_4bit` and 35,066 for
+`kv_fp8` — and read at prefill instead of in the decode gap, the same premise
+is **~25,000× cheaper again** on the substitution row (`exp_clock_algos_gpu`,
+[docs/CLOCK_ALGORITHMS.md](docs/CLOCK_ALGORITHMS.md)), because time-to-first-
+token is compute-bound rather than sitting on the same launch-latency floor.
+Evasion is possible but not free: to hide, a truncating provider must pad every
+long request by exactly what truncation saved — up to 87% of the honest
+per-token time — keeping the memory and giving back all of the speed.
+
+![The clock channel, measured](docs/figures/fig_clock_measured.png)
+![The surviving verifier: the context-slope test](docs/figures/fig_slope_verifier.png)
 
 ---
 
@@ -550,22 +647,30 @@ setting should take the scheduler and skip the head.
 2. **Keep recomputation for what only recomputation can see.** Quantization, fp8
    caches and sampler deviations are recompute-dominant. Spot-check with it rather
    than running it continuously.
-3. **Use a portfolio of detectors.** `token_toploc` deserves particular attention:
+3. **Read the clock before spending FLOPs — differentially, never absolutely.**
+   The arrival times of a stream already bought catch every deviation that
+   attends fewer positions than billed (context truncation, window eviction,
+   stale prefix reuse) at 36–152 tokens per verdict, with zero audit compute and
+   no cooperation. Calibrate the slope on your own honest traffic to that
+   endpoint — it holds to 0.01% — and never test against a roofline or a minimum
+   gap: the stack constant and honest token clumping make every absolute latency
+   test either uncomputable or an accusation machine.
+4. **Use a portfolio of detectors.** `token_toploc` deserves particular attention:
    it needs no seed synchronization.
-4. **Budget in prefill tokens, and schedule prefixes.** Depth is cheap, breadth is
+5. **Budget in prefill tokens, and schedule prefixes.** Depth is cheap, breadth is
    expensive.
-5. **Spend the tuning effort on pool size, not the estimator.** Every attempt to be
+6. **Spend the tuning effort on pool size, not the estimator.** Every attempt to be
    cleverer than a plain mean failed. Measure `d′` on a few thousand tokens first;
    it tells you the pool the verdict will require.
-6. **Report the batch/pool ratio next to every AUC.** It is one number, and without
+7. **Report the batch/pool ratio next to every AUC.** It is one number, and without
    it a detection AUC is not interpretable.
-7. **Price the verdict, not the detector.** A detector 12× cheaper per token that
+8. **Price the verdict, not the detector.** A detector 12× cheaper per token that
    needs 100× more tokens is 8× more expensive per verdict, and one with `d′ ≤ 0`
    is not slow, it is priceless in the useless direction. 14 of 35 cells here have
    no price.
-8. **Run the honest-vs-honest control, and run it per detector.** It is what
+9. **Run the honest-vs-honest control, and run it per detector.** It is what
    disqualified `bug_k32 / surface_tokens`, and no per-cell `d′` table would have.
-9. **Calibrate in the shape you audit in.** The single-card floor is small
+10. **Calibrate in the shape you audit in.** The single-card floor is small
    (largest positive benign `d′` = +0.0019), but token-by-token replay still moves
    the null 45% as far as the attack does.
 
@@ -578,11 +683,11 @@ ivgym/
   core.py            SamplingSpec, Sequence/TokenStep, VContext
   sampling.py        seed-synced Gumbel-Max + top-k/top-p
   attacks.py         Attack base + registry (honest, quant, kv_fp8, temp, seed, bug, adv-temp)
-  verifiers.py       ONE abstraction for every detector: (value, evidence, aggregation)
+  verifiers.py       ONE abstraction for every TOKEN detector: (value, evidence, aggregation)
                      under a recompute budget. Tier-1 recomputes M; Tier-0 never does.
   harness.py         generate -> verify -> calibrate -> evaluate, and EvalConfig: the one
-                     standardized protocol every experiment scores under, INCLUDING the
-                     enforced batch/pool ceiling
+                     standardized protocol every experiment scores under — token AND
+                     clock alike — INCLUDING the enforced batch/pool ceiling
                      + prefill_cost / select_prefix_scheduled: the PHYSICAL audit cost
   metrics.py         ROC AUC, TPR@FPR, standardized partial AUC. Pure numpy.
   signal.py          the theory side: d' -> batch separation -> predicted pAUC, so an
@@ -592,18 +697,34 @@ ivgym/
   infogain.py        NEGATIVE RESULT: the derived matched filter, with oracle arms
   model_taxonomy.py  model-relationship axes + a distance() derived from them
   model_registry.py  one ModelIdentity per HF id
+  backends/base.py   the Backend protocol (reference_logits / reference_activation /
+                     generate), so attacks, defenses and the harness don't change when
+                     the backend does
   backends/hf_gpu.py a real model on a GPU + lazy_reference: RAISE on an unpaid
                      reference row, so a selective budget's cost is MEASURED not assumed
+  backends/vllm_adapter.py the same contract behind vLLM — a documented skeleton, not
+                     yet runnable; every committed result was measured on hf_gpu
 
 experiments/         one file per claim; exp_*_gpu.py need CUDA, plot_*.py do not
   specdec_common.py  the two forward-pass SHAPES (sequential vs chunked/batched) as
                      one symmetric API, shared by the four exp_specdec_* experiments.
                      Torch, so it lives here rather than in the numpy-only core
+  exp_clock_channel_gpu.py / exp_clock_algos_gpu.py / exp_slope_verifier_gpu.py
+                     the CLOCK channel: real batch-1..64 decode and prefill, timed on a
+                     GPU (itl_samples()) — independent of ivgym/'s Backend protocol,
+                     because this times bytes moved rather than tokens claimed.
+                     plot_slope_verifier.py wraps the timing in a `ClockSlope` shim and
+                     scores it through ivgym.harness.evaluate, so the clock lands on the
+                     same pAUC scoreboard as every token verifier
   data/              inputs the specdec experiments were measured on: the 32-prompt
                      bank and the long natural document for the context sweep
 tests/               test_smoke / test_proxy_spec / test_triage_and_cost / test_infogain
-                     + test_claims.py: every claim still has the artifact it came from
-paper/               paper.tex + make_tables.py + make_figs.py (regenerate from docs/results/)
+                     + test_claims.py: every TOKEN claim still has the artifact it came
+                     from (the clock claims above are not yet wired into this check)
+paper/               paper.tex + make_tables.py + make_figs.py (regenerate from
+                     docs/results/) + make_mats_poster.py (regenerates mats_poster.pdf)
+docs/                CLOCK_MEASURED.md / CLOCK_ALGORITHMS.md (the clock channel's full
+                     write-up) alongside GAME.md, TRIAGE_AND_AUDIT_COST.md and others
 docs/results/        every committed run artifact; docs/figures/ every committed figure
 ```
 
@@ -631,6 +752,15 @@ docs/results/        every committed run artifact; docs/figures/ every committed
 | stopping early pays 1.3×, in the 3 of 22 cells a pool this size can resolve | `exp_sequential_verdict` | `sequential_verdict.json` |
 
 `tests/test_claims.py` asserts this table: delete an artifact and a test fails.
+
+The clock channel is scored through the same protocol but is **not yet wired
+into that check**:
+
+| claim | experiment | artifact |
+|---|---|---|
+| the floor is a stack property; fewer bytes ≠ proportionally less time | `exp_clock_channel_gpu` | `clock_channel.json`, `clock_channel_arch.json`, `clock_channel_kvq.json` |
+| the context-slope verifier: predictable floor? real detection? stable null? | `exp_slope_verifier_gpu` | `slope_verifier.json`, `slope_verifier_window.json` |
+| the prefill clock, the low-quantile estimator, the probe schedule | `exp_clock_algos_gpu` | `clock_algos.json`, `clock_algos_ttft.json` |
 
 ---
 
@@ -696,19 +826,40 @@ quantize + temperature-retune cheat against the seed-free verifier
   enough to flip 0.88% of tokens (above). That is a lower bound on the
   cross-machine case, and it is not yet expressed as a `d′` the detection numbers
   can be compared against.
+- **The clock channel is measured on research stacks, and the wire is swept rather
+  than measured.** The clock grid runs HF eager and HF + CUDA graphs on one H100
+  PCIe; a production stack (vLLM, TensorRT-LLM) would lower the additive stack
+  constant and might move the KV term back toward bandwidth-bound, restoring
+  `kv_fp8` detectability. Auditor-side wire jitter is swept (a pessimistic 50 ms),
+  not measured against a public endpoint, and no provider here pads or shapes
+  traffic against the slope test.
 
 See **[`NEXT_EXPERIMENTS.md`](planning/NEXT_EXPERIMENTS.md)** for what to run about them.
 
 ## Further reading
 
 - **[`paper/paper.pdf`](paper/paper.pdf)** — the full write-up.
+  **[`paper/mats_poster.pdf`](paper/mats_poster.pdf)** is the one-page version: token
+  verifier vs. clock verifier, side by side.
 - **[docs/GAME.md](docs/GAME.md)** — the game formalized: players, win conditions,
   the exact per-token → batch → decide pipeline.
+- **[docs/CLOCK_MEASURED.md](docs/CLOCK_MEASURED.md)** — the clock channel, measured:
+  the stack constant, the surviving differential verifier, what's still unmeasured.
+- **[docs/CLOCK_ALGORITHMS.md](docs/CLOCK_ALGORITHMS.md)** — the same premise read at
+  prefill and intra-stream, plus the low-quantile estimator and probe-schedule results.
 - **[docs/TRIAGE_AND_AUDIT_COST.md](docs/TRIAGE_AND_AUDIT_COST.md)** — the audit-cost
   study and the ratio artifact, including the retractions.
 - **[docs/ACCEPTANCE_RATE_FINGERPRINT.md](docs/ACCEPTANCE_RATE_FINGERPRINT.md)**,
   **[docs/SPEC_DECODING_AND_PROXY_DETECTION.md](docs/SPEC_DECODING_AND_PROXY_DETECTION.md)**
   — the proxy tier's theory and its boundary.
+
+None of this is a treaty regime — but it prices one. A clause naming a specific
+detector cannot be enforced; a clause naming a pool size, a false-alarm rate
+and a probe pair can be. That is the sense in which an inference bill is the
+easy case: it is the instance of "verify a claimed computation on hardware you
+cannot enter" where a wrong answer costs a refund rather than a violated
+treaty, which is exactly why it is where to learn what the two observables can
+and cannot prove.
 
 Methodology follows *DiFR: Inference Verification Despite Nondeterminism*
 (Karvonen et al., 2025); the testbed design follows the model-organism pattern of
