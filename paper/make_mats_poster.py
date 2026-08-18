@@ -19,15 +19,17 @@ Every number on the board is read from a committed artifact in `docs/results/`
 (named in the caption). Nothing is typed in twice: the byte ratios, the headline
 grid, the verdict prices, the pooling law's inputs and residual, and every
 latency in the clock column all come out of JSON at render time, so a rerun that
-moves a number moves the poster. Figure 3 is the one drawn curve -- the pooling
-law's normal approximation with this experiment's measured mean, spread and d'
-substituted in, because the raw bootstrap of a score that is exactly zero on 98%
-of tokens is a comb of discreteness artefacts rather than a picture of the
-principle.
+moves a number moves the poster. Two figures are drawn rather than read: Figure 3
+is the pooling law's normal approximation with this experiment's measured mean,
+spread and d' substituted in (the raw bootstrap of a score that is exactly zero
+on 98% of tokens is a comb of discreteness artefacts rather than a picture of
+the principle), and Figure 5 opens the clock column on the roofline's own
+arithmetic, in the icons `docs/figures/fig_clock_basic.png` established -- both
+say so in their captions.
 
-Column 3 goes one step further and re-scores the clock rather than illustrating
-it: `experiments.plot_slope_verifier.detection` is imported and run here, so
-Figure 6B's pAUC curves come out of the same `harness.evaluate` -- same
+Column 3 then re-scores the clock rather than illustrating it:
+`experiments.plot_slope_verifier.detection` is imported and run here, so
+Figure 7B's pAUC curves come out of the same `harness.evaluate` -- same
 standardized pAUC @ FPR <= 0.5%, same honest calibration split, same pool
 ceiling -- that the returned-token verifiers are scored with in column 2. That
 costs a few seconds of render time and buys the guarantee that the two channels
@@ -108,18 +110,31 @@ HR = json.loads((RES / "headline_ratio.json").read_text())
 CV = json.loads((RES / "cost_of_a_verdict.json").read_text())
 PS = json.loads((RES / "pool_scaling.json").read_text())
 CC = json.loads((RES / "clock_channel.json").read_text())
-KVQ = json.loads((RES / "clock_channel_kvq.json").read_text())
 SC = np.load(RES / "cost_of_a_verdict_scores.npz")
 
-# The clock column is scored, not drawn, so it needs one thing the other two do
-# not: the protocol itself. `detection` is imported from the experiment that
-# published the slope verifier rather than reimplemented, so Figure 6B's pAUC
+# The clock column is scored, not just drawn, so it needs one thing the other two
+# do not: the protocol itself. `detection` is imported from the experiment that
+# published the slope verifier rather than reimplemented, so Figure 7B's pAUC
 # curves are the run's own curves -- same `harness.evaluate`, same standardized
 # pAUC @ FPR <= 0.5%, same honest calibration split as the token channel -- and
 # the board cannot drift from the artifact. Everything else in the column is a
 # measured latency read straight out of the committed timing grids.
 from experiments.plot_clock_measured import price as clock_price   # (delta*/d')^2
 from experiments.plot_slope_verifier import SIGMA_MAIN, detection, load_all
+
+# Column 3 opens on the idea rather than on a result, and it borrows the icons the
+# repo already draws it with (docs/figures/fig_clock_basic.png) rather than drawing
+# a second set: the same dial, the same token pill, the same fat arrow, recoloured
+# into this board's palette. Those glyphs assume SQUARE data units, so Figure 5's
+# axes is set up by `canvas` exactly as that figure's panels are. Its two numbers
+# are the roofline's own arithmetic -- bytes read over this card's spec sheet, off
+# Qwen3-1.7B's parameter count -- and the caption says so.
+from experiments.plot_clock_basic import canvas, clock, fat_arrow, token
+from experiments.plot_clock_basic import box as glyph_box
+from experiments.plot_clock_channel_principle import (
+    kv_bytes_per_token, load_measured, roofline_ms,
+)
+from experiments.plot_clock_simple import CTX as CLK_CTX, floor_ms
 
 NICE_A = {"quant_4bit": "4-bit weights", "kv_fp8": "fp8 KV cache",
           "temp_1.1": "wrong temperature", "seed_43": "wrong seed",
@@ -405,7 +420,7 @@ fig.text(fx(TX), fy(1.50), "A treaty clause, a promise to a regulator and an API
 fig.text(fx(TX), fy(2.22), "Jiawei Li¹      ·      mentored by Gabriel Kulp²    "
          "  ·      with Roy Rinberg³", size=T_AUTH, color=WHITE, va="top")
 fig.text(fx(TX), fy(2.82), "¹MATS 10.0 Scholar      ²MATS 10.0 Mentor      "
-         "³MATS 10.0 Extension Scholar      "
+         "³PhD student, Harvard University      "
          "Code + every run artifact: github.com/lijiawei20161002/inference-verification",
          size=T_AFFIL, color=CREAM, va="top")
 
@@ -938,18 +953,121 @@ y = lead_line(x, y, "A token cannot arrive before its bytes have moved. The "
 y = para(x, y + 0.08,
          "One token at a time a GPU is memory-bound: it must drag every weight "
          "it claims and read every position it charged for before it can emit "
-         "anything, so $t_{\\mathrm{token}} \\geq$ bytes $/$ bandwidth. Nothing "
-         "below is drawn — the whole column is timed on one H100.", CW,
-         color=GREY)
+         "anything, so $t_{\\mathrm{token}} \\geq$ bytes $/$ bandwidth. Figure 5 "
+         "is that sentence and nothing more; everything under it is timed on one "
+         "H100.", CW, color=GREY)
 
-# ---- Figure 5: the premise, measured, and the reason it is not a test
+# ---- Figure 5: the idea, in the icons the repo already draws it with
+# The one arithmetic figure on the board, and the only place a number here is not
+# read off a run: bytes / 3.35 TB/s over Qwen3-1.7B's own parameter count. It earns
+# its space because the two measured figures under it are differences of times, and
+# a difference of times is unreadable until the reader has seen what one time IS.
+F5_H = 2.58
+y += 0.10
+panel(x, y, CW, F5_H)
+
+CB_W = CW - 0.56
+axi = axes_at(x + 0.28, y + 0.11, CB_W, F5_H - 0.22)
+YH = canvas(axi, CB_W, F5_H - 0.22)
+
+_cost, _ = load_measured()
+P_M = _cost["m_params"]
+W_B, KV_B = P_M * 2, kv_bytes_per_token(2) * CLK_CTX
+MS16 = roofline_ms(W_B + KV_B)
+F16, F4 = floor_ms(P_M * 2, 2, CLK_CTX), floor_ms(P_M * 0.5, 2, CLK_CTX)
+NTK = 5                                  # tokens drawn on each wire
+
+# ---- upper half: one token is one read, and reading takes time
+cy1 = YH - 4.7
+glyph_box(axi, 1.0, 18.5, cy1 - 3.9, cy1 + 3.9, WHITE, C_CLK, lw=1.5, r=0.9)
+axi.text(9.75, cy1 + 2.1, "WEIGHTS  +  KV CACHE", ha="center", va="center",
+         fontsize=10.5, color=C_CLK, weight="bold", zorder=6)
+axi.text(9.75, cy1 - 1.5, f"1.72B params × 2 bytes\n+ {KV_B / 1e6:.0f} MB for "
+         f"{CLK_CTX} tokens", ha="center", va="center", fontsize=9.2, color=INK,
+         linespacing=1.55, zorder=6)
+
+fat_arrow(axi, 19.9, 25.3, cy1, GREY, lw=6.5)
+axi.text(22.6, cy1 + 2.1, "read every byte,\nonce per token", ha="center",
+         va="bottom", fontsize=9.2, color=GREY, weight="bold", linespacing=1.5,
+         zorder=6)
+axi.text(23.4, cy1 - 2.5, "HBM, 3.35 TB/s", ha="center", va="top", fontsize=8.4,
+         color=C_DEAD, zorder=6)
+
+clock(axi, 31.2, cy1, 3.65, 0.31, C_CLK, lw=2.2)
+axi.text(31.2, cy1 - 4.7, f"{MS16:.2f} ms", ha="center", va="top", fontsize=12.5,
+         color=C_CLK, weight="bold", zorder=6)
+
+fat_arrow(axi, 36.2, 41.4, cy1, GREY, lw=6.5)
+axi.text(38.8, cy1 + 2.1, "then, and\nnot before", ha="center", va="bottom",
+         fontsize=8.8, color=C_DEAD, linespacing=1.5, zorder=6)
+token(axi, 48.6, cy1, 12.2, 5.4, C_TOK, "1 token", fs=11.5)
+
+axi.text(80.5, cy1 + 1.9, "$t_{\\mathrm{token}}\\ \\geq\\ "
+         "\\dfrac{\\mathrm{bytes\\ read}}{\\mathrm{bandwidth}}$", ha="center",
+         va="center", fontsize=14.5, color=INK, zorder=6)
+axi.text(80.5, cy1 - 3.6, f"$=\\ \\dfrac{{{(W_B + KV_B) / 1e9:.2f}\\ "
+         f"\\mathrm{{GB}}}}{{3.35\\ \\mathrm{{TB/s}}}}\\ =\\ {MS16:.2f}$ ms",
+         ha="center", va="center", fontsize=12.5, color=C_CLK, weight="bold",
+         zorder=6)
+
+# ---- lower half: the same five tokens on two wires, and the time never spent
+Y16, Y4 = 9.9, 3.1
+XT = lambda t: 26.6 + t * 10.25            # ms -> canvas units
+BAND_L, BAND_R = XT(F4 * NTK), XT(F16 * NTK)
+for cyw, col, head, note, gap, tot in (
+        (Y16, GREY, "honest bf16", f"reads all {(W_B + KV_B) / 1e9:.2f} GB",
+         F16, f"{F16 * NTK:.1f} ms"),
+        (Y4, MAROON, "4-bit weights", "reads ¼ of the weight bytes", F4,
+         f"{F4 * NTK:.1f} ms")):
+    axi.plot([25.6, 81.0], [cyw, cyw], color=RULE_C, lw=4.0,
+             solid_capstyle="round", zorder=2)
+    axi.text(24.2, cyw + 1.4, head, ha="right", va="center", fontsize=10.4,
+             color=col, weight="bold", zorder=6)
+    axi.text(24.2, cyw - 1.9, note, ha="right", va="center", fontsize=9.0,
+             color=GREY, zorder=6)
+    for k in range(1, NTK + 1):
+        token(axi, XT(gap * k), cyw, 2.4, 4.0, col)
+    clock(axi, 86.2, cyw, 2.7, (gap * NTK) / 6.0, col, lw=1.8)
+    axi.text(90.3, cyw + 1.2, tot, ha="left", va="center", fontsize=10.2,
+             color=col, weight="bold", zorder=6)
+    axi.text(90.3, cyw - 1.8, f"for {NTK} tokens", ha="left", va="center",
+             fontsize=8.6, color=GREY, zorder=6)
+
+axi.annotate("", (XT(2 * F16), Y16 + 2.7), xytext=(XT(3 * F16), Y16 + 2.7),
+             arrowprops=dict(arrowstyle="<|-|>", color=GREY, lw=1.3, shrinkA=0,
+                             shrinkB=0), zorder=6)
+axi.text(XT(2.5 * F16), Y16 + 3.3, f"{F16:.2f} ms between tokens", ha="center",
+         va="bottom", fontsize=9.0, color=GREY, zorder=6)
+
+axi.add_patch(Rectangle((BAND_L, Y4 - 2.55), BAND_R - BAND_L, 5.1,
+                        facecolor=CREAM, edgecolor=MAROON, lw=1.5, hatch="///",
+                        zorder=3))
+axi.text((BAND_L + BAND_R) / 2, Y4 + 0.55, f"{(F16 - F4) * NTK:.1f} ms of "
+         f"reading it never did", ha="center", va="center", fontsize=11.0,
+         color=MAROON, weight="bold", zorder=7,
+         bbox=dict(boxstyle="round,pad=0.16", fc=WHITE, ec="none", alpha=0.8))
+axi.text((BAND_L + BAND_R) / 2, Y4 - 1.55, "the provider's saving — and the "
+         "auditor's evidence", ha="center", va="center", fontsize=9.2,
+         color=MAROON, zorder=7,
+         bbox=dict(boxstyle="round,pad=0.16", fc=WHITE, ec="none", alpha=0.8))
+
+y += F5_H
+y = caption(x, y + 0.09, CW, "Figure 5",
+            f"The one figure on this board that is *arithmetic*, not measurement: "
+            f"{(W_B + KV_B) / 1e9:.2f} GB over this card's 3.35 TB/s spec sheet "
+            f"(experiments/plot_clock_basic.py). A batch-1 decode step is "
+            f"memory-bound, so the deviations worth doing read fewer bytes — and "
+            f"{F16 / F4:.1f}× fewer bytes is {F16 / F4:.1f}× less time, read off "
+            f"a stream the client already bought.")
+
+# ---- Figure 6: the premise, measured, and why the test has to be a difference
 F3_H = 2.84
 y += 0.14
 panel(x, y, CW, F3_H)
 
 fig.text(fx(x + 0.28), fy(y + 0.17), "A.  The channel is real: the time is in "
          "the bytes", size=14, weight="bold", color=INK, va="top")
-fig.text(fx(x + CW * 0.615), fy(y + 0.17), "B.  The floor is not",
+fig.text(fx(x + CW * 0.615), fy(y + 0.17), "B.  The stack it runs on shifts it",
          size=14, weight="bold", color=INK, va="top")
 
 CTX0 = min(c["ctx"] for c in CC["cells"])
@@ -1019,63 +1137,18 @@ ax3.set_xlim(0, XMAX), ax3.set_ylim(0, max(msE.max(), ms4E) * 1.14)
 ax3.tick_params(labelsize=11.5)
 
 y += F3_H
-GAP_G = _avg(MODELS[1], 1024, "mean") - _avg(MODELS[0], 1024, "mean")
-SD_G = _avg(MODELS[1], 1024, "sd")
-GAP_E = (_avg(MODELS[1], 1024, "mean", mode="eager")
-         - _avg(MODELS[0], 1024, "mean", mode="eager"))
-SD_E = _avg(MODELS[1], 1024, "sd", mode="eager")
-y = caption(x, y + 0.07, CW, "Figure 5",
+y = caption(x, y + 0.07, CW, "Figure 6",
             f"clock_channel.json, H100 PCIe, B=1, {CTX0}-token context, "
-            f"{CC['reps']}×{CC['steps']} timed steps per cell. *(A)* The 4-bit provider reads "
-            f"{BYTE_R:.2f}× fewer bytes and still costs "
-            f"{ms4 / (const + slope * gb4):.2f}× what this line prices them at: "
-            f"dequantization spends the saving. *(B)* is the same GPU and the same weights "
-            f"one stack down: the additive constant moves {const:.2f} → "
-            f"{constE:.0f} ms, and the 1.7B→0.6B signal falls from {GAP_G:.2f} "
-            f"ms on {SD_G:.2f} ms of device noise to {GAP_E:.2f} on {SD_E:.2f}. "
-            f"The slope is physics; the intercept is a stack, and it is on no "
-            f"spec sheet.")
+            f"{CC['reps']}×{CC['steps']} timed steps per cell. *(A)* Figure 5's "
+            f"line, measured: 1 GB of weight read costs {slope:.2f} ms, though a "
+            f"real NF4 provider spends part of its saving on dequantization. "
+            f"*(B)* is the same GPU one stack down: the additive constant moves "
+            f"{const:.2f} → {constE:.0f} ms. The slope is physics; the intercept "
+            f"is a stack, on no spec sheet — so the test must subtract, not read "
+            f"a stream against the roofline.")
 
-# ---- Table: what measurement did to the naive clock
-y = section(x, y + 0.20, CW, "EVERY OBVIOUS CLOCK TEST FAILS", color=C_CLK)
-y += 0.02
-REALISED = (ms[1] - ms4) / (ms[1] - ms[1] / BYTE_R)     # of the predicted saving
-B_SLOW = min(B for B in (2, 4, 8, 16, 32, 64)
-             if _cells(NF4, 1024, B=B) and _avg(NF4, 1024, "mean", B=B)
-             > _avg(MODELS[1], 1024, "mean", B=B))
-GAP_B1 = _avg(MODELS[1], 1024, "mean", B=1) - _avg(MODELS[0], 1024, "mean", B=1)
-GAP_B64 = _avg(MODELS[1], 1024, "mean", B=64) - _avg(MODELS[0], 1024, "mean", B=64)
-SD_B64 = _avg(MODELS[1], 1024, "sd", B=64) / _avg(MODELS[1], 1024, "sd", B=1)
-# The int4 cache's own context slope, on minima and from 1024 up: the 256-cell
-# pays a one-off quanto JIT compile that is not a property of the cache.
-KVS = {}
-for mode in ("eager", "kvq4"):
-    ks = sorted((c for c in KVQ["cells"] if c["mode"] == mode and c["ctx"] > CTX0),
-                key=lambda c: c["ctx"])
-    KVS[mode] = _lsq(np.array([c["ctx"] for c in ks], float),
-                     [c["min"] for c in ks])[1]
-ZG = CC["specdec"]["frac_gaps_zero"]
-y = table(x, y, CW,
-          ["what the premise seems to promise", "what 126 timing cells say"],
-          [["Fewer bytes → proportionally less time",
-            f"4-bit returns {REALISED*100:.0f}% of it, and is slower at B ≥ "
-            f"{B_SLOW}"],
-           ["Batching amortizes the weight read away",
-            f"the gap is flat ({GAP_B1:.2f} → {GAP_B64:.2f} ms); the noise "
-            f"grows {SD_B64:.0f}×"],
-           ["Half the KV bytes → half the slope",
-            f"a real int4 cache is {KVS['kvq4']/KVS['eager']:.1f}× steeper"],
-           ["Jitter is positive, so take the minimum gap",
-            f"{ZG*100:.0f}% of an honest server's gaps are 0 ms"]],
-          [5.55, 5.02], aligns=["left", "right"], size=T_TAB - 1, head_bg=C_CLK)
-y = caption(x, y + 0.08, CW, "Table 3",
-            "clock_channel.json, _arch.json and _kvq.json (126 configurations, "
-            "a real NF4 provider, a real quanto int4 cache, real speculative "
-            "decoding). The premise survives every row; the naive *absolute* "
-            "test survives none.")
-
-# ---- Figure 6: the differential test, measured, and priced by the same law
-y = section(x, y + 0.18, CW, "THE TEST THAT SURVIVES: SUBTRACT", color=C_CLK)
+# ---- Figure 7: the differential test, measured, and priced by the same law
+y = section(x, y + 0.14, CW, "THE TEST THAT SURVIVES: SUBTRACT", color=C_CLK)
 F6_H = 2.98
 y += 0.06
 panel(x, y, CW, F6_H)
@@ -1167,21 +1240,19 @@ for Wk in WS:
     ly -= 0.080
 
 y += F6_H
-y = caption(x, y + 0.07, CW, "Figure 6",
+y = caption(x, y + 0.07, CW, "Figure 7",
             f"slope_verifier_window.json, {len(LO['itl_ms']):,} timed decode "
             f"steps per cell, scored through the *same* harness.evaluate as every "
             f"token verifier. *(A)* is measurement only: the subtraction cancels "
-            f"Figure 5's stack constant, and hiding from it costs the "
+            f"Figure 6's stack constant, and hiding from it costs the "
             f"{D_HON - (WCELL(f'window_{WS[0]}')['mean'] - LO['mean']):.0f} ms per "
-            f"token that truncation saved. *(B)* adds the column's one modelled "
-            f"input, σ = {SIGMA_MAIN:.0f} ms of client-side wire jitter — "
-            f"pessimistic, and one-sided: a busy neighbour only pushes $D$ up, "
-            f"toward the honest side, so co-tenancy costs power, never a false "
-            f"accusation. Read at prefill rather than in the gap the same premise is "
-            f"25,000× cheaper again on the substitution row (clock_algos.json).")
+            f"token that truncation saved. *(B)* adds the one modelled input, "
+            f"σ = {SIGMA_MAIN:.0f} ms of wire jitter — one-sided, so co-tenancy "
+            f"costs power, never a false accusation. At prefill the same premise "
+            f"is 25,000× cheaper on the substitution row (clock_algos.json).")
 
 # ---- The close: what any of this buys a governance regime
-y = section(x, y + 0.20, CW, "WHAT AN AUDITOR ACTUALLY GETS")
+y = section(x, y + 0.15, CW, "WHAT AN AUDITOR ACTUALLY GETS")
 y = para(x, y,
          "*A price, not a ranking:* every verdict costed in tokens × seconds — "
          "and 14 of 35 cells cost infinity.\n"

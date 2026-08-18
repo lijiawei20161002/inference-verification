@@ -28,8 +28,9 @@
 \newcommand{\ad}{\texttt{activation\_difr}}
 \newcommand{\tl}{\texttt{token\_toploc}}
 
-\title{\bfseries Checking That an Inference Provider Ran the Model It Charged You For\\[2mm]
-\large What works, what it costs, and how easily the measurement lies to you}
+\title{\bfseries How Do You Audit a Computation You Cannot See?\\[2mm]
+\large Verifying which model an inference provider actually ran: what works,
+what it costs, and how easily the measurement lies to you}
 \author{Jiawei Li\\[1mm]
 \normalsize A summary of the \texttt{inference-verification} (\texttt{ivgym}) experiments,\\
 \normalsize with new measurements run for this report on a single NVIDIA H100-80GB}
@@ -42,24 +43,37 @@
 
 \begin{abstract}
 \noindent
-You rent inference from a provider. It promises to run a specific model with
-specific sampling settings, and it bills you accordingly. Nothing stops it from
-quietly serving a 4-bit copy, a smaller model, or a different sampler and pocketing
-the difference. This report summarizes an experimental study of whether a client can
+A treaty clause that caps training compute, a lab's commitment to its regulator
+that a deployed model is frozen, and an inference bill reduce to the same
+unverifiable sentence: \emph{model $M$ ran under spec $\phi$} --- on hardware the
+auditor cannot enter. Nothing stops the party controlling that hardware from
+quietly serving a 4-bit copy, a smaller model, or a different sampler. This report
+summarizes an experimental study of whether an outside verifier, holding only what
+crosses the boundary --- the tokens that came back, and when they arrived --- can
 catch that, using a testbed (\texttt{ivgym}) that pits provider-side deviations
 against verifier-side detectors on real models on a GPU.
 
-Three findings organize everything else. First, \textbf{the honest verifier works,
+Four findings organize everything else. First, \textbf{the honest verifier works,
 but only barely, and at a price}: recomputing the reference model and comparing
 per-token sampling margins catches every deviation we tried on some model, but no
 single detector is reliable across model families, and the per-token signal from
 realistic quantization is so weak ($d' \approx 0.07$) that thousands of tokens must
 be pooled before a decision is trustworthy. Second, \textbf{most of the cheap
-alternatives fail in a specific and predictable place}: a client-side proxy model
+alternatives fail in a specific and predictable place}: a verifier-side proxy model
 catches wholesale model substitution at AUC 0.998 without ever running the
 reference, but is blind to quantization, because quantization moves the served
 distribution less than the reference model's own run-to-run nondeterminism. Third,
-and least expected: \textbf{the dominant error in this literature-adjacent
+\textbf{the arrival times of a stream already bought are a second verifier, and
+the only free one}: a token cannot arrive before its bytes have moved, so the
+deviations that read fewer bytes leave a timing trace that costs the auditor zero
+FLOPs and needs nothing from the audited party. Measured on real hardware, every
+\emph{absolute} latency test fails --- the per-token floor sits on a 4.15\,ms
+serving-stack constant that appears on no spec sheet --- but a \emph{differential}
+test, subtracting a short-context probe's inter-token time from a long one's,
+cancels the stack, cannot be pushed toward a false accusation by co-tenancy, and
+catches a provider truncating its billed context at 36--152 tokens of stream,
+scored through the same protocol as every other detector here. Fourth, and least
+expected: \textbf{the dominant error in this literature-adjacent
 measurement is statistical, not cryptographic}. Resampling evaluation batches from
 too small a token pool inflates detection AUC arbitrarily; we show the same
 measurement reading 0.98 and 0.53 depending only on pool size, and re-measure the
@@ -81,11 +95,24 @@ verification, the cost side transfers and the signal side does not.
 
 \section{The problem}
 
-An inference provider and a client agree on a \emph{specification} $\phi$: a model
-$M$ and its sampling parameters (temperature, top-$k$, top-$p$, and a seed). The
-provider returns \texttt{(prompt, output)} pairs and claims they came from running
-$\phi$ on $M$. It may instead have run something cheaper. The deviations that matter
-economically are not exotic:
+Three instruments that look nothing alike reduce to one sentence. A treaty that
+caps training compute is a promise about which computations ran on a fleet. A
+commitment to a regulator that a deployed model is frozen is a promise about which
+computation answers each request. An inference bill is a promise that a specific
+model ran under a specific spec. In all three, the party making the promise
+controls the hardware, and the party checking it cannot enter the building:
+nothing in the stack between a GPU and the outside world emits a statement about
+what the silicon actually did, so an auditor holds only what crosses the boundary
+--- the tokens that came back, and when they arrived. This report measures what
+those two observables can prove, and what a verdict costs in each.
+
+We study the tractable instance of that problem, because it is the one where every
+claim can be tested on real hardware and the deviations have the same shape one
+level up. An inference provider claims a \emph{specification} $\phi$: a model $M$
+and its sampling parameters (temperature, top-$k$, top-$p$, and a seed). It
+returns \texttt{(prompt, output)} pairs and asserts they came from running $\phi$
+on $M$. It may instead have run something cheaper. The deviations worth making are
+not exotic --- each is pure margin for the party running the hardware:
 
 \begin{itemize}
 \item \textbf{Serve a smaller model.} Bill for a 4B, serve a 0.6B. This is the
@@ -96,14 +123,16 @@ economically are not exotic:
       that truncates the candidate set.
 \end{itemize}
 
-The client's problem is that it only sees text. It cannot audit the provider's
-hardware, and the provider is exactly the party whose self-reports cannot be
-trusted --- so any verifier that needs the provider's cooperation (a reported trace,
-a logged KV cache) is one the provider can stub out. Zero-knowledge proofs of
-inference solve this in principle and are many orders of magnitude too slow in
-practice.
+The auditor cannot inspect the provider's hardware, and the provider is exactly
+the party whose self-reports cannot be trusted --- so any verifier that needs the
+provider's cooperation (a reported trace, a logged KV cache) is one the provider
+can stub out. Zero-knowledge proofs of inference solve this in principle and are
+many orders of magnitude too slow in practice. What remains are the two passive
+observables above: most of this report reads the tokens
+(Sections~\ref{sec:trap}--\ref{sec:cheap}), and Section~\ref{sec:clock} reads the
+clock.
 
-The approach studied here follows DiFR \cite{difr}: the client \emph{recomputes}. It
+The token-side approach follows DiFR \cite{difr}: the verifier \emph{recomputes}. It
 runs $M$ itself over \texttt{prompt + claimed\_tokens}, and asks whether each
 claimed token is what $\phi$ on $M$ would have produced. The complication that makes
 this a research problem rather than an equality check is \textbf{nondeterminism}:
@@ -118,8 +147,10 @@ whom'' is a grid rather than an anecdote; the design follows the model-organism
 testbed pattern \cite{clymer}, in which known deviations are planted so that a
 detector's misses are observable. This report summarizes what that grid says
 across roughly two dozen experiments on Qwen3, Llama-3.x, SmolLM2, Pythia and GPT-2
-models, and adds five new measurements, run for this report, that close the largest
-gaps in the existing record. New results are marked \textbf{[new]}.
+models, and adds new measurements, run for this report, that close the largest
+gaps in the existing record --- including a measured study of the second
+observable, the clock (Section~\ref{sec:clock}), scored through the same protocol
+as the token detectors. New results are marked \textbf{[new]}.
 
 \section{Setup: the game, and the number we report}
 \label{sec:setup}
@@ -458,16 +489,16 @@ is a statement that the attack was crude.
 \subsection{The one cheap signal with a trust story: the acceptance rate}
 
 The interesting Tier-0 detector borrows the mechanism of speculative decoding
-\cite{spec}. The client holds its own small proxy $q$ (sharing $M$'s tokenizer) and
-computes the rate at which $q$'s drafts would have been accepted against the served
-distribution $p$. That rate is exactly an overlap:
+\cite{spec}. The verifier holds its own small proxy $q$ (sharing $M$'s tokenizer)
+and computes the rate at which $q$'s drafts would have been accepted against the
+served distribution $p$. That rate is exactly an overlap:
 \[
 \mathrm{accept} = \mathbb{E}_{x\sim q}\!\left[\min\!\left(1, \tfrac{p(x)}{q(x)}\right)\right]
 = \sum_x \min(p(x), q(x)) = 1 - \mathrm{TV}(p, q).
 \]
-The client \emph{owns} $q$, so $q$ is a trusted anchor even though $p$ is not. If the
-provider corrupts the target ($p^* \to \hat{p}$), the rate moves from
-$1-\mathrm{TV}(p^*,q)$ to $1-\mathrm{TV}(\hat{p},q)$, and the client sees the shift
+The verifier \emph{owns} $q$, so $q$ is a trusted anchor even though $p$ is not. If
+the provider corrupts the target ($p^* \to \hat{p}$), the rate moves from
+$1-\mathrm{TV}(p^*,q)$ to $1-\mathrm{TV}(\hat{p},q)$, and the auditor sees the shift
 against a one-time offline honest reference --- without ever running $M$. Everything
 this tier can and cannot do follows from one budget: the expected proxy surprisal on
 honest text is $H(M,q) = H(M) + \mathrm{KL}(M \| q)$, so $\mathrm{KL}(M\|q)$ is the
@@ -541,6 +572,108 @@ cross-validated ROC-AUC on greedy decoding over a fixed prompt set --- a differe
 more forgiving protocol than the FPR-constrained partial AUC used everywhere else in
 this report. They should be read as a separate line of evidence about capability
 detection, not as entries in the same table.
+
+\section{[new] The second observable: the clock}
+\label{sec:clock}
+
+Everything so far reads the returned tokens. The auditor's other observable is
+\emph{when} they arrived, and it has a property no token detector has: it costs
+zero audit FLOPs, adds zero latency, and needs nothing from the audited party ---
+the verdict is read off the arrival times of a stream already bought. For a
+governance instrument, that is the difference between a check that can run on
+every request and one that must be budgeted; it is also the only channel here
+whose cost does not grow with the model being verified.
+
+\paragraph{The premise.} A batch-1 decode step is memory-bound: the provider must
+move every weight byte it claims and read every context position it billed for
+before a token can exist, so $t_{\text{token}} \ge \text{bytes}/\text{bandwidth}$.
+The deviations worth making are exactly the ones that read fewer bytes ---
+serving a 0.6B as a 1.7B reads $2.83\times$ fewer, NF4 weights $2.55\times$,
+attending half a 32k context $1.35\times$ --- while a wrong seed, a wrong
+temperature or a top-$k$ bug reads \emph{identical} bytes ($1.00\times$). The
+provider's saving and the auditor's evidence are the same quantity, and the
+channel's blindness class is the exact complement of the token channel's: the
+sampler deviations the clock cannot see are the ones recomputation catches
+cheapest (a wrong seed at 226 tokens), and the byte deviations the token channel
+reads worst (an fp8 KV cache at 35{,}066 tokens) are the ones with a timing trace.
+
+\paragraph{Measured, every obvious clock test fails.} We timed 126 real serving
+configurations on one H100 PCIe (1.85 TB/s measured copy bandwidth): two stack
+modes, five architectures, real \texttt{bitsandbytes} NF4 weights, a real quanto
+int4 KV cache, and real speculative decoding
+(\texttt{docs/results/clock\_channel*.json}). The premise survives every row; the
+naive \emph{absolute} test survives none of them.
+
+\begin{itemize}
+\item \textbf{The floor is a stack property, not a spec sheet.} Observed ms/token
+is $4.15\,\text{ms} + \text{bytes}/1.22\,\text{TB/s}$: the slope is physics (66\%
+of the card's measured copy bandwidth), but it sits on a 4.15\,ms additive
+constant that is pure serving stack --- the same GPU and weights one stack down
+(plain eager) cost ${\sim}30$\,ms per token, \emph{flat} in bytes. Nor can the
+floor be computed from a config file: a slope law fitted on five configurations
+misses five unseen architectures by 26\% mean and 48\% worst. An auditor that
+does not know the stack cannot convert a roofline into an accusation.
+\item \textbf{Fewer bytes is not proportionally less time.} Real NF4 weights save
+$2.55\times$ the bytes and deliver 14\% of the predicted time saving ---
+dequantization spends the rest --- and are \emph{slower} than bf16 at every batch
+size $\ge 4$. At these scales weight quantization buys the provider capacity, not
+speed, and a latency channel cannot see a capital saving.
+\item \textbf{A byte-saving KV cache is not a latency deviation.} A real int4 KV
+cache, identical positions and $4\times$ fewer cache bytes, is \emph{slower}: the
+context slope steepens $1.6\times$. Single-query attention is per-position, not
+per-byte.
+\item \textbf{Honest servers already live below the ``floor''.} Under real
+speculative decoding --- an honest provider by construction, since greedy
+acceptance emits the target's own continuation --- \textbf{73\% of the visible
+inter-token gaps are 0\,ms}. Tokens arrive in clumps, so any minimum-gap
+statistic accuses essentially every real provider.
+\end{itemize}
+
+\paragraph{What survives: subtract.} All three obstacles --- the unknown stack
+constant, co-tenancy, sub-floor gaps --- attack absolute tests, and none of them
+attacks a \emph{difference}. The surviving verifier sends two probes matched in
+everything but prompt length and reads $D = \mathrm{ITL}(\text{ctx}_{hi}) -
+\mathrm{ITL}(\text{ctx}_{lo})$: the stack constant and any constant network offset
+cancel exactly. Two measured properties make it deployable. First, co-tenancy is a
+\emph{one-sided} nuisance --- load only pushes $D$ up, toward the honest side ---
+so a busy datacenter costs the auditor power, never a false accusation. Second,
+the verifier is self-calibrating: an endpoint's own honest slope re-measured in a
+fresh process drifts by 0.01\%, three orders of magnitude tighter than the
+cross-architecture law, so the floor is calibrated on the auditor's own honest
+traffic rather than derived from a spec sheet --- which also means the test
+detects a provider that \emph{starts} truncating, the realistic threat.
+
+\paragraph{Priced through the same protocol.} A provider billing for 32{,}768
+tokens of context while attending a window $W$, scored through the identical
+\texttt{harness.evaluate} as every token detector (standardized pAUC @ FPR $\le$
+0.5\%, honest calibration split, ratio ceiling enforced), under a pessimistic
+$\sigma = 50$\,ms of auditor-side wire jitter:
+
+\begin{center}\small
+\begin{tabular}{rrrr}
+\toprule
+window held & $d'$ per probe pair & pAUC @ 32 pairs & tokens for pAUC 0.90 \\
+\midrule
+512            & 0.89 & 0.996 & 36 \\
+2{,}048        & 0.82 & 0.987 & 42 \\
+8{,}192        & 0.68 & 0.940 & 62 \\
+16{,}384 (half) & 0.43 & 0.714 & 152 \\
+\bottomrule
+\end{tabular}
+\end{center}
+
+\noindent Thirty-six to 152 tokens of stream per verdict, against the token
+channel's 2{,}013 for 4-bit weights and 35{,}066 for an fp8 KV cache --- and read
+at prefill instead of in the decode gap, the same premise is four orders of
+magnitude cheaper again on the substitution row
+(\texttt{docs/results/clock\_algos.json}). Measured pAUC tracks the same
+$d'\sqrt{b}$ law as Section~\ref{sec:poolscaling}, so the channel is priced by the
+report's existing cost model with nothing added. Evasion is possible but not
+free in the way the original cheat was: to hide, a truncating provider must pad
+each long request by exactly what truncation saved --- up to 87\% of the honest
+per-token time --- keeping the memory and giving back all of the speed. A
+differential clock does not prove honesty; it converts the cheat from free margin
+into a real cost, which is what an enforcement instrument needs.
 
 \section{What a selective audit really costs}
 \label{sec:cost}
@@ -776,7 +909,7 @@ predicts the log honest variance well ($R^2 = 0.73$) and the signal not at all
 ($R^2 = 0.002$). Since $I = \Delta^2/v$ divides a quantity the features cannot
 estimate by one they can, the resulting information estimate is not merely noisy but
 \textbf{anti-correlated} with the truth (Spearman $-0.92$). The derivation is right;
-the inputs it needs are not recoverable from what a client can cheaply see. Where the
+the inputs it needs are not recoverable from what a verifier can cheaply see. Where the
 deviation will show up is, on this evidence, roughly unpredictable from the proxy's
 view of a position --- and a matched filter built on an anti-correlated weight estimate
 is worse than no weighting at all.
@@ -796,12 +929,20 @@ and skip the head.
 
 \begin{enumerate}
 \item \textbf{Cascade, and put the cheap tier first for the right reason.} A
-client-side proxy panel catches capability downgrades --- the attacks with real money
-in them --- at a small fraction of one forward pass. Use it as a continuous
-first-line filter, not as a verifier.
+verifier-side proxy panel catches capability downgrades --- the deviations with the
+most compute saved in them --- at a small fraction of one forward pass. Use it as a
+continuous first-line filter, not as a verifier.
 \item \textbf{Keep recomputation for what only recomputation can see.} Quantization,
 fp8 caches, and sampler deviations are recompute-dominant; no cheap statistic reached
 them in any experiment here. Spot-check with it rather than running it continuously.
+\item \textbf{Read the clock before spending FLOPs --- differentially, never
+absolutely.} The arrival times of a stream already bought catch every deviation
+that attends fewer positions than billed (context truncation, window eviction,
+stale prefix reuse) at 36--152 tokens per verdict, with zero audit compute and no
+cooperation. Calibrate the slope on your own honest traffic to that endpoint (it
+is stable to 0.01\%); never test against a roofline or a minimum gap --- the
+stack constant and honest token clumping make every absolute latency test either
+uncomputable or an accusation machine (Section~\ref{sec:clock}).
 \item \textbf{Use a portfolio of detectors, not the best one.} Each recompute score
 is structurally blind to a different class of deviation, and which one wins is set
 by the attack, not by the model --- the winning detector was identical in all six
@@ -858,6 +999,14 @@ testbed.
 \item \textbf{One prompt domain, one GPU.} Cross-GPU and cross-datacenter benign
 variation --- arguably the most important false-positive source in a real deployment
 --- is untested, because there was only one accelerator available.
+\item \textbf{The clock channel is measured on research stacks, and the wire is
+swept rather than measured.} Section~\ref{sec:clock}'s grid runs HF eager and HF +
+CUDA graphs on one H100 PCIe; a production stack (vLLM, TensorRT-LLM) will lower
+the additive constant and may move the context term back toward bandwidth-bound,
+which could restore fp8-KV detectability. The auditor-side jitter $\sigma$ is
+swept (the quoted prices use a pessimistic 50\,ms), not measured against public
+endpoints, and no provider here shapes or pads traffic against the slope test ---
+the padding counter-move is priced but not played.
 \end{itemize}
 
 \begin{thebibliography}{9}
