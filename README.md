@@ -469,7 +469,7 @@ provider running exactly the algorithm it promised.
 
 ### The floor, finally in `d′`
 
-That conversion was the first item in [`NEXT_EXPERIMENTS.md`](NEXT_EXPERIMENTS.md)
+That conversion was the first item in [`NEXT_EXPERIMENTS.md`](planning/NEXT_EXPERIMENTS.md)
 and the single-card half of it is now run. `exp_benign_shape_dprime_gpu` generates
 one honest pool (80 × 256 tokens, Qwen3-1.7B) and has the *verifier* replay it —
 same weights, same claimed tokens, the same memoized noise draw — under four
@@ -697,7 +697,7 @@ quantize + temperature-retune cheat against the seed-free verifier
   cross-machine case, and it is not yet expressed as a `d′` the detection numbers
   can be compared against.
 
-See **[`NEXT_EXPERIMENTS.md`](NEXT_EXPERIMENTS.md)** for what to run about them.
+See **[`NEXT_EXPERIMENTS.md`](planning/NEXT_EXPERIMENTS.md)** for what to run about them.
 
 ## Further reading
 
