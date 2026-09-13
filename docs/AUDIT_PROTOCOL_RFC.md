@@ -1,26 +1,58 @@
 # IVGym audit protocol, draft v0.1
 
-Status: proposed design, not an implemented CLI or a validated security claim.
-Prepared against the local repository and the supplied Gupta–Katz–Miers PDF on
-2026-09-13. No GPU experiments or endpoint audits were performed for this RFC.
+Status as of 2026-09-13: experimental artifact and Hugging Face HTTP MVP
+implemented and tested on an H100. The broader design below remains an RFC;
+it is not a validated security or deployment error-rate claim. See the
+[executable implementation contract](AUDIT_IMPLEMENTATION.md) and
+[measured pilot](results/audit_protocol_h100.md).
 
-The first release should produce reproducible statistical evidence about a
+The original proposal was prepared against the repository and the supplied
+Gupta–Katz–Miers PDF on 2026-09-13. The subsequent pilot ran 106 complete blocks
+through collection, closure, selection, independent scoring and artifact
+verification, plus one separate-process CLI audit. At a 5% per-audit threshold
+with 63 calibration blocks, it flagged 1/20 honest blocks, 10/10 temperature
+overrides and 0/10 actual NF4 blocks. All 107 transcripts verified; the four
+selected replay checks reproduced scores exactly. The full suite passed 112
+tests. These observations demonstrate a working protocol and sampler-deviation
+signal, not validated quantization detection or a rare false-positive bound.
+
+The implemented release produces reproducible statistical evidence about a
 bounded collection of responses from a named endpoint. Cryptographic signatures
 bind parties to the evidence; they do not establish which computation ran.
 
-The intended interface is:
+After provisioning keys, trust, a reference and calibration as described in the
+implementation guide, the executable interface is:
 
 ```sh
-ivgym audit https://api.provider.com/v1 --model qwen3-8b --spec spec.json
-# verdict.json + transcript/ + transcript.sig
-ivgym verify transcript/ --trust trust.json
-ivgym replay transcript/ --reference reference.json
+ivgym audit http://127.0.0.1:8765 --model Qwen/Qwen3-0.6B \
+  --spec spec.json --calibration calibration.json --prompts prompts.json \
+  --reference reference.json --trust trust.json \
+  --auditor-key auditor.pem --reference-key reference.pem --out transcript
+# transcript/verdict.json + evidence files + manifest.json + transcript.sig
+ivgym verify transcript --trust trust.json
+ivgym replay transcript --trust trust.json --reference reference.json
 ```
 
-These commands are proposed. `verify` checks signatures, commitments and the
-decision calculation from recorded scores. `replay` independently recomputes
-model scores and reports numerical agreement under the recorded calibration
-profile. They have different compute requirements and trust assumptions.
+The endpoint must implement the negotiated `/ivgym/` exact-token extension.
+This is not yet a one-command audit of an arbitrary OpenAI-compatible endpoint;
+a missing required receipt capability returns `unsupported`. `verify` checks
+signatures, commitments and the decision calculation from recorded scores.
+`replay` independently recomputes model scores and reports numerical agreement
+under the recorded calibration profile. They have different compute requirements
+and trust assumptions.
+
+The implementation is limited to raw token IDs, explicit full-softmax sampling,
+one fixed-horizon audit, and a pinned BF16 reference profile. Requirements below
+for vLLM, streaming, wider sampler contracts, deployment calibration, persistent
+campaign accounting, external witnesses and exact-relation proofs are follow-on
+work unless the implementation guide explicitly marks them supported.
+
+![Implemented receipted audit flow across the auditor, provider and trusted reference, followed by offline verification or GPU replay.](figures/fig_audit_protocol.png)
+
+*Figure: the implemented receipted-mode workflow. The provider closes the response
+set before the auditor reveals selection randomness. Signatures bind evidence;
+the trusted reference supplies the independent model scores.*
+[SVG](figures/fig_audit_protocol.svg) · [PDF](figures/fig_audit_protocol.pdf).
 
 ## 1. What to take from the paper
 
@@ -307,6 +339,13 @@ would be a different backend with different deployment assumptions.
 
 ## 7. Real vLLM experiments and cross-hardware calibration
 
+**Current status:** `ProviderClient`, `ReferenceExecutor` and `AuditRunner` are
+implemented separately in `ivgym.audit`. The H100 pilot exercised genuine HF
+HTTP generation, including NF4, with independent teacher-forced reference
+scoring. The following vLLM and cross-hardware matrix remains untested. The MVP
+uses versioned unfiltered NLL and capped log-rank scores; it does not adapt the
+old harness's seed-synchronized or activation checks into deployment verdicts.
+
 Split the current combined backend contract into `ProviderClient` (remote
 generation/capture), `ReferenceExecutor` (trusted teacher-forced scoring) and
 `AuditRunner` (selection/statistics/artifacts). Preserve adapters into `VContext`
@@ -371,6 +410,18 @@ capture of real requests through the ordinary path and a declared population.
 
 ## 8. Build sequence and acceptance gates
 
+| Gate | Status after the H100 pilot | Remaining scope |
+|---|---|---|
+| Artifact MVP | Implemented; strict schemas, signatures, offline checker, adversarial tests and fixed wire vectors | Independent implementation/security review and broader conformance coverage |
+| Real server MVP | Implemented for the local HF HTTP extension; honest, temperature-override and actual NF4 generation tested | vLLM, ordinary endpoint integration, streaming and production serving |
+| Calibration release | Exploratory signed bundle with 3 development, 63 calibration and 40 held-out blocks | Validated FPR and power targets, representative nuisance coverage and rare-error certification |
+| Deployment evaluation | Not completed | Cross-hardware pairs, load, routing, independent sessions/days and adaptive attackers |
+| Optional exact-relation backend | Not implemented | Encoded arithmetic semantics, setup trust, reviewed proof checks and measured costs |
+
+The original acceptance gates below remain the broader release criteria. The
+pilot does not close the calibration or deployment gates; v1 returns
+`inconclusive` whenever a validated operating point is required.
+
 1. **Artifact MVP:** add packaging/CLI, versioned spec/message schemas,
    canonicalization, signatures and an offline checker. Test mutation, replay,
    cross-session substitution, wrong trusted keys, omitted/reordered records,
@@ -395,7 +446,7 @@ capture of real requests through the ordinary path and a declared population.
    outputs, embeddings, nonlinear operations, attention/KV state and the sampler.
    Spot-checking signed linear outputs alone is not a complete inference proof.
 
-The current repo already supplies useful score functions and prefill-cost
-accounting. Its research harness remains useful for exploration. Production
-evidence needs a new collection and decision boundary around those components;
-renaming `evaluate` to `audit` would leave the deployment gaps intact.
+The repository now has a separate collection and decision boundary in
+`ivgym.audit`; the research harness remains useful for exploration. Completing
+the remaining calibration and deployment gates requires new evidence beyond
+the implemented protocol and this single-H100 pilot.

@@ -1,6 +1,7 @@
 """vLLM backend adapter (contract + skeleton).
 
-NOT runnable on this machine (no CUDA / no vLLM here). This file documents the
+This remains a skeleton, separate from the implemented audit HTTP extension
+(`ivgym.audit.http`). It documents the
 exact contract a real backend must satisfy so that the *same* attacks,
 defenses, and harness run unchanged against real models on a GPU box.
 
@@ -25,8 +26,9 @@ Implementation notes
   under the reference config (Section 3.3 -- prefill is 3-5x faster), then read
   per-position logits and final-hidden-state activations. Cache per sequence.
 * generate: issue a normal vLLM request with a per-request seed
-  (vLLM passes a torch.Generator to exponential() for Gumbel noise -- match it
-  in ivgym.sampling.gumbel_noise so the verifier reconstructs identical noise).
+  only under an explicitly pinned RNG/counter contract. The NumPy generator in
+  ivgym.sampling.gumbel_noise does not reproduce vLLM random draws. The audit
+  protocol therefore disables seed-synchronized verification.
 * Activation fingerprints: register a forward hook on the final norm layer,
   project with the shared orthogonal matrix (ivgym.sampling.projection),
   and store on TokenStep.fingerprint.

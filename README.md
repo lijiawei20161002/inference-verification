@@ -71,6 +71,54 @@ figure in it regenerates from the committed run artifacts
 
 ---
 
+## Experimental authenticated audit protocol
+
+The proposed protocol now has an executable MVP: `ivgym audit`, `ivgym verify`,
+and `ivgym replay`. It captures exact-token HTTP responses, authenticates provider
+receipts, selects responses after signed closure, and scores their returned
+prefixes with a separate pinned CUDA reference. Offline verification checks the
+signed evidence and decision; GPU replay independently recomputes the scores.
+
+![Receipted audit protocol: commit the plan, collect and close responses, reveal the sample, recompute independently, then seal and review.](docs/figures/fig_audit_protocol.png)
+
+[Editable SVG](docs/figures/fig_audit_protocol.svg) · [PDF](docs/figures/fig_audit_protocol.pdf).
+The highlighted boundary keeps selection randomness secret until responses are
+closed; verification and replay are separate review operations.
+
+The [H100 pilot](docs/results/audit_protocol_h100.md) used Qwen3-0.6B, 63 fresh
+calibration blocks and a 5% per-audit threshold:
+
+| Held-out provider condition | Flagged blocks |
+|---|---:|
+| Honest BF16 | 1 / 20 |
+| Temperature 2 while claiming 1 | 10 / 10 |
+| Actual NF4 weights while claiming BF16 | 0 / 10 |
+
+This budget demonstrated detection of the temperature override but did not
+demonstrate NF4 detection. The honest sample is too small to validate deployment
+false-positive rates. The [full report](docs/results/audit_protocol_h100.md)
+includes confidence intervals, costs and signed evidence.
+
+The implementation passed **112 tests**; all **107 saved transcripts** verified.
+One transcript from each condition and a separate-process CLI audit replayed
+with zero score delta. The tested stack is Hugging Face on one H100. vLLM,
+cross-hardware calibration and deployment error-rate certification remain open.
+Signatures do not establish GPU identity, precision or compute spent.
+
+```sh
+.venv/bin/pip install -e '.[audit,gpu,test]' bitsandbytes scipy
+.venv/bin/python -m experiments.exp_audit_protocol_gpu \
+  --snapshot /path/to/pinned/snapshot --out runs/audit-h100
+.venv/bin/ivgym verify runs/audit-h100/honest/block-0000 \
+  --trust runs/audit-h100/trust.json
+```
+
+See the [implementation guide](docs/AUDIT_IMPLEMENTATION.md) for environment
+setup, pinned-model download, the complete audit/replay commands, and supported
+contract settings. The [RFC](docs/AUDIT_PROTOCOL_RFC.md) distinguishes implemented
+features from the remaining design. Unsupported capabilities and insufficient
+calibration produce explicit `unsupported` or `inconclusive` outcomes.
+
 ## Quickstart
 
 ```bash
@@ -680,14 +728,17 @@ setting should take the scheduler and skip the head.
 
 ```
 ivgym/
+  audit/             authenticated fixed-horizon protocol, separate from harness.py:
+                     CLI, strict contracts, signatures, HTTP receipts, CUDA reference
+                     scoring, offline verification and replay
   core.py            SamplingSpec, Sequence/TokenStep, VContext
   sampling.py        seed-synced Gumbel-Max + top-k/top-p
   attacks.py         Attack base + registry (honest, quant, kv_fp8, temp, seed, bug, adv-temp)
   verifiers.py       ONE abstraction for every TOKEN detector: (value, evidence, aggregation)
                      under a recompute budget. Tier-1 recomputes M; Tier-0 never does.
-  harness.py         generate -> verify -> calibrate -> evaluate, and EvalConfig: the one
-                     standardized protocol every experiment scores under — token AND
-                     clock alike — INCLUDING the enforced batch/pool ceiling
+  harness.py         generate -> verify -> calibrate -> evaluate, and EvalConfig: the
+                     research harness for token and clock experiments, including
+                     the enforced batch/pool ceiling
                      + prefill_cost / select_prefix_scheduled: the PHYSICAL audit cost
   metrics.py         ROC AUC, TPR@FPR, standardized partial AUC. Pure numpy.
   signal.py          the theory side: d' -> batch separation -> predicted pAUC, so an
@@ -703,9 +754,12 @@ ivgym/
   backends/hf_gpu.py a real model on a GPU + lazy_reference: RAISE on an unpaid
                      reference row, so a selective budget's cost is MEASURED not assumed
   backends/vllm_adapter.py the same contract behind vLLM — a documented skeleton, not
-                     yet runnable; every committed result was measured on hf_gpu
+                     yet runnable; the audit MVP uses its own Hugging Face HTTP path
 
 experiments/         one file per claim; exp_*_gpu.py need CUDA, plot_*.py do not
+  exp_audit_protocol_gpu.py
+                     complete HTTP audit blocks: development, calibration, honest,
+                     temperature override and actual NF4; signed artifacts and replay
   specdec_common.py  the two forward-pass SHAPES (sequential vs chunked/batched) as
                      one symmetric API, shared by the four exp_specdec_* experiments.
                      Torch, so it lives here rather than in the numpy-only core
@@ -718,7 +772,9 @@ experiments/         one file per claim; exp_*_gpu.py need CUDA, plot_*.py do no
                      same pAUC scoreboard as every token verifier
   data/              inputs the specdec experiments were measured on: the 32-prompt
                      bank and the long natural document for the context sweep
-tests/               test_smoke / test_proxy_spec / test_triage_and_cost / test_infogain
+tests/               test_audit_protocol / test_audit_conformance: signed-artifact
+                     attacks, HTTP lifecycle, budgets, statistics and wire vectors
+                     test_smoke / test_proxy_spec / test_triage_and_cost / test_infogain
                      + test_claims.py: every TOKEN claim still has the artifact it came
                      from (the clock claims above are not yet wired into this check)
 paper/               paper.tex + make_tables.py + make_figs.py (regenerate from
@@ -804,12 +860,16 @@ quantize + temperature-retune cheat against the seed-free verifier
 - **Model scale.** Everything runs on a single H100, so reference models are
   0.13B–8B. The economically interesting case is a frontier model, where the
   attacker's incentive is larger and the proxy-to-target ratio much smaller.
-- **Attacks are mostly simulated at the logit level.** Temperature, seed and
-  sampler-bug attacks are real specification changes, but quantization and fp8
-  caches are perturbations on top of real logits rather than genuinely quantized
-  weights. A faithful deterministic quantization is sparse and heavy-tailed,
-  structurally unlike an i.i.d. Gaussian perturbation. Read the quantization
-  numbers as a *model of* the attack, not a measurement of it.
+- **Most headline quantization results model the attack.** The research harness's
+  `quant_*` and `kv_fp8` attacks perturb real logits; those numbers do not measure
+  actual quantized weights or FP8 caches. The new
+  [audit pilot](docs/results/audit_protocol_h100.md) does generate with genuine
+  NF4 weights and detected 0/10 blocks at its small budget. That result does not
+  validate the earlier simulated effect sizes or establish general undetectability.
+- **The authenticated protocol is an experimental MVP.** It supports explicit raw
+  token IDs, full-softmax sampling and a local Hugging Face HTTP receipt extension.
+  Arbitrary OpenAI-compatible endpoints, vLLM, cross-hardware calibration and
+  validated deployment operating points are outside the tested scope.
 - **The verifier is passive.** No experiment has the attacker adapting to the
   specific verifier it faces.
 - **Small-sample statistics remain the weak axis.** Five to nine protocol seeds
@@ -838,6 +898,11 @@ See **[`NEXT_EXPERIMENTS.md`](planning/NEXT_EXPERIMENTS.md)** for what to run ab
 
 ## Further reading
 
+- **[docs/AUDIT_IMPLEMENTATION.md](docs/AUDIT_IMPLEMENTATION.md)** — executable audit,
+  verify and replay commands, wire contract, trust and budget limits.
+- **[docs/AUDIT_PROTOCOL_RFC.md](docs/AUDIT_PROTOCOL_RFC.md)** — protocol design and
+  implementation status; [H100 results](docs/results/audit_protocol_h100.md) include
+  measured outcomes, costs and the complete public evidence archive.
 - **[`paper/paper.pdf`](paper/paper.pdf)** — the full write-up.
   **[`paper/mats_poster.pdf`](paper/mats_poster.pdf)** is the one-page version: token
   verifier vs. clock verifier, side by side.

@@ -16,3 +16,7 @@ texput.log
 # Local secrets / key helpers — never commit
 .set_key.sh
 .claude/
+
+# Audit transcripts contain private inputs; keys and local runs stay local.
+runs/
+*.egg-info/

@@ -30,8 +30,8 @@ def position_seed(master_seed: int, prompt_id: int, position: int) -> int:
 def gumbel_noise(vocab: int, seed: int) -> np.ndarray:
     """Standard Gumbel(0,1) noise vector, reproducible from `seed`.
 
-    Matches vLLM's use of an exponential draw: g = -log(e), e ~ Exp(1) is a
-    Gumbel sample up to sign conventions; here we use the canonical
+    An exponential draw g = -log(e), e ~ Exp(1), has the same distribution.
+    This NumPy RNG does not reproduce vLLM's draws or counter layout. We use
     g = -log(-log(U)).
     """
     rng = np.random.default_rng(seed)

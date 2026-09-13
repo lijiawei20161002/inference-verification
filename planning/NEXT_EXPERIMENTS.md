@@ -8,8 +8,9 @@ repo's history looked strong until someone asked that question.
 Three things bound the current record, and the list below is organized around
 them:
 
-- **A** — the attacks are simulated at the logit level, so the headline
-  quantization numbers are a *model of* the attack, not a measurement of it.
+- **A** — the headline research-harness quantization numbers model logit
+  perturbations. The new real-NF4 protocol pilot below adds an end-to-end
+  measurement, but does not validate those earlier effect sizes.
 - **B** — the verifier is passive; no adversary has ever adapted to it.
 - **C** — one GPU, one prompt domain, so the false-positive side of the ROC has
   never been stressed by anything except run-to-run nondeterminism on a single
@@ -19,6 +20,20 @@ Of these, **C is the one that decides whether any of this deploys**, and it is
 the cheapest to run. It is first for that reason.
 
 ---
+
+## Protocol MVP completed; deployment validation remains open
+
+The [authenticated audit pilot](../docs/results/audit_protocol_h100.md) now runs
+signed HTTP collection, post-closure selection, independent CUDA scoring,
+offline verification and replay. It used 63 fresh calibration blocks and flagged
+1/20 honest blocks, 10/10 temperature overrides and 0/10 real NF4 blocks at a 5%
+per-audit threshold. All 107 transcripts verified; four replay checks agreed
+exactly, and the repository suite passed 112 tests.
+
+Next steps are vLLM receipt integration, representative cross-hardware and
+serving-condition calibration, and enough fresh held-out blocks to measure FPR
+and attack-specific power. The small single-H100 pilot neither establishes NF4
+detection nor closes the deployment-calibration requirement.
 
 ## Tier 1 — the results that are load-bearing and untested
 
@@ -99,9 +114,13 @@ economically most plausible cheat.
 
 The attacks apply an i.i.d. Gaussian logit perturbation. A real NF4/INT8 quantized
 checkpoint produces a *deterministic, sparse, heavy-tailed* logit shift —
-structurally different even when matched on mean divergence. The repo's one
-genuine nf4 datapoint (in the proxy-panel study) read chance, which is at least
-consistent, but "consistent with" is not "measured".
+structurally different even when matched on mean divergence. The earlier genuine
+NF4 datapoint in the proxy-panel study read chance. The new authenticated
+protocol pilot generated with actual NF4 Qwen3-0.6B weights and flagged 0/10
+blocks using NLL and capped log rank against BF16. It selected two of four
+responses per block, capped at 24 output tokens each. That is a measured negative
+result at a small budget, not the all-detector effect-size and concentration
+study proposed below.
 
 **Experiment.** Serve `M̂` = a real `bitsandbytes` NF4 (and INT8, and AWQ/GPTQ)
 load of `M`, generate honestly *under `M̂`*, and verify against fp16 `M`. Report
