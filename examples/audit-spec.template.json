@@ -1,0 +1,78 @@
+{
+  "schema_version": "ivgym.audit-spec.draft-0.1",
+  "template_only": true,
+  "protocol_mode": "receipted",
+  "model": {
+    "alias": "qwen3-8b",
+    "repository": "Qwen/Qwen3-8B",
+    "revision": null,
+    "manifest_sha256": null,
+    "tokenizer_sha256": null,
+    "chat_template_sha256": null,
+    "adapters": []
+  },
+  "generation": {
+    "temperature": 1.0,
+    "top_p": 1.0,
+    "top_k": null,
+    "seed_contract": "not_used_for_verification",
+    "max_output_tokens": 128,
+    "effective_generation_config_sha256": null,
+    "reasoning_mode": null,
+    "context_policy": "reject_overflow",
+    "stop_and_eos_policy_sha256": null,
+    "require_exact_prompt_and_output_token_ids": true
+  },
+  "claimed_arithmetic": {
+    "weights": "bfloat16",
+    "activation_and_accumulation_profile_sha256": null,
+    "kv_cache": "bfloat16",
+    "allowed_execution_family_sha256": null
+  },
+  "reference": {
+    "trust_mode": "adopter_controlled",
+    "executor_config": null,
+    "image_sha256": null,
+    "hardware_profile": null
+  },
+  "calibration": {
+    "bundle": null,
+    "sha256": null,
+    "trusted_publisher_key_id": null,
+    "require_applicability": true,
+    "require_validated_operating_point": true
+  },
+  "audit": {
+    "scope": "captured_requests_in_one_deployment_epoch",
+    "prompt_suite_sha256": null,
+    "scheduled_requests": 64,
+    "selection": "uniform_responses_without_replacement_after_closure",
+    "audited_responses": 16,
+    "prefix_policy": "all_returned_tokens_up_to_output_cap",
+    "selection_algorithm_version": null,
+    "fixed_horizon": true,
+    "detectors": ["cross_entropy", "token_toploc"],
+    "detector_implementation_sha256": null,
+    "aggregate": "fixed_mean_per_detector_over_selected_tokens",
+    "null_test": "max_over_calibrated_conditions_rank_pvalue",
+    "multiple_testing": "bonferroni",
+    "alpha": 0.0001,
+    "alpha_scope": "one_audit_only",
+    "campaign_allocation": null
+  },
+  "budget": {
+    "max_requests_including_retries": 64,
+    "max_generated_tokens": 8192,
+    "max_reference_prefill_tokens": 100000,
+    "max_cost_usd": null,
+    "on_exhaustion": "inconclusive"
+  },
+  "evidence": {
+    "trust_config": null,
+    "provider_key_id": null,
+    "auditor_signing_key_reference": null,
+    "require_provider_receipts": true,
+    "include_private_replay_inputs": true,
+    "destination": "./audit-output"
+  }
+}
