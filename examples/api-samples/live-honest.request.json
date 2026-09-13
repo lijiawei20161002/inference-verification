@@ -1,0 +1,21 @@
+{
+  "model": "qwen3-0.6b",
+  "target": {
+    "base_url": "http://127.0.0.1:8766/v1",
+    "model": "test-provider",
+    "sampler_contract": "ivgym_numpy_gumbel_v1"
+  },
+  "verifiers": [
+    "token_difr"
+  ],
+  "sampling": {
+    "temperature": 1.0,
+    "top_k": null,
+    "top_p": 1.0,
+    "seed": 42
+  },
+  "prompts": [
+    "Write an imaginative beginning to a story about a lighthouse:"
+  ],
+  "max_tokens": 8
+}

@@ -1,0 +1,94 @@
+{
+  "id": "3dabe7c960da4faab7232257633b93da",
+  "outcome": "no_deviation_detected",
+  "verifiers": {
+    "token_difr": {
+      "status": "no_deviation_detected",
+      "reason": null,
+      "score": 0.003284000799214315,
+      "sample_count": 8,
+      "p_value": 1.0,
+      "threshold": 0.05,
+      "calibration_id": "token_difr-bb72e62a21001feb",
+      "calibration_provenance": "Operator-controlled separate HF process; integration test only",
+      "condition_p_values": {
+        "trusted_control": 1.0
+      },
+      "minimum_p_value": 0.05,
+      "design": {
+        "model": "qwen3-0.6b",
+        "reference": {
+          "repository": "Qwen/Qwen3-0.6B",
+          "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+          "dtype": "bfloat16",
+          "attention": "eager",
+          "torch": "2.8.0+cu128",
+          "device": "NVIDIA H100 80GB HBM3",
+          "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+        },
+        "detector": "token_difr",
+        "sampling": {
+          "temperature": 1.0,
+          "top_k": null,
+          "top_p": 1.0,
+          "seed": 42
+        },
+        "provenance": "service_observed",
+        "input_modes": [
+          "exact_ids"
+        ],
+        "prompt_lengths": [
+          12
+        ],
+        "output_lengths": [
+          8
+        ],
+        "aggregate": "mean_over_tokens",
+        "sampler_contract": "ivgym_numpy_gumbel_v1"
+      }
+    }
+  },
+  "alpha": 0.05,
+  "combination": "bonferroni_over_requested_verifiers",
+  "parties": {
+    "requester": "API caller",
+    "provider": "untrusted inference endpoint",
+    "verifier": "independent third-party service"
+  },
+  "evidence_provenance": "service_observed",
+  "reference": {
+    "repository": "Qwen/Qwen3-0.6B",
+    "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "dtype": "bfloat16",
+    "attention": "eager",
+    "torch": "2.8.0+cu128",
+    "device": "NVIDIA H100 80GB HBM3",
+    "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+  },
+  "observations": [
+    {
+      "role": "token",
+      "intervals_ms": [
+        44.03297044336796,
+        20.573843270540237,
+        20.219888538122177,
+        23.555507883429527,
+        20.763251930475235,
+        20.42354643344879,
+        21.6323584318161
+      ],
+      "unit": "token",
+      "ttft_ms": 431.57663382589817,
+      "events": 8,
+      "response_body_bytes": 1563,
+      "wall_seconds": 0.603468032553792
+    }
+  ],
+  "costs": {
+    "reference_prefill_tokens": 19,
+    "reference_seconds": 0.41729940101504326,
+    "wall_seconds": 21.163838485255837
+  },
+  "scope": "behavioral token and timing evidence; not hardware attestation",
+  "calibration_assumption": "Honest calibration blocks must be exchangeable with this request; matching a design does not prove traffic coverage."
+}

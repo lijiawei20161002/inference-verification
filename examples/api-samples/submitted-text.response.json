@@ -1,0 +1,111 @@
+{
+  "id": "c7b0c608584a498590ae0160a8c7dd06",
+  "outcome": "inconclusive",
+  "verifiers": {
+    "cross_entropy": {
+      "status": "inconclusive",
+      "reason": "no_applicable_calibration",
+      "score": 0.5229521989822388,
+      "sample_count": 2,
+      "p_value": null,
+      "threshold": 0.025,
+      "calibration_id": null,
+      "design": {
+        "model": "qwen3-0.6b",
+        "reference": {
+          "repository": "Qwen/Qwen3-0.6B",
+          "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+          "dtype": "bfloat16",
+          "attention": "eager",
+          "torch": "2.8.0+cu128",
+          "device": "NVIDIA H100 80GB HBM3",
+          "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+        },
+        "detector": "cross_entropy",
+        "sampling": {
+          "temperature": 1.0,
+          "top_k": null,
+          "top_p": 1.0,
+          "seed": 42
+        },
+        "provenance": "client_reported",
+        "input_modes": [
+          "retokenized_text"
+        ],
+        "prompt_lengths": [
+          5
+        ],
+        "output_lengths": [
+          2
+        ],
+        "aggregate": "mean_over_tokens",
+        "sampler_contract": null
+      }
+    },
+    "token_toploc": {
+      "status": "inconclusive",
+      "reason": "no_applicable_calibration",
+      "score": 0.0,
+      "sample_count": 2,
+      "p_value": null,
+      "threshold": 0.025,
+      "calibration_id": null,
+      "design": {
+        "model": "qwen3-0.6b",
+        "reference": {
+          "repository": "Qwen/Qwen3-0.6B",
+          "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+          "dtype": "bfloat16",
+          "attention": "eager",
+          "torch": "2.8.0+cu128",
+          "device": "NVIDIA H100 80GB HBM3",
+          "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+        },
+        "detector": "token_toploc",
+        "sampling": {
+          "temperature": 1.0,
+          "top_k": null,
+          "top_p": 1.0,
+          "seed": 42
+        },
+        "provenance": "client_reported",
+        "input_modes": [
+          "retokenized_text"
+        ],
+        "prompt_lengths": [
+          5
+        ],
+        "output_lengths": [
+          2
+        ],
+        "aggregate": "mean_over_tokens",
+        "sampler_contract": null
+      }
+    }
+  },
+  "alpha": 0.05,
+  "combination": "bonferroni_over_requested_verifiers",
+  "parties": {
+    "requester": "API caller",
+    "provider": "untrusted inference endpoint",
+    "verifier": "independent third-party service"
+  },
+  "evidence_provenance": "client_reported",
+  "reference": {
+    "repository": "Qwen/Qwen3-0.6B",
+    "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "dtype": "bfloat16",
+    "attention": "eager",
+    "torch": "2.8.0+cu128",
+    "device": "NVIDIA H100 80GB HBM3",
+    "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+  },
+  "observations": [],
+  "costs": {
+    "reference_prefill_tokens": 6,
+    "reference_seconds": 0.025602975860238075,
+    "wall_seconds": 0.02631423808634281
+  },
+  "scope": "behavioral token and timing evidence; not hardware attestation",
+  "calibration_assumption": "Honest calibration blocks must be exchangeable with this request; matching a design does not prove traffic coverage."
+}

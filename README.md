@@ -41,7 +41,8 @@ replace the reference or submit their own trusted score arrays.
 [Live provider example](examples/verify-live.json) ·
 [Token capture example](examples/verify-tokens.json) ·
 [Clock capture example](examples/verify-clock.json) ·
-[Complete API guide](docs/VERIFICATION_SERVICE.md)
+[Complete API guide](docs/VERIFICATION_SERVICE.md) ·
+[Actual request/response samples](examples/api-samples/README.md)
 
 The service exposes the original `token_difr`, `cross_entropy`, `token_toploc`
 and context-slope `clock_slope` scores. Live collection currently supports

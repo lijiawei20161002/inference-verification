@@ -1,0 +1,55 @@
+{
+  "id": "abdd6c34662a45d7b05bacdf5fe5b537",
+  "outcome": "inconclusive",
+  "verifiers": {
+    "clock_slope": {
+      "status": "inconclusive",
+      "reason": "no_applicable_calibration",
+      "score": -53.631264062499994,
+      "sample_count": 64,
+      "p_value": null,
+      "threshold": 0.05,
+      "calibration_id": null,
+      "design": {
+        "model": "Qwen/Qwen3-1.7B",
+        "detector": "clock_slope",
+        "provenance": "client_reported",
+        "unit": "device_token",
+        "contexts": [
+          [
+            256,
+            32768
+          ]
+        ],
+        "intervals_per_pair": [
+          64
+        ],
+        "aggregate": "mean_negative_context_difference"
+      },
+      "details": {
+        "delta_itl_ms": 53.631264062499994,
+        "short_mean_ms": 7.290699999999999,
+        "long_mean_ms": 60.921964062499995,
+        "unit": "device_token",
+        "interpretation": "A smaller long-minus-short gap increases the anomaly score."
+      }
+    }
+  },
+  "alpha": 0.05,
+  "combination": "bonferroni_over_requested_verifiers",
+  "parties": {
+    "requester": "API caller",
+    "provider": "untrusted inference endpoint",
+    "verifier": "independent third-party service"
+  },
+  "evidence_provenance": "client_reported",
+  "reference": null,
+  "observations": [],
+  "costs": {
+    "reference_prefill_tokens": 0,
+    "reference_seconds": 0.0,
+    "wall_seconds": 0.0002179071307182312
+  },
+  "scope": "behavioral token and timing evidence; not hardware attestation",
+  "calibration_assumption": "Honest calibration blocks must be exchangeable with this request; matching a design does not prove traffic coverage."
+}

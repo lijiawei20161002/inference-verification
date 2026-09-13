@@ -53,6 +53,9 @@ required to call the new service.
 
 ## API requests
 
+See [five actual H100 request/response samples](../examples/api-samples/README.md)
+for live token decisions, submitted text, and historical clock traces.
+
 | Endpoint | Purpose |
 |---|---|
 | `POST /v1/verify` | Submit a request and wait for the result |
