@@ -145,12 +145,6 @@ receipts, selects responses after signed closure, and scores their returned
 prefixes with a separate pinned CUDA reference. Offline verification checks the
 signed evidence and decision; GPU replay independently recomputes the scores.
 
-![Receipted audit protocol: commit the plan, collect and close responses, reveal the sample, recompute independently, then seal and review.](docs/figures/fig_audit_protocol.png)
-
-[Editable SVG](docs/figures/fig_audit_protocol.svg) · [PDF](docs/figures/fig_audit_protocol.pdf).
-The highlighted boundary keeps selection randomness secret until responses are
-closed; verification and replay are separate review operations.
-
 The [H100 pilot](docs/results/audit_protocol_h100.md) used Qwen3-0.6B, 63 fresh
 calibration blocks and a 5% per-audit threshold:
 
