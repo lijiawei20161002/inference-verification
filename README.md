@@ -1,4 +1,70 @@
-# Inference Verification Gym (`ivgym`)
+# IVGym Verification Service
+
+An independent third party checks inference providers using the **token verifiers
+and clock verifier from the IVGym experiments**. Anyone can post a verification
+request. The service runs its own reference model and measures the provider
+connection; the inference provider does not run or control the verifier.
+
+```mermaid
+flowchart LR
+    U["Anyone: API caller"] -->|"Verification request"| V["Independent verification service"]
+    V -->|"Inference requests"| P["Provider being checked"]
+    P -->|"Outputs; service measures arrival times"| V
+    R["Service-owned reference + calibration"] --> V
+    V -->|"Token + clock results"| U
+```
+
+## Run the independent API
+
+```sh
+python -m venv --system-site-packages .venv
+.venv/bin/pip install -e '.[service,gpu,test]'
+.venv/bin/ivgym serve --config examples/service.h100.json --port 8000
+
+curl http://127.0.0.1:8000/v1/verify \
+  -H 'Content-Type: application/json' \
+  --data-binary @examples/verify-tokens.json
+```
+
+Open **http://127.0.0.1:8000/docs** for interactive API documentation. On this
+H100, the example configuration uses the cached Qwen3-0.6B reference. Configure
+provider URLs and trusted calibration as the service operator; callers cannot
+replace the reference or submit their own trusted score arrays.
+
+| Request | API |
+|---|---|
+| Verify a provider or submitted captures | `POST /v1/verify` |
+| Queue a longer verification | `POST /v1/verifications` |
+| Retrieve job status and result | `GET /v1/verifications/{id}` |
+| Discover models and calibration | `GET /v1/models`, `GET /v1/calibrations` |
+
+[Live provider example](examples/verify-live.json) ·
+[Token capture example](examples/verify-tokens.json) ·
+[Clock capture example](examples/verify-clock.json) ·
+[Complete API guide](docs/VERIFICATION_SERVICE.md)
+
+The service exposes the original `token_difr`, `cross_entropy`, `token_toploc`
+and context-slope `clock_slope` scores. Live collection currently supports
+OpenAI-compatible streaming `/completions`; captured evidence is also accepted.
+It distinguishes exact token IDs, reconstructed text, token arrival times and
+SSE chunk gaps. DiFR requires the original shared RNG contract. Results include
+scores and applicable calibrated decisions; absent matching calibration they
+remain explicitly inconclusive.
+
+**Validation:** [135 tests and nine H100 service integration cases](docs/results/verification_service_h100.md)
+passed. With operator-owned calibration, the live API accepted the honest control
+and flagged an actual temperature override; the clock API reproduced the prior
+experiment statistic. These are integration checks, not deployment FPR certification.
+
+The older signed-receipt workflow remains an
+[optional artifact experiment](docs/AUDIT_IMPLEMENTATION.md). It is not the
+verification service or a requirement for inference providers. `ivgym serve`
+now launches the independent verifier; use `ivgym artifact-provider` for that
+older experiment's provider server.
+
+---
+
+## Research background
 
 **How do you audit a computation you cannot see?**
 
@@ -71,7 +137,7 @@ figure in it regenerates from the committed run artifacts
 
 ---
 
-## Experimental authenticated audit protocol
+## Optional signed-artifact experiment
 
 The proposed protocol now has an executable MVP: `ivgym audit`, `ivgym verify`,
 and `ivgym replay`. It captures exact-token HTTP responses, authenticates provider

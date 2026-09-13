@@ -1,0 +1,1264 @@
+{
+  "purpose": "Independent service integration and parity with prior experimental detectors",
+  "provider_process_id": 17757,
+  "verifier_process_id": 18614,
+  "cases": {
+    "prior_honest": {
+      "id": "baf2155e36804338b11b66c25b21d10c",
+      "outcome": "inconclusive",
+      "verifiers": {
+        "cross_entropy": {
+          "status": "inconclusive",
+          "reason": "no_applicable_calibration",
+          "score": 1.936545747616189,
+          "sample_count": 96,
+          "p_value": null,
+          "threshold": 0.025,
+          "calibration_id": null,
+          "design": {
+            "model": "qwen3-0.6b",
+            "reference": {
+              "repository": "Qwen/Qwen3-0.6B",
+              "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+              "dtype": "bfloat16",
+              "attention": "eager",
+              "torch": "2.8.0+cu128",
+              "device": "NVIDIA H100 80GB HBM3",
+              "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+            },
+            "detector": "cross_entropy",
+            "sampling": {
+              "temperature": 1.0,
+              "top_k": null,
+              "top_p": 1.0,
+              "seed": 42
+            },
+            "provenance": "client_reported",
+            "input_modes": [
+              "exact_ids",
+              "exact_ids",
+              "exact_ids",
+              "exact_ids"
+            ],
+            "prompt_lengths": [
+              29,
+              24,
+              25,
+              27
+            ],
+            "output_lengths": [
+              24,
+              24,
+              24,
+              24
+            ],
+            "aggregate": "mean_over_tokens",
+            "sampler_contract": null
+          }
+        },
+        "token_toploc": {
+          "status": "inconclusive",
+          "reason": "no_applicable_calibration",
+          "score": 5.28125,
+          "sample_count": 96,
+          "p_value": null,
+          "threshold": 0.025,
+          "calibration_id": null,
+          "design": {
+            "model": "qwen3-0.6b",
+            "reference": {
+              "repository": "Qwen/Qwen3-0.6B",
+              "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+              "dtype": "bfloat16",
+              "attention": "eager",
+              "torch": "2.8.0+cu128",
+              "device": "NVIDIA H100 80GB HBM3",
+              "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+            },
+            "detector": "token_toploc",
+            "sampling": {
+              "temperature": 1.0,
+              "top_k": null,
+              "top_p": 1.0,
+              "seed": 42
+            },
+            "provenance": "client_reported",
+            "input_modes": [
+              "exact_ids",
+              "exact_ids",
+              "exact_ids",
+              "exact_ids"
+            ],
+            "prompt_lengths": [
+              29,
+              24,
+              25,
+              27
+            ],
+            "output_lengths": [
+              24,
+              24,
+              24,
+              24
+            ],
+            "aggregate": "mean_over_tokens",
+            "sampler_contract": null
+          }
+        }
+      },
+      "alpha": 0.05,
+      "combination": "bonferroni_over_requested_verifiers",
+      "parties": {
+        "requester": "API caller",
+        "provider": "untrusted inference endpoint",
+        "verifier": "independent third-party service"
+      },
+      "evidence_provenance": "client_reported",
+      "reference": {
+        "repository": "Qwen/Qwen3-0.6B",
+        "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+        "dtype": "bfloat16",
+        "attention": "eager",
+        "torch": "2.8.0+cu128",
+        "device": "NVIDIA H100 80GB HBM3",
+        "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+      },
+      "observations": [],
+      "costs": {
+        "reference_prefill_tokens": 197,
+        "reference_seconds": 0.5806866809725761,
+        "wall_seconds": 20.694812947884202
+      },
+      "scope": "behavioral token and timing evidence; not hardware attestation",
+      "calibration_assumption": "Honest calibration blocks must be exchangeable with this request; matching a design does not prove traffic coverage."
+    },
+    "prior_temperature_2": {
+      "id": "9726f4e90c5242cb868513d706ea8780",
+      "outcome": "inconclusive",
+      "verifiers": {
+        "cross_entropy": {
+          "status": "inconclusive",
+          "reason": "no_applicable_calibration",
+          "score": 12.791612041493257,
+          "sample_count": 96,
+          "p_value": null,
+          "threshold": 0.025,
+          "calibration_id": null,
+          "design": {
+            "model": "qwen3-0.6b",
+            "reference": {
+              "repository": "Qwen/Qwen3-0.6B",
+              "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+              "dtype": "bfloat16",
+              "attention": "eager",
+              "torch": "2.8.0+cu128",
+              "device": "NVIDIA H100 80GB HBM3",
+              "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+            },
+            "detector": "cross_entropy",
+            "sampling": {
+              "temperature": 1.0,
+              "top_k": null,
+              "top_p": 1.0,
+              "seed": 42
+            },
+            "provenance": "client_reported",
+            "input_modes": [
+              "exact_ids",
+              "exact_ids",
+              "exact_ids",
+              "exact_ids"
+            ],
+            "prompt_lengths": [
+              24,
+              24,
+              18,
+              23
+            ],
+            "output_lengths": [
+              24,
+              24,
+              24,
+              24
+            ],
+            "aggregate": "mean_over_tokens",
+            "sampler_contract": null
+          }
+        },
+        "token_toploc": {
+          "status": "inconclusive",
+          "reason": "no_applicable_calibration",
+          "score": 48.479166666666664,
+          "sample_count": 96,
+          "p_value": null,
+          "threshold": 0.025,
+          "calibration_id": null,
+          "design": {
+            "model": "qwen3-0.6b",
+            "reference": {
+              "repository": "Qwen/Qwen3-0.6B",
+              "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+              "dtype": "bfloat16",
+              "attention": "eager",
+              "torch": "2.8.0+cu128",
+              "device": "NVIDIA H100 80GB HBM3",
+              "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+            },
+            "detector": "token_toploc",
+            "sampling": {
+              "temperature": 1.0,
+              "top_k": null,
+              "top_p": 1.0,
+              "seed": 42
+            },
+            "provenance": "client_reported",
+            "input_modes": [
+              "exact_ids",
+              "exact_ids",
+              "exact_ids",
+              "exact_ids"
+            ],
+            "prompt_lengths": [
+              24,
+              24,
+              18,
+              23
+            ],
+            "output_lengths": [
+              24,
+              24,
+              24,
+              24
+            ],
+            "aggregate": "mean_over_tokens",
+            "sampler_contract": null
+          }
+        }
+      },
+      "alpha": 0.05,
+      "combination": "bonferroni_over_requested_verifiers",
+      "parties": {
+        "requester": "API caller",
+        "provider": "untrusted inference endpoint",
+        "verifier": "independent third-party service"
+      },
+      "evidence_provenance": "client_reported",
+      "reference": {
+        "repository": "Qwen/Qwen3-0.6B",
+        "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+        "dtype": "bfloat16",
+        "attention": "eager",
+        "torch": "2.8.0+cu128",
+        "device": "NVIDIA H100 80GB HBM3",
+        "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+      },
+      "observations": [],
+      "costs": {
+        "reference_prefill_tokens": 181,
+        "reference_seconds": 0.13817874528467655,
+        "wall_seconds": 0.13867294043302536
+      },
+      "scope": "behavioral token and timing evidence; not hardware attestation",
+      "calibration_assumption": "Honest calibration blocks must be exchangeable with this request; matching a design does not prove traffic coverage."
+    },
+    "prior_real_nf4": {
+      "id": "3bb37617d607494bb4e8607dab00892f",
+      "outcome": "inconclusive",
+      "verifiers": {
+        "cross_entropy": {
+          "status": "inconclusive",
+          "reason": "no_applicable_calibration",
+          "score": 2.5471849329645067,
+          "sample_count": 96,
+          "p_value": null,
+          "threshold": 0.025,
+          "calibration_id": null,
+          "design": {
+            "model": "qwen3-0.6b",
+            "reference": {
+              "repository": "Qwen/Qwen3-0.6B",
+              "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+              "dtype": "bfloat16",
+              "attention": "eager",
+              "torch": "2.8.0+cu128",
+              "device": "NVIDIA H100 80GB HBM3",
+              "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+            },
+            "detector": "cross_entropy",
+            "sampling": {
+              "temperature": 1.0,
+              "top_k": null,
+              "top_p": 1.0,
+              "seed": 42
+            },
+            "provenance": "client_reported",
+            "input_modes": [
+              "exact_ids",
+              "exact_ids",
+              "exact_ids",
+              "exact_ids"
+            ],
+            "prompt_lengths": [
+              19,
+              19,
+              18,
+              28
+            ],
+            "output_lengths": [
+              24,
+              24,
+              24,
+              24
+            ],
+            "aggregate": "mean_over_tokens",
+            "sampler_contract": null
+          }
+        },
+        "token_toploc": {
+          "status": "inconclusive",
+          "reason": "no_applicable_calibration",
+          "score": 9.416666666666666,
+          "sample_count": 96,
+          "p_value": null,
+          "threshold": 0.025,
+          "calibration_id": null,
+          "design": {
+            "model": "qwen3-0.6b",
+            "reference": {
+              "repository": "Qwen/Qwen3-0.6B",
+              "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+              "dtype": "bfloat16",
+              "attention": "eager",
+              "torch": "2.8.0+cu128",
+              "device": "NVIDIA H100 80GB HBM3",
+              "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+            },
+            "detector": "token_toploc",
+            "sampling": {
+              "temperature": 1.0,
+              "top_k": null,
+              "top_p": 1.0,
+              "seed": 42
+            },
+            "provenance": "client_reported",
+            "input_modes": [
+              "exact_ids",
+              "exact_ids",
+              "exact_ids",
+              "exact_ids"
+            ],
+            "prompt_lengths": [
+              19,
+              19,
+              18,
+              28
+            ],
+            "output_lengths": [
+              24,
+              24,
+              24,
+              24
+            ],
+            "aggregate": "mean_over_tokens",
+            "sampler_contract": null
+          }
+        }
+      },
+      "alpha": 0.05,
+      "combination": "bonferroni_over_requested_verifiers",
+      "parties": {
+        "requester": "API caller",
+        "provider": "untrusted inference endpoint",
+        "verifier": "independent third-party service"
+      },
+      "evidence_provenance": "client_reported",
+      "reference": {
+        "repository": "Qwen/Qwen3-0.6B",
+        "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+        "dtype": "bfloat16",
+        "attention": "eager",
+        "torch": "2.8.0+cu128",
+        "device": "NVIDIA H100 80GB HBM3",
+        "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+      },
+      "observations": [],
+      "costs": {
+        "reference_prefill_tokens": 176,
+        "reference_seconds": 0.13844553381204605,
+        "wall_seconds": 0.13889140263199806
+      },
+      "scope": "behavioral token and timing evidence; not hardware attestation",
+      "calibration_assumption": "Honest calibration blocks must be exchangeable with this request; matching a design does not prove traffic coverage."
+    },
+    "prior_clock_honest_hi": {
+      "id": "2dec714e0b094273815063a7a1f3cf24",
+      "outcome": "inconclusive",
+      "verifiers": {
+        "clock_slope": {
+          "status": "inconclusive",
+          "reason": "no_applicable_calibration",
+          "score": -53.631264062499994,
+          "sample_count": 64,
+          "p_value": null,
+          "threshold": 0.05,
+          "calibration_id": null,
+          "design": {
+            "model": "Qwen/Qwen3-1.7B",
+            "detector": "clock_slope",
+            "provenance": "client_reported",
+            "unit": "device_token",
+            "contexts": [
+              [
+                256,
+                32768
+              ]
+            ],
+            "intervals_per_pair": [
+              64
+            ],
+            "aggregate": "mean_negative_context_difference"
+          },
+          "details": {
+            "delta_itl_ms": 53.631264062499994,
+            "short_mean_ms": 7.290699999999999,
+            "long_mean_ms": 60.921964062499995,
+            "unit": "device_token",
+            "interpretation": "A smaller long-minus-short gap increases the anomaly score."
+          }
+        }
+      },
+      "alpha": 0.05,
+      "combination": "bonferroni_over_requested_verifiers",
+      "parties": {
+        "requester": "API caller",
+        "provider": "untrusted inference endpoint",
+        "verifier": "independent third-party service"
+      },
+      "evidence_provenance": "client_reported",
+      "reference": null,
+      "observations": [],
+      "costs": {
+        "reference_prefill_tokens": 0,
+        "reference_seconds": 0.0,
+        "wall_seconds": 0.0003181975334882736
+      },
+      "scope": "behavioral token and timing evidence; not hardware attestation",
+      "calibration_assumption": "Honest calibration blocks must be exchangeable with this request; matching a design does not prove traffic coverage."
+    },
+    "prior_clock_window_512": {
+      "id": "1fa268efc97b4fc495902a9095f06d6b",
+      "outcome": "inconclusive",
+      "verifiers": {
+        "clock_slope": {
+          "status": "inconclusive",
+          "reason": "no_applicable_calibration",
+          "score": -0.36642968750000005,
+          "sample_count": 64,
+          "p_value": null,
+          "threshold": 0.05,
+          "calibration_id": null,
+          "design": {
+            "model": "Qwen/Qwen3-1.7B",
+            "detector": "clock_slope",
+            "provenance": "client_reported",
+            "unit": "device_token",
+            "contexts": [
+              [
+                256,
+                32768
+              ]
+            ],
+            "intervals_per_pair": [
+              64
+            ],
+            "aggregate": "mean_negative_context_difference"
+          },
+          "details": {
+            "delta_itl_ms": 0.36642968750000005,
+            "short_mean_ms": 7.290699999999999,
+            "long_mean_ms": 7.6571296875,
+            "unit": "device_token",
+            "interpretation": "A smaller long-minus-short gap increases the anomaly score."
+          }
+        }
+      },
+      "alpha": 0.05,
+      "combination": "bonferroni_over_requested_verifiers",
+      "parties": {
+        "requester": "API caller",
+        "provider": "untrusted inference endpoint",
+        "verifier": "independent third-party service"
+      },
+      "evidence_provenance": "client_reported",
+      "reference": null,
+      "observations": [],
+      "costs": {
+        "reference_prefill_tokens": 0,
+        "reference_seconds": 0.0,
+        "wall_seconds": 0.00010085105895996094
+      },
+      "scope": "behavioral token and timing evidence; not hardware attestation",
+      "calibration_assumption": "Honest calibration blocks must be exchangeable with this request; matching a design does not prove traffic coverage."
+    },
+    "live_independent_provider": {
+      "id": "bed6c853b5bb4a869a21bdbdf436dc60",
+      "outcome": "inconclusive",
+      "verifiers": {
+        "token_difr": {
+          "status": "inconclusive",
+          "reason": "no_applicable_calibration",
+          "score": 0.0014536158338656069,
+          "sample_count": 32,
+          "p_value": null,
+          "threshold": 0.0125,
+          "calibration_id": null,
+          "design": {
+            "model": "qwen3-0.6b",
+            "reference": {
+              "repository": "Qwen/Qwen3-0.6B",
+              "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+              "dtype": "bfloat16",
+              "attention": "eager",
+              "torch": "2.8.0+cu128",
+              "device": "NVIDIA H100 80GB HBM3",
+              "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+            },
+            "detector": "token_difr",
+            "sampling": {
+              "temperature": 1.0,
+              "top_k": null,
+              "top_p": 1.0,
+              "seed": 42
+            },
+            "provenance": "service_observed",
+            "input_modes": [
+              "exact_ids",
+              "exact_ids"
+            ],
+            "prompt_lengths": [
+              5,
+              9
+            ],
+            "output_lengths": [
+              16,
+              16
+            ],
+            "aggregate": "mean_over_tokens",
+            "sampler_contract": "ivgym_numpy_gumbel_v1"
+          },
+          "token_scores": [
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.04651570668369942,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0,
+            0.0
+          ]
+        },
+        "cross_entropy": {
+          "status": "inconclusive",
+          "reason": "no_applicable_calibration",
+          "score": 4.204500444291625,
+          "sample_count": 32,
+          "p_value": null,
+          "threshold": 0.0125,
+          "calibration_id": null,
+          "design": {
+            "model": "qwen3-0.6b",
+            "reference": {
+              "repository": "Qwen/Qwen3-0.6B",
+              "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+              "dtype": "bfloat16",
+              "attention": "eager",
+              "torch": "2.8.0+cu128",
+              "device": "NVIDIA H100 80GB HBM3",
+              "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+            },
+            "detector": "cross_entropy",
+            "sampling": {
+              "temperature": 1.0,
+              "top_k": null,
+              "top_p": 1.0,
+              "seed": 42
+            },
+            "provenance": "service_observed",
+            "input_modes": [
+              "exact_ids",
+              "exact_ids"
+            ],
+            "prompt_lengths": [
+              5,
+              9
+            ],
+            "output_lengths": [
+              16,
+              16
+            ],
+            "aggregate": "mean_over_tokens",
+            "sampler_contract": null
+          },
+          "token_scores": [
+            7.213620662689209,
+            1.5091986656188965,
+            7.495124816894531,
+            3.5094122886657715,
+            2.004772424697876,
+            1.3219752311706543,
+            13.8199462890625,
+            4.989613056182861,
+            2.144449234008789,
+            0.35163185000419617,
+            4.479835510253906,
+            1.502269983291626,
+            0.49200576543807983,
+            6.886383533477783,
+            0.02654867060482502,
+            10.370454788208008,
+            3.3635287284851074,
+            8.810796737670898,
+            4.438345432281494,
+            7.658816814422607,
+            0.36448031663894653,
+            2.8133316040039062,
+            10.768835067749023,
+            1.5908313989639282,
+            3.0646307468414307,
+            1.377889633178711,
+            4.267141342163086,
+            4.328680038452148,
+            0.23392854630947113,
+            4.655637264251709,
+            1.285738229751587,
+            7.4041595458984375
+          ]
+        },
+        "token_toploc": {
+          "status": "inconclusive",
+          "reason": "no_applicable_calibration",
+          "score": 16.21875,
+          "sample_count": 32,
+          "p_value": null,
+          "threshold": 0.0125,
+          "calibration_id": null,
+          "design": {
+            "model": "qwen3-0.6b",
+            "reference": {
+              "repository": "Qwen/Qwen3-0.6B",
+              "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+              "dtype": "bfloat16",
+              "attention": "eager",
+              "torch": "2.8.0+cu128",
+              "device": "NVIDIA H100 80GB HBM3",
+              "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+            },
+            "detector": "token_toploc",
+            "sampling": {
+              "temperature": 1.0,
+              "top_k": null,
+              "top_p": 1.0,
+              "seed": 42
+            },
+            "provenance": "service_observed",
+            "input_modes": [
+              "exact_ids",
+              "exact_ids"
+            ],
+            "prompt_lengths": [
+              5,
+              9
+            ],
+            "output_lengths": [
+              16,
+              16
+            ],
+            "aggregate": "mean_over_tokens",
+            "sampler_contract": null
+          },
+          "token_scores": [
+            50.0,
+            2.0,
+            41.0,
+            3.0,
+            2.0,
+            0.0,
+            50.0,
+            6.0,
+            0.0,
+            0.0,
+            3.0,
+            0.0,
+            0.0,
+            50.0,
+            0.0,
+            50.0,
+            5.0,
+            50.0,
+            10.0,
+            50.0,
+            0.0,
+            3.0,
+            50.0,
+            0.0,
+            3.0,
+            1.0,
+            14.0,
+            14.0,
+            0.0,
+            11.0,
+            1.0,
+            50.0
+          ]
+        },
+        "clock_slope": {
+          "status": "inconclusive",
+          "reason": "no_applicable_calibration",
+          "score": -0.23742330571015677,
+          "sample_count": 30,
+          "p_value": null,
+          "threshold": 0.0125,
+          "calibration_id": null,
+          "design": {
+            "model": "qwen3-0.6b",
+            "detector": "clock_slope",
+            "provenance": "service_observed",
+            "unit": "token",
+            "contexts": [
+              [
+                8,
+                1153
+              ],
+              [
+                8,
+                1153
+              ]
+            ],
+            "intervals_per_pair": [
+              15,
+              15
+            ],
+            "aggregate": "mean_negative_context_difference"
+          },
+          "details": {
+            "delta_itl_ms": 0.23742330571015677,
+            "short_mean_ms": 22.936929389834404,
+            "long_mean_ms": 23.17435269554456,
+            "unit": "token",
+            "interpretation": "A smaller long-minus-short gap increases the anomaly score."
+          }
+        }
+      },
+      "alpha": 0.05,
+      "combination": "bonferroni_over_requested_verifiers",
+      "parties": {
+        "requester": "API caller",
+        "provider": "untrusted inference endpoint",
+        "verifier": "independent third-party service"
+      },
+      "evidence_provenance": "service_observed",
+      "reference": {
+        "repository": "Qwen/Qwen3-0.6B",
+        "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+        "dtype": "bfloat16",
+        "attention": "eager",
+        "torch": "2.8.0+cu128",
+        "device": "NVIDIA H100 80GB HBM3",
+        "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+      },
+      "observations": [
+        {
+          "role": "token",
+          "intervals_ms": [
+            42.362090200185776,
+            23.765871301293373,
+            26.85592696070671,
+            23.414431139826775,
+            23.88264611363411,
+            23.164955899119377,
+            23.41889962553978,
+            22.782783955335617,
+            23.169148713350296,
+            24.068143218755722,
+            26.544716209173203,
+            24.677997455000877,
+            26.82771533727646,
+            25.53536742925644,
+            26.06532722711563
+          ],
+          "unit": "token",
+          "ttft_ms": 439.8380499333143,
+          "events": 16,
+          "response_body_bytes": 2395,
+          "wall_seconds": 0.8269517980515957
+        },
+        {
+          "role": "token",
+          "intervals_ms": [
+            27.57892571389675,
+            26.898672804236412,
+            24.68302473425865,
+            24.224868044257164,
+            23.51975068449974,
+            21.937983110547066,
+            21.81841805577278,
+            21.2272796779871,
+            22.26819470524788,
+            23.07583950459957,
+            23.4686266630888,
+            23.385653272271156,
+            22.58862927556038,
+            21.991344168782234,
+            24.11731146275997
+          ],
+          "unit": "token",
+          "ttft_ms": 66.02711044251919,
+          "events": 16,
+          "response_body_bytes": 2754,
+          "wall_seconds": 0.4193044323474169
+        },
+        {
+          "role": "short",
+          "intervals_ms": [
+            25.38479119539261,
+            23.97678978741169,
+            23.9128191024065,
+            23.88431876897812,
+            23.16104806959629,
+            22.834187373518944,
+            22.704005241394043,
+            21.92205935716629,
+            22.171536460518837,
+            23.797160014510155,
+            23.580651730298996,
+            23.701896890997887,
+            23.202668875455856,
+            22.231318056583405,
+            22.385528311133385
+          ],
+          "unit": "token",
+          "ttft_ms": 48.219820484519005,
+          "events": 16,
+          "response_body_bytes": 2588,
+          "wall_seconds": 0.39746617898344994
+        },
+        {
+          "role": "long",
+          "intervals_ms": [
+            26.321224868297577,
+            25.421947240829468,
+            24.027075618505478,
+            24.360081180930138,
+            23.87482300400734,
+            22.929731756448746,
+            25.329476222395897,
+            22.559573873877525,
+            22.407598793506622,
+            24.679673835635185,
+            23.756928741931915,
+            23.613061755895615,
+            23.846326395869255,
+            23.6625075340271,
+            24.93194118142128
+          ],
+          "unit": "token",
+          "ttft_ms": 73.92811588943005,
+          "events": 16,
+          "response_body_bytes": 100327,
+          "wall_seconds": 0.4378341641277075
+        },
+        {
+          "role": "long",
+          "intervals_ms": [
+            23.444602265954018,
+            21.580956876277924,
+            21.744664758443832,
+            22.89089746773243,
+            21.992463618516922,
+            22.120967507362366,
+            22.63416349887848,
+            21.765615791082382,
+            21.63710817694664,
+            21.34796790778637,
+            23.232562467455864,
+            22.827481850981712,
+            22.797033190727234,
+            21.687394008040428,
+            21.804729476571083
+          ],
+          "unit": "token",
+          "ttft_ms": 50.46842806041241,
+          "events": 16,
+          "response_body_bytes": 100274,
+          "wall_seconds": 0.38599768467247486
+        },
+        {
+          "role": "short",
+          "intervals_ms": [
+            23.16104620695114,
+            22.67914079129696,
+            22.151419892907143,
+            23.113274946808815,
+            22.196676582098007,
+            22.441120818257332,
+            22.545604035258293,
+            22.27182872593403,
+            22.455647587776184,
+            22.112587466835976,
+            22.76742085814476,
+            23.164674639701843,
+            23.197084665298462,
+            22.640587761998177,
+            22.358987480401993
+          ],
+          "unit": "token",
+          "ttft_ms": 43.89692097902298,
+          "events": 16,
+          "response_body_bytes": 2606,
+          "wall_seconds": 0.38364347256720066
+        }
+      ],
+      "costs": {
+        "reference_prefill_tokens": 44,
+        "reference_seconds": 0.15258615836501122,
+        "wall_seconds": 3.0098642744123936
+      },
+      "scope": "behavioral token and timing evidence; not hardware attestation",
+      "calibration_assumption": "Honest calibration blocks must be exchangeable with this request; matching a design does not prove traffic coverage."
+    },
+    "live_calibrated_honest": {
+      "id": "84c330afd84e499f81d98f6a442bda53",
+      "outcome": "no_deviation_detected",
+      "verifiers": {
+        "token_difr": {
+          "status": "no_deviation_detected",
+          "reason": null,
+          "score": 0.003284000799214315,
+          "sample_count": 8,
+          "p_value": 1.0,
+          "threshold": 0.05,
+          "calibration_id": "token_difr-bb72e62a21001feb",
+          "calibration_provenance": "Operator-controlled separate HF process; integration test only",
+          "condition_p_values": {
+            "trusted_control": 1.0
+          },
+          "minimum_p_value": 0.05,
+          "design": {
+            "model": "qwen3-0.6b",
+            "reference": {
+              "repository": "Qwen/Qwen3-0.6B",
+              "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+              "dtype": "bfloat16",
+              "attention": "eager",
+              "torch": "2.8.0+cu128",
+              "device": "NVIDIA H100 80GB HBM3",
+              "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+            },
+            "detector": "token_difr",
+            "sampling": {
+              "temperature": 1.0,
+              "top_k": null,
+              "top_p": 1.0,
+              "seed": 42
+            },
+            "provenance": "service_observed",
+            "input_modes": [
+              "exact_ids"
+            ],
+            "prompt_lengths": [
+              12
+            ],
+            "output_lengths": [
+              8
+            ],
+            "aggregate": "mean_over_tokens",
+            "sampler_contract": "ivgym_numpy_gumbel_v1"
+          }
+        }
+      },
+      "alpha": 0.05,
+      "combination": "bonferroni_over_requested_verifiers",
+      "parties": {
+        "requester": "API caller",
+        "provider": "untrusted inference endpoint",
+        "verifier": "independent third-party service"
+      },
+      "evidence_provenance": "service_observed",
+      "reference": {
+        "repository": "Qwen/Qwen3-0.6B",
+        "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+        "dtype": "bfloat16",
+        "attention": "eager",
+        "torch": "2.8.0+cu128",
+        "device": "NVIDIA H100 80GB HBM3",
+        "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+      },
+      "observations": [
+        {
+          "role": "token",
+          "intervals_ms": [
+            23.874543607234955,
+            23.39012548327446,
+            23.900246247649193,
+            24.18799325823784,
+            24.47238378226757,
+            24.612907320261,
+            24.469032883644104
+          ],
+          "unit": "token",
+          "ttft_ms": 65.68572483956814,
+          "events": 8,
+          "response_body_bytes": 1563,
+          "wall_seconds": 0.23515084944665432
+        }
+      ],
+      "costs": {
+        "reference_prefill_tokens": 19,
+        "reference_seconds": 0.3897182699292898,
+        "wall_seconds": 21.364351991564035
+      },
+      "scope": "behavioral token and timing evidence; not hardware attestation",
+      "calibration_assumption": "Honest calibration blocks must be exchangeable with this request; matching a design does not prove traffic coverage."
+    },
+    "live_calibrated_temperature": {
+      "id": "9bfecbbd192c4766ac5169497ccaa2c5",
+      "outcome": "inconsistent",
+      "verifiers": {
+        "token_difr": {
+          "status": "inconsistent",
+          "reason": null,
+          "score": 1.1333009744219735,
+          "sample_count": 8,
+          "p_value": 0.05,
+          "threshold": 0.05,
+          "calibration_id": "token_difr-bb72e62a21001feb",
+          "calibration_provenance": "Operator-controlled separate HF process; integration test only",
+          "condition_p_values": {
+            "trusted_control": 0.05
+          },
+          "minimum_p_value": 0.05,
+          "design": {
+            "model": "qwen3-0.6b",
+            "reference": {
+              "repository": "Qwen/Qwen3-0.6B",
+              "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+              "dtype": "bfloat16",
+              "attention": "eager",
+              "torch": "2.8.0+cu128",
+              "device": "NVIDIA H100 80GB HBM3",
+              "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+            },
+            "detector": "token_difr",
+            "sampling": {
+              "temperature": 1.0,
+              "top_k": null,
+              "top_p": 1.0,
+              "seed": 42
+            },
+            "provenance": "service_observed",
+            "input_modes": [
+              "exact_ids"
+            ],
+            "prompt_lengths": [
+              12
+            ],
+            "output_lengths": [
+              8
+            ],
+            "aggregate": "mean_over_tokens",
+            "sampler_contract": "ivgym_numpy_gumbel_v1"
+          }
+        }
+      },
+      "alpha": 0.05,
+      "combination": "bonferroni_over_requested_verifiers",
+      "parties": {
+        "requester": "API caller",
+        "provider": "untrusted inference endpoint",
+        "verifier": "independent third-party service"
+      },
+      "evidence_provenance": "service_observed",
+      "reference": {
+        "repository": "Qwen/Qwen3-0.6B",
+        "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+        "dtype": "bfloat16",
+        "attention": "eager",
+        "torch": "2.8.0+cu128",
+        "device": "NVIDIA H100 80GB HBM3",
+        "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+      },
+      "observations": [
+        {
+          "role": "token",
+          "intervals_ms": [
+            23.97790737450123,
+            22.50593528151512,
+            22.764626890420914,
+            22.425755858421326,
+            23.115230724215508,
+            23.323075845837593,
+            25.97341500222683
+          ],
+          "unit": "token",
+          "ttft_ms": 52.47427150607109,
+          "events": 8,
+          "response_body_bytes": 1561,
+          "wall_seconds": 0.21712425537407398
+        }
+      ],
+      "costs": {
+        "reference_prefill_tokens": 19,
+        "reference_seconds": 0.05405994690954685,
+        "wall_seconds": 0.2725609112530947
+      },
+      "scope": "behavioral token and timing evidence; not hardware attestation",
+      "calibration_assumption": "Honest calibration blocks must be exchangeable with this request; matching a design does not prove traffic coverage."
+    }
+  },
+  "queued_job": {
+    "id": "dd3f5e57570448579da9b85a70f9760c",
+    "status": "succeeded",
+    "created_at": 1789271004.6998172,
+    "completed_at": 1789271005.1302648,
+    "result": {
+      "outcome": "inconclusive",
+      "verifiers": {
+        "token_toploc": {
+          "status": "inconclusive",
+          "score": 16.0625,
+          "sample_count": 16,
+          "p_value": null,
+          "threshold": 0.05,
+          "calibration_id": null,
+          "reason": "no_applicable_calibration",
+          "design": {
+            "model": "qwen3-0.6b",
+            "reference": {
+              "repository": "Qwen/Qwen3-0.6B",
+              "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+              "dtype": "bfloat16",
+              "attention": "eager",
+              "torch": "2.8.0+cu128",
+              "device": "NVIDIA H100 80GB HBM3",
+              "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+            },
+            "detector": "token_toploc",
+            "sampling": {
+              "temperature": 1.0,
+              "top_k": null,
+              "top_p": 1.0,
+              "seed": 42
+            },
+            "provenance": "service_observed",
+            "input_modes": [
+              "exact_ids"
+            ],
+            "prompt_lengths": [
+              5
+            ],
+            "output_lengths": [
+              16
+            ],
+            "aggregate": "mean_over_tokens",
+            "sampler_contract": null
+          },
+          "token_scores": [
+            50.0,
+            2.0,
+            41.0,
+            3.0,
+            2.0,
+            0.0,
+            50.0,
+            6.0,
+            0.0,
+            0.0,
+            3.0,
+            0.0,
+            0.0,
+            50.0,
+            0.0,
+            50.0
+          ]
+        }
+      },
+      "alpha": 0.05,
+      "combination": "bonferroni_over_requested_verifiers",
+      "parties": {
+        "requester": "API caller",
+        "provider": "untrusted inference endpoint",
+        "verifier": "independent third-party service"
+      },
+      "evidence_provenance": "service_observed",
+      "reference": {
+        "repository": "Qwen/Qwen3-0.6B",
+        "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+        "dtype": "bfloat16",
+        "attention": "eager",
+        "torch": "2.8.0+cu128",
+        "device": "NVIDIA H100 80GB HBM3",
+        "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+      },
+      "observations": [
+        {
+          "role": "token",
+          "intervals_ms": [
+            22.778034210205078,
+            21.476756781339645,
+            21.8326635658741,
+            25.269972160458565,
+            22.89509028196335,
+            22.738086059689522,
+            23.25575239956379,
+            22.85206690430641,
+            21.92317694425583,
+            22.483307868242264,
+            23.11103790998459,
+            23.427002131938934,
+            24.46400374174118,
+            23.30435998737812,
+            22.50649221241474
+          ],
+          "unit": "token",
+          "ttft_ms": 48.43129776418209,
+          "events": 16,
+          "response_body_bytes": 2395,
+          "wall_seconds": 0.39323659241199493
+        }
+      ],
+      "costs": {
+        "reference_prefill_tokens": 20,
+        "reference_seconds": 0.036452680826187134,
+        "wall_seconds": 0.4302454888820648
+      },
+      "scope": "behavioral token and timing evidence; not hardware attestation",
+      "calibration_assumption": "Honest calibration blocks must be exchangeable with this request; matching a design does not prove traffic coverage."
+    },
+    "error": null
+  },
+  "note": "Prior captures and live four-detector checks are diagnostic without matching calibration. A 19-block operator-owned control demonstrates live DiFR decisions on one honest and one temperature-deviating request. This is an integration test, not an FPR or power study."
+}

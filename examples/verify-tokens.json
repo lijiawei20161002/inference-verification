@@ -1,0 +1,5 @@
+{
+  "model": "qwen3-0.6b",
+  "verifiers": ["cross_entropy", "token_toploc"],
+  "captures": [{"prompt": "The capital of France is", "output": " Paris."}]
+}

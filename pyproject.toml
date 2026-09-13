@@ -4,18 +4,19 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "ivgym"
-version = "0.1.0"
-description = "Inference verification experiments and authenticated statistical audits"
+version = "0.2.0"
+description = "Independent API service for token and clock inference verification"
 requires-python = ">=3.10"
 dependencies = ["numpy>=1.24"]
 
 [project.optional-dependencies]
+service = ["fastapi>=0.115,<1", "uvicorn>=0.30,<1", "httpx>=0.27,<1"]
 audit = ["cryptography>=41", "rfc8785>=0.1.4"]
 gpu = ["torch>=2.4", "transformers>=4.51,<5", "accelerate", "safetensors"]
 test = ["pytest>=8"]
 
 [project.scripts]
-ivgym = "ivgym.audit.cli:main"
+ivgym = "ivgym.cli:main"
 
 [tool.setuptools.packages.find]
 include = ["ivgym*"]

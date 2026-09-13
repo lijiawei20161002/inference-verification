@@ -1,5 +1,9 @@
 # IVGym audit protocol, draft v0.1
 
+**Scope:** this document describes the optional signed-artifact experiment.
+The primary product is the [independent token and clock verification service](VERIFICATION_SERVICE.md);
+it does not require provider receipts.
+
 Status as of 2026-09-13: experimental artifact and Hugging Face HTTP MVP
 implemented and tested on an H100. The broader design below remains an RFC;
 it is not a validated security or deployment error-rate claim. See the

@@ -1,0 +1,11 @@
+{
+  "model": "Qwen/Qwen3-1.7B",
+  "verifiers": ["clock_slope"],
+  "timing_pairs": [{
+    "short_context_tokens": 256,
+    "long_context_tokens": 32768,
+    "short_itl_ms": [7.1, 7.3, 7.2],
+    "long_itl_ms": [60.5, 61.1, 60.8],
+    "unit": "device_token"
+  }]
+}

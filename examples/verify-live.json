@@ -1,0 +1,16 @@
+{
+  "model": "qwen3-0.6b",
+  "target": {
+    "base_url": "http://127.0.0.1:8766/v1",
+    "model": "Qwen/Qwen3-0.6B"
+  },
+  "verifiers": ["cross_entropy", "token_toploc", "clock_slope"],
+  "sampling": {"temperature": 1.0, "top_k": null, "top_p": 1.0, "seed": 42},
+  "prompts": ["The capital of France is"],
+  "clock_probes": {
+    "short_prompt": "Describe a city.",
+    "long_prompt": "A city has a river, three bridges, a railway station, a library, a museum, a park, a university and a busy central market. Describe how residents travel between these places during a typical day.",
+    "pairs": 2
+  },
+  "max_tokens": 16
+}

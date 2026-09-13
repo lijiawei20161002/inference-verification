@@ -1,0 +1,65 @@
+{
+  "version": "ivgym.service.calibration.v1",
+  "blocks_collected": 19,
+  "profiles": [
+    {
+      "id": "token_difr-bb72e62a21001feb",
+      "design": {
+        "model": "qwen3-0.6b",
+        "reference": {
+          "repository": "Qwen/Qwen3-0.6B",
+          "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+          "dtype": "bfloat16",
+          "attention": "eager",
+          "torch": "2.8.0+cu128",
+          "device": "NVIDIA H100 80GB HBM3",
+          "files_sha256": "cc086dedf0733334d723f28ef64b5624c32926e1814c283ae2128523fbe77c5f"
+        },
+        "detector": "token_difr",
+        "sampling": {
+          "temperature": 1.0,
+          "top_k": null,
+          "top_p": 1.0,
+          "seed": 42
+        },
+        "provenance": "service_observed",
+        "input_modes": [
+          "exact_ids"
+        ],
+        "prompt_lengths": [
+          12
+        ],
+        "output_lengths": [
+          8
+        ],
+        "aggregate": "mean_over_tokens",
+        "sampler_contract": "ivgym_numpy_gumbel_v1"
+      },
+      "conditions": {
+        "trusted_control": [
+          0.003284000799214315,
+          0.003284000799214315,
+          0.003284000799214315,
+          0.003284000799214315,
+          0.003284000799214315,
+          0.003284000799214315,
+          0.003284000799214315,
+          0.003284000799214315,
+          0.003284000799214315,
+          0.003284000799214315,
+          0.003284000799214315,
+          0.003284000799214315,
+          0.003284000799214315,
+          0.003284000799214315,
+          0.003284000799214315,
+          0.003284000799214315,
+          0.003284000799214315,
+          0.003284000799214315,
+          0.003284000799214315
+        ]
+      },
+      "provenance": "Operator-controlled separate HF process; integration test only"
+    }
+  ],
+  "caveat": "Operator asserts control provenance and exchangeability. This does not certify a deployment error rate."
+}

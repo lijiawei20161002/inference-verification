@@ -1,5 +1,9 @@
 # Experimental audit protocol v1
 
+**Scope:** this document describes the optional signed-artifact experiment.
+The primary product is the [independent token and clock verification service](VERIFICATION_SERVICE.md);
+it does not require provider receipts.
+
 The [RFC](AUDIT_PROTOCOL_RFC.md) now has an executable, deliberately bounded
 implementation in `ivgym/audit/`. It provides signed artifacts, a real HTTP
 receipt extension, independent Hugging Face CUDA scoring, offline verification,
@@ -76,7 +80,7 @@ For a subsequent audit using the provisioned configuration, start the local
 test provider in one terminal:
 
 ```sh
-.venv/bin/ivgym serve --spec runs/audit-h100/spec.json \
+.venv/bin/ivgym artifact-provider --spec runs/audit-h100/spec.json \
   --reference runs/audit-h100/reference-config.json \
   --provider-key runs/audit-h100/keys/provider.pem \
   --trust runs/audit-h100/trust.json

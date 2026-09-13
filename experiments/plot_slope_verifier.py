@@ -82,12 +82,8 @@ GEOM2 = {                          # layers, KV heads, head_dim for the arm-2 mo
 }
 
 
-class ClockSlope(verifiers.Verifier):
-    """A shim so `harness.evaluate` scores the clock exactly as it scores every
-    returned-token verifier: the per-'token' score is one probe pair's D."""
-
-    name = "clock_slope"
-    value_fn = "uniform"
+# Shared with the independent verification API; score = -(ITL_hi - ITL_lo).
+from ivgym.clock import ClockSlope
 
 
 # ------------------------------------------------------------------------- data
