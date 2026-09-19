@@ -1,0 +1,23 @@
+name: Research result or feature proposal
+description: Propose an integration, detector, replication, or usability improvement.
+body:
+  - type: textarea
+    id: goal
+    attributes:
+      label: What question or user problem does this address?
+    validations:
+      required: true
+  - type: textarea
+    id: proposal
+    attributes:
+      label: Proposed change or experiment
+      description: Describe the scope, required evidence, and any relevant existing code or artifacts.
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: How would we evaluate it?
+      description: For research, include the honest control, hardware, calibration design, and a falsifying outcome. For features, describe an example of the desired behavior.
+    validations:
+      required: true

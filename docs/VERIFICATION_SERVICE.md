@@ -26,12 +26,55 @@ This separation is an explicit code boundary:
 | `service/engine.py` | Calls existing detectors and applies configured calibration | No provider logits or caller-supplied null accepted |
 | `service/app.py` and `jobs.py` | Public API, validation and bounded GPU queue | No public endpoint can replace reference models or calibration |
 
-## Start the API on this H100
+## Start locally without a GPU
+
+From a clone of the repository, create and activate a Python 3.10+ environment:
 
 ```sh
-python -m venv --system-site-packages .venv
-.venv/bin/pip install -e '.[service,gpu,test]'
-.venv/bin/ivgym serve --config examples/service.h100.json --port 8000
+python3 -m venv .venv
+source .venv/bin/activate
+python -m pip install -e '.[service]'
+ivgym serve --port 8000
+```
+
+The default configuration supports captured clock evidence without loading a
+model. In another terminal, from the repository root:
+
+```sh
+curl http://127.0.0.1:8000/v1/verify \
+  -H 'Content-Type: application/json' \
+  --data-binary @examples/verify-clock.json
+```
+
+This illustrative request returns a clock score near `-53.6` and `inconclusive`
+because the default configuration has no trusted calibration. Token and live
+checks require the reference setup below.
+
+## Configure a reference model for token and live checks
+
+On a CUDA host, install the GPU extras into your active environment and copy the
+existing example into the ignored local-output directory:
+
+```sh
+python -m pip install -e '.[service,gpu]'
+mkdir -p runs
+cp examples/service.h100.json runs/service.json
+```
+
+Edit `runs/service.json` before starting the service:
+
+1. Set `models.qwen3-0.6b.snapshot` to your local immutable checkpoint directory.
+   Download the revision named in the configuration if it is not already cached.
+2. Keep `repository` and `revision` consistent with that checkpoint. If you
+   change the model alias, update the request's `model` field as well.
+3. For live checks, set `allowed_provider_urls` to the provider's base URL and
+   update `examples/verify-live.json` with the same URL and its model name.
+4. Keep `calibrations` empty for initial score inspection. Install matching
+   operator-collected calibration before interpreting a decision; see
+   [calibration](#results-and-calibration).
+
+```sh
+ivgym serve --config runs/service.json --port 8000
 ```
 
 The service is at `http://127.0.0.1:8000`, with interactive API documentation at
@@ -40,8 +83,8 @@ is equivalent. Use `--host 0.0.0.0` when deliberately exposing the service to yo
 network. The API has no caller authentication requirement: anyone who can reach
 it can submit requests. Configure the network/TLS boundary for a hosted service.
 
-The H100 example points to the checkpoint already downloaded on this machine.
-On another machine, set `snapshot` to its locally installed immutable snapshot.
+The H100 example records the checkpoint path used for the original experiment.
+It is not a portable checkpoint location.
 The service operator configures model IDs, reference paths, enabled provider base
 URLs, calibration, and limits. Requesters cannot supply reference code, weights,
 logits, filesystem paths, or honest-score pools.

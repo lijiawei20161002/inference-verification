@@ -5,9 +5,16 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "ivgym"
 version = "0.2.0"
-description = "Independent API service for token and clock inference verification"
+description = "Check LLM inference behavior with token and timing evidence"
+readme = "README.md"
 requires-python = ">=3.10"
 dependencies = ["numpy>=1.24"]
+keywords = ["llm", "inference-verification", "model-auditing", "ai-safety"]
+
+[project.urls]
+Repository = "https://github.com/lijiawei20161002/inference-verification"
+Documentation = "https://github.com/lijiawei20161002/inference-verification/blob/main/docs/README.md"
+Issues = "https://github.com/lijiawei20161002/inference-verification/issues"
 
 [project.optional-dependencies]
 service = ["fastapi>=0.115,<1", "uvicorn>=0.30,<1", "httpx>=0.27,<1"]

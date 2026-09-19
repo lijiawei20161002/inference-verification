@@ -1,0 +1,32 @@
+name: Bug report
+description: Report a reproducible problem with installation, the API, or an experiment.
+title: "[Bug] "
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: What happened?
+      description: Include what you expected and what actually happened.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduce
+    attributes:
+      label: Minimal reproduction
+      description: Include the command or a small request. Remove credentials and private prompts.
+      render: shell
+    validations:
+      required: true
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Commit, Python version, OS, installed extras; GPU, model revision, and backend if relevant.
+    validations:
+      required: true
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant output
+      description: Paste the traceback or response with sensitive values removed.
+      render: text

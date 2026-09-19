@@ -127,7 +127,8 @@ once averaged over a large enough batch, which is why the sweeps vary `b` and
 why real-model AUCs sharpen as `IVGYM_TOKENS`/`IVGYM_BATCH` grow.
 
 > Mean is the current aggregator because it matches the paper's batched
-> hypothesis test and is what the AUC numbers in the README are computed with.
+> hypothesis test and is what the AUC numbers in the
+> [research guide](RESEARCH_GUIDE.md#what-catches-what) are computed with.
 > Sum / trimmed-mean / max-of-windows are all valid alternative aggregators; if
 > we change it, this is the line to change and to report.
 
@@ -193,8 +194,9 @@ It is a one-shot hypothesis test with a fixed FPR budget α:
 
 - **Defender (verifier) wins** when, at a threshold τ honoring `FPR ≤ α`
   (α = 0.5%), it flags the deviating provider — i.e. **TPR@α → 1** (equivalently
-  AUC@FPR≤α → 1). The README grid is exactly the scoreboard: `token_difr` wins
-  every column on the real model.
+  AUC@FPR≤α → 1). The [research grid](RESEARCH_GUIDE.md#what-catches-what)
+  compares those outcomes by detector and deviation; detection depends on the
+  model, evidence budget, and evaluation protocol.
 - **Attacker (provider) wins** when it deviates from ϕ (cheaper/different/
   exfiltrated weights) yet keeps `S` statistically indistinguishable from honest
   at that same τ — **TPR@α ≈ α / AUC@FPR≤α ≈ 0.5**. The canonical attacker win in the

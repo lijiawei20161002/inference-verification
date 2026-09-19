@@ -1,0 +1,18 @@
+cff-version: 1.2.0
+message: "If you use IVGym, cite this repository and record the commit and measurement artifacts used."
+type: software
+title: "IVGym: Inference Verification with Token and Timing Evidence"
+authors:
+  - family-names: Li
+    given-names: Jiawei
+repository-code: "https://github.com/lijiawei20161002/inference-verification"
+url: "https://github.com/lijiawei20161002/inference-verification"
+version: 0.2.0
+abstract: >-
+  An independent verification API and research testbed for studying which
+  deviations from claimed LLM inference behavior can be detected using
+  returned tokens and timing observations.
+keywords:
+  - inference verification
+  - large language models
+  - model auditing
