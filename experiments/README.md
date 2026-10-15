@@ -6,6 +6,11 @@
 Run commands from the repository root. Fresh model experiments require CUDA and
 model weights. Saved artifacts can be inspected on a laptop.
 
+For parallel runs on H100, A100, and L40S hosts, follow the
+[multi-machine experiment guide](../docs/MULTI_MACHINE_EXPERIMENTS.md). It includes
+an isolated launcher for existing token and timing baselines and distinguishes
+those measurements from the planned joint-channel evaluation.
+
 ## First experiment
 
 ```sh

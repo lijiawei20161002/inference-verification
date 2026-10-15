@@ -15,6 +15,7 @@ The signed-artifact protocol is a separate, optional experiment.
 | Check tokens or probe a live endpoint | [Reference setup](VERIFICATION_SERVICE.md#configure-a-reference-model-for-token-and-live-checks) | CUDA reference, model checkpoint, allowed provider URL; calibration for a verdict |
 | Add an attack or verifier | [Extending IVGym](EXTENDING.md) | NumPy to inspect strategies; CUDA to run the research sweep |
 | Reproduce research | [Experiment map](../experiments/README.md) | Saved artifacts for inspection; CUDA for fresh model measurements |
+| Run experiments on multiple GPU hosts | [Multi-machine experiment guide](MULTI_MACHINE_EXPERIMENTS.md) | Token and timing baselines, isolated jobs, hardware controls, and result collection |
 | Verify signed artifacts | [Audit implementation](AUDIT_IMPLEMENTATION.md) | Audit extras for offline checks; CUDA for score replay |
 
 ## Understand the research
