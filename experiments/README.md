@@ -11,6 +11,11 @@ For parallel runs on H100, A100, and L40S hosts, follow the
 an isolated launcher for existing token and timing baselines and distinguishes
 those measurements from the planned joint-channel evaluation.
 
+The [16 October H100 campaign report](../docs/results/h100_campaign_20261016.md)
+documents all eight completed baseline tasks, including the successful batching
+retry and controlled second-GPU interference pilot. Rebuild its numerical
+summary without a GPU with `python3 experiments/analyze_h100_campaign.py`.
+
 ## First experiment
 
 ```sh

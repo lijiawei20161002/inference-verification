@@ -32,6 +32,7 @@ The signed-artifact protocol is a separate, optional experiment.
 ## Follow a claim to its evidence
 
 - [Claim → experiment → artifact index](RESEARCH_GUIDE.md#which-experiment-backs-which-claim)
+- [16 October H100 campaign: results, implications, and limitations](results/h100_campaign_20261016.md)
 - [Independent service H100 report](results/verification_service_h100.md)
 - [Actual API requests and responses](../examples/api-samples/README.md)
 - [Separate signed-artifact H100 pilot](results/audit_protocol_h100.md)
