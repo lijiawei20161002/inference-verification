@@ -64,6 +64,8 @@ Writes `docs/results/clock_channel[_TAG].json`.
 """
 from __future__ import annotations
 
+import gc
+import inspect
 import json
 import os
 import sys
@@ -88,6 +90,7 @@ MODES = os.environ.get("IVGYM_CLOCK_MODES", "graph,eager").split(",")
 
 DELTA_STAR = json.load(open(RES / "cost_of_a_verdict.json"))["delta_star"]
 MEM_BUDGET_GB = 62.0            # skip a cell whose KV cache would not fit comfortably
+PREFILL_CHUNK_TOKENS = 256      # setup only; the timed decode still uses the full batch
 
 # The grid. Contexts are powers of four-ish so the KV slope is read over two decades;
 # batch sizes span the range a real server actually runs at.
@@ -194,81 +197,108 @@ def kv_bytes_per_token(cfg, width: int = 2) -> float:
 
 
 # ------------------------------------------------------- the measurement primitive
+def prefill_cache(model, ids, cache, chunk_tokens=PREFILL_CHUNK_TOKENS):
+    """Fill the entire prompt cache without materializing full-prompt logits.
+
+    Prefill is outside the measured decode. Bound temporary activations by chunking
+    the context, keeping absolute cache positions and only the final token's logits.
+    Older model APIs without a logits selector still get bounded prompt chunks.
+    """
+    if chunk_tokens <= 0:
+        raise ValueError("Prefill chunk size must be positive")
+    params = inspect.signature(model.forward).parameters
+    kwargs = {}
+    for name in ("logits_to_keep", "num_logits_to_keep"):
+        if name in params:
+            kwargs[name] = 1
+            break
+    for start in range(0, ids.shape[1], chunk_tokens):
+        end = min(start + chunk_tokens, ids.shape[1])
+        o = model(input_ids=ids[:, start:end], past_key_values=cache, use_cache=True,
+                  cache_position=torch.arange(start, end, device=ids.device), **kwargs)
+        tok = o.logits[:, -1:].argmax(-1)
+        del o
+    return tok
+
+
+def _itl_rep(model, cfg, B, ctx, steps, mode, r):
+    """One repetition in its own scope so outputs cannot retain the previous cache."""
+    from transformers import DynamicCache, StaticCache
+
+    out = np.empty(steps)
+    total = ctx + steps + 8
+    with torch.inference_mode():
+        ids = (real_ids(ctx, offset=1024 * r) % cfg.vocab_size)
+        ids = ids.expand(B, -1).contiguous()
+        if mode == "graph":
+            cache = StaticCache(config=cfg, max_batch_size=B,
+                                max_cache_len=total, device="cuda",
+                                dtype=torch.bfloat16)
+            tok = prefill_cache(model, ids, cache)
+            pos = torch.tensor([ctx], device="cuda")
+            stream = torch.cuda.Stream()
+            stream.wait_stream(torch.cuda.current_stream())
+            with torch.cuda.stream(stream):
+                for _ in range(3):
+                    o = model(input_ids=tok, past_key_values=cache,
+                              cache_position=pos, use_cache=True)
+                    tok.copy_(o.logits[:, -1:].argmax(-1))
+                    pos.add_(1)
+            torch.cuda.current_stream().wait_stream(stream)
+            g = torch.cuda.CUDAGraph()
+            with torch.cuda.graph(g):
+                o = model(input_ids=tok, past_key_values=cache,
+                          cache_position=pos, use_cache=True)
+                tok.copy_(o.logits[:, -1:].argmax(-1))
+                pos.add_(1)
+            torch.cuda.synchronize()
+            for i in range(steps):
+                t0 = time.perf_counter()
+                g.replay()
+                torch.cuda.synchronize()
+                out[i] = (time.perf_counter() - t0) * 1e3
+        else:
+            if mode.startswith("kvq"):
+                from transformers import QuantizedCache
+                cache = QuantizedCache(backend="quanto", config=cfg,
+                                       nbits=int(mode[3:]), q_group_size=64,
+                                       residual_length=64)
+            else:
+                cache = DynamicCache()
+            tok = prefill_cache(model, ids, cache)
+            torch.cuda.synchronize()
+            for i in range(steps):
+                t0 = time.perf_counter()
+                o = model(input_ids=tok, past_key_values=cache, use_cache=True)
+                tok = o.logits[:, -1:].argmax(-1)
+                torch.cuda.synchronize()
+                out[i] = (time.perf_counter() - t0) * 1e3
+    return out
+
+
 def itl_samples(model, cfg, B: int, ctx: int, steps: int, reps: int,
                 mode: str = "graph") -> np.ndarray | None:
     """[reps, steps] per-token inter-token latency in ms, batch-B decode at context
     `ctx`. `mode='graph'` captures one decode step into a CUDA graph and replays it,
     which is what a production server's overhead looks like; `mode='eager'` is the
     plain HF loop. Returns None if the cell does not fit."""
-    from transformers import DynamicCache, StaticCache
-
     total = ctx + steps + 8
     kv_gb = kv_bytes_per_token(cfg) * total * B / 1e9
     if kv_gb > MEM_BUDGET_GB:
         return None
     out = np.empty((reps, steps))
     try:
-        with torch.inference_mode():
-            for r in range(reps):
-                # ids are clamped into this model's vocab: the fixture is tokenized
-                # once with one tokenizer, and decode latency is content-independent.
-                ids = (real_ids(ctx, offset=1024 * r) % cfg.vocab_size)
-                ids = ids.expand(B, -1).contiguous()
-                if mode == "graph":
-                    cache = StaticCache(config=cfg, max_batch_size=B,
-                                        max_cache_len=total, device="cuda",
-                                        dtype=torch.bfloat16)
-                    o = model(input_ids=ids, past_key_values=cache, use_cache=True,
-                              cache_position=torch.arange(ctx, device="cuda"))
-                    tok = o.logits[:, -1:].argmax(-1)
-                    pos = torch.tensor([ctx], device="cuda")
-                    stream = torch.cuda.Stream()
-                    stream.wait_stream(torch.cuda.current_stream())
-                    with torch.cuda.stream(stream):          # warm up before capture
-                        for _ in range(3):
-                            o = model(input_ids=tok, past_key_values=cache,
-                                      cache_position=pos, use_cache=True)
-                            tok.copy_(o.logits[:, -1:].argmax(-1))
-                            pos.add_(1)
-                    torch.cuda.current_stream().wait_stream(stream)
-                    g = torch.cuda.CUDAGraph()
-                    with torch.cuda.graph(g):
-                        o = model(input_ids=tok, past_key_values=cache,
-                                  cache_position=pos, use_cache=True)
-                        tok.copy_(o.logits[:, -1:].argmax(-1))
-                        pos.add_(1)
-                    torch.cuda.synchronize()
-                    for i in range(steps):
-                        t0 = time.perf_counter()
-                        g.replay()
-                        torch.cuda.synchronize()
-                        out[r, i] = (time.perf_counter() - t0) * 1e3
-                    del g, cache
-                else:
-                    if mode.startswith("kvq"):
-                        from transformers import QuantizedCache
-                        cache = QuantizedCache(backend="quanto", config=cfg,
-                                               nbits=int(mode[3:]), q_group_size=64,
-                                               residual_length=64)
-                    else:
-                        cache = DynamicCache()
-                    o = model(input_ids=ids, past_key_values=cache, use_cache=True)
-                    tok = o.logits[:, -1:].argmax(-1)
-                    torch.cuda.synchronize()
-                    for i in range(steps):
-                        t0 = time.perf_counter()
-                        o = model(input_ids=tok, past_key_values=cache, use_cache=True)
-                        tok = o.logits[:, -1:].argmax(-1)
-                        torch.cuda.synchronize()
-                        out[r, i] = (time.perf_counter() - t0) * 1e3
-                    del cache
-                del ids
-                torch.cuda.empty_cache()
+        for r in range(reps):
+            out[r] = _itl_rep(model, cfg, B, ctx, steps, mode, r)
+            gc.collect()
+            torch.cuda.empty_cache()
     except Exception as e:                  # OOM, or a stack that will not graph-capture
-        torch.cuda.empty_cache()
         log(f"    !! cell failed (B={B} ctx={ctx} {mode}): {type(e).__name__}: "
-            f"{str(e)[:120]}")
-        return None
+            f"{e}")
+        out = None
+    # Run after the exception scope releases its traceback and failed-rep tensors.
+    gc.collect()
+    torch.cuda.empty_cache()
     return out
 
 
@@ -383,7 +413,11 @@ def main() -> None:
     log("=" * 96)
 
     out: dict = {"steps": STEPS, "reps": REPS, "modes": MODES, "arms": arms,
-                 "delta_star": DELTA_STAR, "cells": [], "specdec": None}
+                 "delta_star": DELTA_STAR, "cells": [], "specdec": None,
+                 "cuda_allocator_config": os.environ.get("PYTORCH_CUDA_ALLOC_CONF"),
+                 "prefill": {"chunk_tokens": PREFILL_CHUNK_TOKENS,
+                             "logits": "last token when supported",
+                             "included_in_timing": False}}
 
     out["card"] = measure_bandwidth()
     log(f"  card: {out['card']['device']}   copy bandwidth "

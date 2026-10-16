@@ -131,6 +131,10 @@ export TRANSFORMERS_OFFLINE=1
 
 每个时序任务的 `itl_ms` 来自主机计时加 CUDA 同步，包含该测量方式的开销。不要把它称作客户端网络 ITL 或纯 kernel 时间。`activation_difr` 需要内部激活证据，单独作为有额外可见性的对照，不纳入仅凭公开 token 和时间的主结果。
 
+`exp_clock_channel_gpu.itl_samples` 的 prompt prefill 在计时区间外按 256 token 分块，模型支持时仅生成最后一个位置的 logits，并在每个 repetition 后释放 cache 和 CUDA graph。这样避免完整 `[batch, context, vocab]` logits 和前后两轮 cache 同时驻留导致的 OOM；被测 decode 仍保留原来的完整 batch、上下文、步数及重复数。结果 JSON 的 `prefill` 字段记录此设置。旧版 OOM 结果应保留，新版重新运行完整 batching 网格并单独记录 commit，不将不同 prefill 实现的 cell 混成一轮结果。
+
+`clock-batching` 启动器固定 `PYTORCH_CUDA_ALLOC_CONF=expandable_segments:True`，减少动态 KV cache 增长时的显存碎片；manifest 的 `settings` 及结果的 `cuda_allocator_config` 均记录此设置。它不减少实际 cache 大小，也不将两个 GPU 的显存合并。
+
 `--size smoke` 减少可配置的 token/step/repetition 数，用于检查兼容性；`--size baseline` 使用更大的已有基线配置。两者都不是阶段 B 的正式样本量。特别是 `clock-specdec` 的旧入口有固定的 block/repetition 数，smoke 不会缩短它。
 
 ## 开始运行

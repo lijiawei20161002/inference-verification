@@ -55,6 +55,9 @@ def settings(job, size):
            "IVGYM_SLOPE_KEEP": "1"}
     if family == "CLOCK":
         env["IVGYM_CLOCK_MODES"] = "graph,eager"
+    if job == "clock-batching":
+        # Dynamic KV caches grow each step; avoid stranding memory in old sizes.
+        env["PYTORCH_CUDA_ALLOC_CONF"] = "expandable_segments:True"
     return env
 
 
