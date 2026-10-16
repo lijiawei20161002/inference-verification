@@ -46,6 +46,7 @@ def source_repo(tmp_path, monkeypatch):
     monkeypatch.setattr(launcher.tempfile, "gettempdir", lambda: str(tmp_path))
     monkeypatch.setattr(launcher, "record_command", lambda command: {"returncode": 0, "output": "fixture"})
     monkeypatch.setattr(launcher, "cached_revisions", lambda: {})
+    monkeypatch.setattr(launcher, "gpu_uuid", lambda selector: f"GPU-fixture-{selector}")
     original_run = subprocess.run
 
     def run_without_cuda(command, **kwargs):
@@ -120,6 +121,22 @@ def test_host_lock_prevents_concurrent_launchers(tmp_path):
         pass
 
 
+def test_token_host_sharing_excludes_timing_and_same_gpu(tmp_path):
+    host, gpu0, gpu1 = (tmp_path / name for name in ("host.lock", "GPU-0.lock", "GPU-1.lock"))
+    with launcher.host_lock(host, shared=True), launcher.host_lock(gpu0):
+        with launcher.host_lock(host, shared=True), launcher.host_lock(gpu1):
+            with pytest.raises(RuntimeError, match="host lock"):
+                with launcher.host_lock(host):
+                    pass
+            with pytest.raises(RuntimeError, match="GPU lock"):
+                with launcher.host_lock(gpu0):
+                    pass
+    with launcher.host_lock(host):
+        with pytest.raises(RuntimeError, match="host lock"):
+            with launcher.host_lock(host, shared=True):
+                pass
+
+
 def test_missing_and_invalid_timing_measurements_are_rejected():
     data = window_data()
     data["cells"].pop()
@@ -151,3 +168,25 @@ def test_dry_run_needs_no_gpu_or_output_directory(tmp_path, monkeypatch, capsys)
     assert launcher.run(arguments(dry_run=True, size="baseline")) == 0
     assert json.loads(capsys.readouterr().out)["job"] == "clock-window"
     assert list(tmp_path.iterdir()) == []
+
+
+def test_token_model_selection_and_interference_arguments(capsys):
+    assert launcher.run(arguments(job="token-shape", model="Qwen/Qwen3-4B", gpu="1", dry_run=True)) == 0
+    assert json.loads(capsys.readouterr().out)["settings"]["IVGYM_M"] == "Qwen/Qwen3-4B"
+    with pytest.raises(ValueError, match="token-shape only"):
+        launcher.run(arguments(model="Qwen/Qwen3-4B", dry_run=True))
+    with pytest.raises(ValueError, match="requires --load-gpu"):
+        launcher.run(arguments(job="clock-interference", dry_run=True))
+    with pytest.raises(ValueError, match="different GPUs"):
+        launcher.run(arguments(job="clock-interference", load_gpu="0", dry_run=True))
+    assert launcher.run(arguments(job="clock-interference", load_gpu="1", dry_run=True)) == 0
+    assert json.loads(capsys.readouterr().out)["settings"]["IVGYM_INTERFERENCE_GPU"] == "1"
+
+
+def test_selected_token_model_is_locked(tmp_path, monkeypatch):
+    path = tmp_path / "models.json"
+    pinned = {"Qwen/Qwen3-4B": "a" * 40}
+    path.write_text(json.dumps(pinned))
+    monkeypatch.setattr(launcher, "cached_revisions", lambda: dict(pinned))
+    monkeypatch.setenv("HF_HUB_OFFLINE", "1")
+    assert launcher.check_model_lock(path, "token-shape", "Qwen/Qwen3-4B") == pinned

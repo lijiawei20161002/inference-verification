@@ -7,7 +7,7 @@ Only standard-library imports are needed for --dry-run and result inspection.
 from __future__ import annotations
 
 import argparse
-from contextlib import contextmanager
+from contextlib import contextmanager, ExitStack
 from datetime import datetime, timezone
 import hashlib
 import json
@@ -30,7 +30,9 @@ JOBS = {
     "clock-floor": ("experiments.exp_clock_channel_gpu", "clock_channel_floor.json"),
     "clock-batching": ("experiments.exp_clock_channel_gpu", "clock_channel_batching.json"),
     "clock-specdec": ("experiments.exp_clock_channel_gpu", "clock_channel_specdec.json"),
+    "clock-interference": ("experiments.exp_clock_interference_gpu", "clock_interference.json"),
 }
+MODELS = ("Qwen/Qwen3-0.6B", "Qwen/Qwen3-1.7B", "Qwen/Qwen3-4B")
 
 
 def settings(job, size):
@@ -41,6 +43,10 @@ def settings(job, size):
                     IVGYM_PROMPTS="4" if small else "80",
                     IVGYM_TOKENS="16" if small else "256",
                     IVGYM_BOOT="20" if small else "400", IVGYM_FILLER_BATCH="4")
+    if job == "clock-interference":
+        return dict(IVGYM_CLOCK_STEPS="16" if small else "192", IVGYM_CLOCK_REPS="1",
+                    IVGYM_INTERFERENCE_CALIBRATION="2" if small else "16",
+                    IVGYM_INTERFERENCE_TEST="2" if small else "16")
     arm = job.removeprefix("clock-")
     family = "SLOPE" if arm in ("window", "stability") else "CLOCK"
     env = {f"IVGYM_{family}_ARMS": arm, f"IVGYM_{family}_TAG": arm,
@@ -70,18 +76,26 @@ def write_json(path, value):
 
 
 @contextmanager
-def host_lock(path):
-    """Serialize cooperating launchers, including jobs targeting different GPUs."""
+def host_lock(path, shared=False):
+    """Token jobs share the host; timing experiments require exclusive access."""
     import fcntl
     with path.open("a") as handle:
         try:
-            fcntl.flock(handle, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            fcntl.flock(handle, (fcntl.LOCK_SH if shared else fcntl.LOCK_EX) | fcntl.LOCK_NB)
         except BlockingIOError:
-            raise RuntimeError("Another research job holds the host lock; run serially.") from None
+            raise RuntimeError(f"Another research job holds the host lock or GPU lock: {path}") from None
         try:
             yield
         finally:
             fcntl.flock(handle, fcntl.LOCK_UN)
+
+
+def gpu_uuid(selector):
+    """Canonicalize numeric indices and UUID aliases for per-device locking."""
+    value = capture(["nvidia-smi", f"--id={selector}", "--query-gpu=uuid", "--format=csv,noheader"])
+    if not re.fullmatch(r"GPU-[A-Za-z0-9-]+", value):
+        raise ValueError(f"Cannot resolve GPU selector {selector}")
+    return value
 
 
 def validate_result(job, data):
@@ -106,6 +120,20 @@ def validate_result(job, data):
     if any(not isinstance(x, (float, int)) or not math.isfinite(x) or x < 0
            for c in cells for x in c["itl_ms"]):
         raise ValueError("Timing samples must be finite and nonnegative")
+    if job == "clock-interference":
+        contexts = {256, 512, 2048, 8192, 16384, 32768}
+        expected = {("calibration", i, "idle", ctx)
+                    for i in range(data["calibration_reps"]) for ctx in contexts}
+        expected.update(("test", i, condition, ctx) for i in range(data["test_reps"])
+                        for condition in ("idle", "load") for ctx in contexts)
+        measured = {(c["partition"], c["replicate"], c["condition"], c["ctx"]) for c in cells}
+        if measured != expected or len(cells) != len(expected):
+            raise ValueError("Incomplete interference measurement grid")
+        if not data.get("load_worker_stopped") or not data.get("analysis"):
+            raise ValueError("Interference worker or analysis did not finish")
+        if any(b["load_iterations"] <= 0 for b in data["blocks"] if b["condition"] == "load"):
+            raise ValueError("Interference load did not run during measurement")
+        return dict(coverage="complete", cells=len(cells), observation="local interference pilot")
     if job in ("clock-window", "clock-stability"):
         expected = {256, 512, 2048, 8192, 16384, 32768} if job == "clock-window" else {
             256, 1024, 4096, 8192, 16384, 32768}
@@ -130,7 +158,7 @@ def cached_revisions():
     return refs
 
 
-def check_model_lock(path, job):
+def check_model_lock(path, job, model=None):
     if os.environ.get("HF_HUB_OFFLINE") != "1":
         raise ValueError("Locked runs require HF_HUB_OFFLINE=1 after model preparation")
     locked = json.loads(Path(path).read_text())
@@ -138,6 +166,8 @@ def check_model_lock(path, job):
     required = {"Qwen/Qwen3-1.7B", "Qwen/Qwen3-0.6B"}
     if job == "clock-floor":
         required.add("Qwen/Qwen3-4B")
+    if job == "token-shape":
+        required = {model or "Qwen/Qwen3-1.7B"}
     for model in required:
         revision = locked.get(model)
         if not isinstance(revision, str) or not re.fullmatch(r"[0-9a-f]{40}", revision):
@@ -152,8 +182,23 @@ def run(args):
         raise ValueError("--node must be a simple label, e.g. h100-sxm-01")
     if not re.fullmatch(r"[0-9]+|GPU-[A-Za-z0-9-]+", args.gpu):
         raise ValueError("--gpu must select one full GPU index or GPU UUID")
+    model = getattr(args, "model", None)
+    load_gpu = getattr(args, "load_gpu", None)
+    if model and (args.job != "token-shape" or model not in MODELS):
+        raise ValueError("--model selects a supported model for token-shape only")
+    if args.job == "clock-interference":
+        if not load_gpu or not re.fullmatch(r"[0-9]+|GPU-[A-Za-z0-9-]+", load_gpu):
+            raise ValueError("clock-interference requires --load-gpu")
+        if load_gpu == args.gpu:
+            raise ValueError("Measurement and load require different GPUs")
+    elif load_gpu:
+        raise ValueError("--load-gpu is only for clock-interference")
     module, artifact = JOBS[args.job]
     env_settings = settings(args.job, args.size)
+    if model:
+        env_settings["IVGYM_M"] = model
+    if load_gpu:
+        env_settings["IVGYM_INTERFERENCE_GPU"] = load_gpu
     plan = dict(node=args.node, job=args.job, size=args.size, gpu=args.gpu,
                 module=module, settings=env_settings, output_artifact=artifact)
     if args.dry_run:
@@ -161,12 +206,20 @@ def run(args):
         return 0
     if args.size == "baseline" and not args.model_lock:
         raise ValueError("Baseline runs require --model-lock; see the multi-machine guide")
-    model_lock = check_model_lock(args.model_lock, args.job) if args.model_lock else None
+    model_lock = check_model_lock(args.model_lock, args.job, model) if args.model_lock else None
     # A copied HEAD is reproducible only if it includes the user's intended changes.
     if capture(["git", "status", "--porcelain", "--untracked-files=normal"]):
         raise RuntimeError("Commit or move local changes before running; only committed HEAD is executed.")
     commit = capture(["git", "rev-parse", "HEAD"])
-    with host_lock(Path(tempfile.gettempdir()) / f"ivgym-research-{os.getuid()}.lock"):
+    with ExitStack() as locks:
+        lock_root = Path(tempfile.gettempdir())
+        locks.enter_context(host_lock(lock_root / f"ivgym-research-{os.getuid()}.lock",
+                                      shared=args.job == "token-shape"))
+        devices = {selector: gpu_uuid(selector) for selector in (args.gpu, load_gpu) if selector is not None}
+        if len(set(devices.values())) != len(devices):
+            raise ValueError("Measurement and load require different physical GPUs")
+        for uuid in sorted(devices.values()):
+            locks.enter_context(host_lock(lock_root / f"ivgym-research-{os.getuid()}-{uuid}.lock"))
         device_env = dict(os.environ, CUDA_VISIBLE_DEVICES=args.gpu)
         subprocess.run([sys.executable, "-c", "import torch; "
                         "assert torch.cuda.is_available(), 'CUDA GPU required'; "
@@ -189,6 +242,8 @@ def run(args):
         # Avoid an external checkout overriding modules in the archived source tree.
         env.pop("PYTHONPATH", None)
         meta = dict(**plan, commit=commit, hostname=socket.gethostname(),
+                    gpu_uuids=devices, load_gpu=load_gpu,
+                    host_access="shared-token" if args.job == "token-shape" else "exclusive-timing",
                     started_utc=stamp, python=sys.version, status="running",
                     observations="local GPU experiments; no joint or network validation",
                     model_lock=model_lock,
@@ -211,11 +266,15 @@ def run(args):
                 raise RuntimeError(f"Experiment exited {p.returncode}; inspect run.log")
             data = json.loads(expected.read_text())
             if args.model_lock:
-                check_model_lock(args.model_lock, args.job)
+                check_model_lock(args.model_lock, args.job, model)
             meta["validation"] = validate_result(args.job, data)
             target = results / artifact
             target.write_bytes(expected.read_bytes())
             meta["artifact_sha256"] = hashlib.sha256(target.read_bytes()).hexdigest()
+            if args.job == "clock-interference":
+                load_log = results / "clock_interference_load.log"
+                load_log.write_bytes((expected.parent / load_log.name).read_bytes())
+                meta["auxiliary_sha256"] = {load_log.name: hashlib.sha256(load_log.read_bytes()).hexdigest()}
             meta["status"] = meta["validation"]["coverage"]
         except BaseException as e:
             meta.update(status="failed", error=f"{type(e).__name__}: {e}")
@@ -234,6 +293,8 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--node", required=True, help="Unique machine label")
     parser.add_argument("--gpu", default="0", help="GPU index or full GPU UUID")
+    parser.add_argument("--model", choices=MODELS, help="Model for a complete independent token-shape job")
+    parser.add_argument("--load-gpu", help="Separate GPU running the clock-interference workload")
     parser.add_argument("--job", choices=JOBS, required=True)
     parser.add_argument("--size", choices=("smoke", "baseline"), default="smoke")
     parser.add_argument("--model-lock", help="JSON mapping Hub model IDs to frozen revisions")

@@ -4,7 +4,7 @@
 
 研究问题是：外部审计者能否利用 **返回的 token 与响应时间**，判断服务商的推理行为是否符合声明？token 通道检验输出与模型、采样规则的一致性；时间通道检验执行过程的可观测特征。主结果比较两个通道各自的边界，以及在相同整体误报率下联合检测增加的证据。成本只在最后报告。
 
-**可以多机器并行。** 每台机器拉取同一个 Git commit，领取独立任务，把结果写入自己的目录。当前任务属于独立实验并行，不需要跨机器通信或分布式训练。一次时序基线测量期间，同一主机只运行一个实验；多卡机器也先串行测量，以隔离 CPU、PCIe、功耗和散热干扰。
+**可以多机器并行。** 每台机器拉取同一个 Git commit，领取独立任务，把结果写入自己的目录。当前任务属于独立实验并行，不需要跨机器通信或分布式训练。Token 任务可按 GPU 并行运行不同模型。一次干净时序基线测量期间，同一主机只运行一个实验，以控制 CPU、PCIe、功耗和散热干扰；这是保守的实验设计，不是双卡不能测时间。受控干扰另用 `clock-interference` 测量。
 
 ## 当前可运行范围
 
@@ -26,7 +26,7 @@
 | `l40s-01` | 1 × L40S 48GB，至少 16 vCPU、64GB RAM | token 正常变化、context window、稳定性 |
 | `client-01` | 8 vCPU、16GB RAM，无需 GPU | 阶段 B 的独立网络客户端 |
 
-当前启动器只暴露一张 GPU，旧实验里的模型实例仍在这一张卡上。双卡主机不会自动变成服务端与验证端分离的系统。
+每个 token 任务只暴露一张 GPU，用 `--model` 选择模型；两张卡可分别执行完整任务，分别保存结果，不混合不同模型的统计样本。干净时序任务仍只用一张卡。`clock-interference --gpu 0 --load-gpu 1` 在 GPU 0 测量，在 GPU 1 施加固定负载。双卡主机不会自动变成服务端与验证端分离的系统。
 
 选择按需、整卡独占实例，记录 PCIe 或 SXM 的确切形态。同一区域完成首轮后，再把跨区域网络作为单独因素。不同机型的正常时间基线分别建立；跨硬件迁移是要检验的假设。
 
@@ -127,6 +127,7 @@ export TRANSFORMERS_OFFLINE=1
 | `clock-floor` | 0.6B、1.7B、4B 及真实 NF4，比较 eager 与 CUDA graph 的时间曲线 | 区分模型、量化和栈的影响，不把绝对速度直接解释为违规 |
 | `clock-batching` | batch 1 至 64 对时间信号的影响 | 先在 H100 上运行；旧脚本的内存阈值未按机型自适应，OOM/skip 要保留 |
 | `clock-specdec` | speculative decoding 的分块输出如何影响逐 token 时间统计 | 测量设备端 block 时间，再构造 block 内零间隔；不是实测网络到达时间 |
+| `clock-interference` | GPU 0 的时序判别在 GPU 1 有负载时怎样变化 | 固定 BF16 GEMM 干扰；独立空闲校准、配对空闲/负载测试；本地有效上下文微基准 pilot |
 
 每个时序任务的 `itl_ms` 来自主机计时加 CUDA 同步，包含该测量方式的开销。不要把它称作客户端网络 ITL 或纯 kernel 时间。`activation_difr` 需要内部激活证据，单独作为有额外可见性的对照，不纳入仅凭公开 token 和时间的主结果。
 
@@ -160,7 +161,16 @@ tail -f runs/campaign/h100-sxm-01/ACTUAL_RUN_DIRECTORY/run.log
 H100：
 
 ```bash
-for job in token-shape clock-window clock-stability clock-floor clock-specdec clock-batching; do
+python scripts/run_research_job.py --node h100-sxm-01 --gpu 0 \
+  --job token-shape --model Qwen/Qwen3-1.7B --size baseline \
+  --model-lock runs/campaign-lock/model-refs.json &
+token_pid0=$!
+python scripts/run_research_job.py --node h100-sxm-01 --gpu 1 \
+  --job token-shape --model Qwen/Qwen3-4B --size baseline \
+  --model-lock runs/campaign-lock/model-refs.json &
+token_pid1=$!
+wait "$token_pid0" && wait "$token_pid1" &&
+for job in clock-window clock-stability clock-floor clock-specdec clock-batching; do
   python scripts/run_research_job.py --node h100-sxm-01 --gpu 0 \
     --job "$job" --size baseline --model-lock runs/campaign-lock/model-refs.json || break
 done
@@ -186,7 +196,22 @@ done
 
 稳定性至少安排早晚及另一天的新进程复测，沿用同一代码、软件和模型版本。每次启动都会创建新目录，不会覆盖上一次。
 
-启动器使用同用户、同临时目录下的文件锁串行化任务，包括选择不同 GPU 的任务。锁不能检测其他用户、其他容器或绕过启动器的程序；测量时仍需确认没有训练、下载、压缩、重算或人为负载并行占用主机。受控并发和干扰是阶段 B 的独立实验条件。
+启动器使用同用户、同临时目录下的主机锁和 GPU UUID 锁。Token 任务共享主机锁，各自独占一张 GPU；所有时序任务独占主机锁。干扰任务还锁定负载 GPU，负载仅由该任务管理。锁不能检测其他用户、其他容器或绕过启动器的程序；干净基线测量时仍需确认没有其他主机负载。
+
+### 双卡受控干扰 pilot
+
+先完成干净时序基线，再执行：
+
+```bash
+python scripts/run_research_job.py --node h100-sxm-01 --gpu 0 --load-gpu 1 \
+  --job clock-interference --size smoke --model-lock runs/campaign-lock/model-refs.json
+python scripts/run_research_job.py --node h100-sxm-01 --gpu 0 --load-gpu 1 \
+  --job clock-interference --size baseline --model-lock runs/campaign-lock/model-refs.json
+```
+
+GPU 1 运行固定 8192×8192 BF16 矩阵乘法。空闲条件暂停负载 kernel，但保留进程与显存。GPU 0 使用 1.7B 模型与 CUDA graph，在每个独立 prefill/decode 周期测量 256 至 32768 的六个有效上下文。测试周期交替采用空闲→负载、负载→空闲的顺序；每对条件使用相同的随机上下文顺序。记录原始 ITL、执行顺序、负载迭代数、GPU 利用率和功耗快照。
+
+只用空闲校准周期确定长短上下文差值的低尾阈值，然后固定阈值比较两种测试条件的告警计数。baseline 有 16 个校准周期、每个条件 16 个测试周期；smoke 各为 2 个。计数单位是周期，不把单个 token 当作独立样本。这些数量及重复文本不足以验证 0.5% 部署误报率，结果仅用于发现同机负载是否改变正常差值或有效上下文偏离的可分性；正式网络与联合检测仍属阶段 B。
 
 ## 保存与汇总
 
