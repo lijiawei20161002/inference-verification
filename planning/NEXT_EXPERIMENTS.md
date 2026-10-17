@@ -12,9 +12,9 @@ them:
   perturbations. The new real-NF4 protocol pilot below adds an end-to-end
   measurement, but does not validate those earlier effect sizes.
 - **B** — the verifier is passive; no adversary has ever adapted to it.
-- **C** — one GPU, one prompt domain, so the false-positive side of the ROC has
-  never been stressed by anything except run-to-run nondeterminism on a single
-  accelerator.
+- **C** — independent H100 and A100 baselines are now recorded, but paired
+  cross-hardware scoring and held-out deployment false-positive rates remain
+  untested. Separate per-host runs do not establish calibration transfer.
 
 Of these, **C is the one that decides whether any of this deploys**, and it is
 the cheapest to run. It is first for that reason.
@@ -98,6 +98,17 @@ coincidence of this detector and this deviation.
 **Still open, and now the whole of the item:** the cross-GPU arm. Different SKU,
 different driver, different kernel selection. The shapes above are a lower bound
 on it, and they are the part that needed no new hardware.
+
+**2026-10-17 update:** the [A100 campaign](../docs/results/a100_campaign_20261017.md)
+completed all four independent baselines (token shape, context window,
+short-term stability and the 48-cell timing floor). On A100, clean-arm
+`token_difr` d′ was −0.00679 for batch 4, −0.00660 for SDPA and −0.03164 for
+sequential replay; the first two 90% paired sequence-bootstrap intervals include
+zero. The context timing gap was 61.863 ms, followed by 61.848 ms in a new
+process. The archived results and hashes are linked from the report. H100 and
+A100 each generated their own pool, so this does **not** close the paired
+cross-GPU experiment above or establish deployment FPR. Next, replay the same
+frozen honest capture on both GPUs with aligned revisions and scoring settings.
 
 **Falsifies the deployment story if:** `d′(benign) ≳ d′(quant_4bit)` *with a
 positive sign*. Then no pool size fixes it, because growing the pool sharpens the

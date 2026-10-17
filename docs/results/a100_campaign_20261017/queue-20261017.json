@@ -1,0 +1,38 @@
+{
+  "status": "failed",
+  "pid": 8340,
+  "started_utc": "2026-10-17T06:08:54.415203+00:00",
+  "commit": "f09b37055e3ba0f62730c45050e2a378a5bd5739",
+  "plan": [
+    {
+      "job": "clock-window",
+      "size": "smoke"
+    },
+    {
+      "job": "clock-window",
+      "size": "baseline"
+    },
+    {
+      "job": "clock-stability",
+      "size": "baseline"
+    },
+    {
+      "job": "token-shape",
+      "size": "baseline"
+    },
+    {
+      "job": "clock-floor",
+      "size": "baseline"
+    }
+  ],
+  "completed": [],
+  "scope": "Independent A100 baselines; no paired H100/A100 replay or deployment FPR claim.",
+  "current": {
+    "job": "clock-window",
+    "size": "smoke",
+    "started_utc": "2026-10-17T06:08:54.419659+00:00"
+  },
+  "child_pid": null,
+  "error": "RuntimeError: Timing mean does not reproduce",
+  "finished_utc": "2026-10-17T06:09:26.295921+00:00"
+}

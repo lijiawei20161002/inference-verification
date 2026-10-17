@@ -1,0 +1,24 @@
+2026-10-17T06:10:43.705429+00:00 Starting clock-window baseline
+NVIDIA A100-SXM4-80GB
+Run directory: /workspace/inference-verification/runs/campaign/a100-80-01/clock-window-baseline-20261017T061045.844940Z
+Log: /workspace/inference-verification/runs/campaign/a100-80-01/clock-window-baseline-20261017T061045.844940Z/run.log
+Finished: complete. Results: /workspace/inference-verification/runs/campaign/a100-80-01/clock-window-baseline-20261017T061045.844940Z/results
+2026-10-17T06:14:05.376409+00:00 Verified clock-window baseline
+2026-10-17T06:14:05.376656+00:00 Starting clock-stability baseline
+NVIDIA A100-SXM4-80GB
+Run directory: /workspace/inference-verification/runs/campaign/a100-80-01/clock-stability-baseline-20261017T061407.505285Z
+Log: /workspace/inference-verification/runs/campaign/a100-80-01/clock-stability-baseline-20261017T061407.505285Z/run.log
+Finished: complete. Results: /workspace/inference-verification/runs/campaign/a100-80-01/clock-stability-baseline-20261017T061407.505285Z/results
+2026-10-17T06:17:32.335022+00:00 Verified clock-stability baseline
+2026-10-17T06:17:32.335269+00:00 Starting token-shape baseline
+NVIDIA A100-SXM4-80GB
+Run directory: /workspace/inference-verification/runs/campaign/a100-80-01/token-shape-baseline-20261017T061734.416299Z
+Log: /workspace/inference-verification/runs/campaign/a100-80-01/token-shape-baseline-20261017T061734.416299Z/run.log
+Finished: complete. Results: /workspace/inference-verification/runs/campaign/a100-80-01/token-shape-baseline-20261017T061734.416299Z/results
+2026-10-17T06:51:47.728949+00:00 Verified token-shape baseline
+2026-10-17T06:51:47.729230+00:00 Starting clock-floor baseline
+NVIDIA A100-SXM4-80GB
+Run directory: /workspace/inference-verification/runs/campaign/a100-80-01/clock-floor-baseline-20261017T065149.859197Z
+Log: /workspace/inference-verification/runs/campaign/a100-80-01/clock-floor-baseline-20261017T065149.859197Z/run.log
+Finished: complete. Results: /workspace/inference-verification/runs/campaign/a100-80-01/clock-floor-baseline-20261017T065149.859197Z/results
+2026-10-17T07:20:02.890077+00:00 Verified clock-floor baseline

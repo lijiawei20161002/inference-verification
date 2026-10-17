@@ -1,0 +1,139 @@
+{
+  "status": "complete",
+  "pid": 8602,
+  "started_utc": "2026-10-17T06:10:43.698233+00:00",
+  "commit": "f09b37055e3ba0f62730c45050e2a378a5bd5739",
+  "plan": [
+    {
+      "job": "clock-window",
+      "size": "baseline"
+    },
+    {
+      "job": "clock-stability",
+      "size": "baseline"
+    },
+    {
+      "job": "token-shape",
+      "size": "baseline"
+    },
+    {
+      "job": "clock-floor",
+      "size": "baseline"
+    }
+  ],
+  "completed": [
+    {
+      "manifest": "runs/campaign/a100-80-01/clock-window-baseline-20261017T061045.844940Z/manifest.json",
+      "artifact": "runs/campaign/a100-80-01/clock-window-baseline-20261017T061045.844940Z/results/slope_verifier_window.json",
+      "sha256": "ea0ca9e32e0cf647c7fc0701bc00996f416d86476809caf93a01ad9141dfa8e9",
+      "elapsed_seconds": 198.3808406558819,
+      "job": "clock-window",
+      "size": "baseline",
+      "commit": "f09b37055e3ba0f62730c45050e2a378a5bd5739",
+      "timing_cells": 6,
+      "full_minus_short_ms": 61.862969270833325
+    },
+    {
+      "manifest": "runs/campaign/a100-80-01/clock-stability-baseline-20261017T061407.505285Z/manifest.json",
+      "artifact": "runs/campaign/a100-80-01/clock-stability-baseline-20261017T061407.505285Z/results/slope_verifier_stability.json",
+      "sha256": "d648cc4eb71ba5499dcfecf2717b694a6aae0bdde11b5ad209219a2952dc7fac",
+      "elapsed_seconds": 203.58975708996877,
+      "job": "clock-stability",
+      "size": "baseline",
+      "commit": "f09b37055e3ba0f62730c45050e2a378a5bd5739",
+      "timing_cells": 6,
+      "full_minus_short_ms": 61.84825846354166
+    },
+    {
+      "manifest": "runs/campaign/a100-80-01/token-shape-baseline-20261017T061734.416299Z/manifest.json",
+      "artifact": "runs/campaign/a100-80-01/token-shape-baseline-20261017T061734.416299Z/results/benign_shape_dprime.json",
+      "sha256": "4a8f8e3d2c22b795aa91905466ed2518cdcdfe4775c1a7816ff5faec2b5e0ad6",
+      "elapsed_seconds": 2052.2038573841564,
+      "job": "token-shape",
+      "size": "baseline",
+      "commit": "f09b37055e3ba0f62730c45050e2a378a5bd5739",
+      "token_difr": {
+        "chunked_b4": {
+          "d_prime": -0.006785546197271787,
+          "ci90": [
+            -0.016910699407826385,
+            0.0036326234760226286
+          ]
+        },
+        "chunked_b1_sdpa": {
+          "d_prime": -0.006603679694926576,
+          "ci90": [
+            -0.01473319411848209,
+            0.003445521823749314
+          ]
+        },
+        "sequential": {
+          "d_prime": -0.03163549217836527,
+          "ci90": [
+            -0.03995886823927587,
+            -0.02255056173611922
+          ]
+        }
+      }
+    },
+    {
+      "manifest": "runs/campaign/a100-80-01/clock-floor-baseline-20261017T065149.859197Z/manifest.json",
+      "artifact": "runs/campaign/a100-80-01/clock-floor-baseline-20261017T065149.859197Z/results/clock_channel_floor.json",
+      "sha256": "727759d1ef80659aa280686281a32e3e74d79326418ddb770804992aa92164f6",
+      "elapsed_seconds": 1691.8102422347292,
+      "job": "clock-floor",
+      "size": "baseline",
+      "commit": "f09b37055e3ba0f62730c45050e2a378a5bd5739",
+      "timing_cells": 48
+    }
+  ],
+  "scope": "Independent A100 baselines; no paired H100/A100 replay or deployment FPR claim.",
+  "preflight": [
+    {
+      "manifest": "runs/campaign/a100-80-01/clock-window-smoke-20261017T060856.600109Z/manifest.json",
+      "artifact": "runs/campaign/a100-80-01/clock-window-smoke-20261017T060856.600109Z/results/slope_verifier_window.json",
+      "sha256": "43171e68e8a3ffdc2157f65f811669daaaf9bf104b3a27079471970973f8cb09",
+      "elapsed_seconds": 28.438903850037605,
+      "job": "clock-window",
+      "size": "smoke",
+      "commit": "f09b37055e3ba0f62730c45050e2a378a5bd5739",
+      "timing_cells": 6,
+      "full_minus_short_ms": 61.624593749999995
+    },
+    {
+      "manifest": "runs/campaign/a100-80-01/token-shape-smoke-20261017T060745.624073Z/manifest.json",
+      "artifact": "runs/campaign/a100-80-01/token-shape-smoke-20261017T060745.624073Z/results/benign_shape_dprime.json",
+      "sha256": "0a86f0c3d687ce62a777d7bf873cd5050043432be9e11b014b17568fa7446f7f",
+      "elapsed_seconds": 15.885169180110097,
+      "job": "token-shape",
+      "size": "smoke",
+      "commit": "f09b37055e3ba0f62730c45050e2a378a5bd5739",
+      "token_difr": {
+        "chunked_b4": {
+          "d_prime": 0.16291527941780906,
+          "ci90": [
+            0.0,
+            0.24838750231265488
+          ]
+        },
+        "chunked_b1_sdpa": {
+          "d_prime": 0.07744305652296332,
+          "ci90": [
+            0.0,
+            0.11534152140849695
+          ]
+        },
+        "sequential": {
+          "d_prime": -0.11944818451153827,
+          "ci90": [
+            -0.1739614241438396,
+            0.0
+          ]
+        }
+      }
+    }
+  ],
+  "current": null,
+  "child_pid": null,
+  "finished_utc": "2026-10-17T07:20:02.890144+00:00"
+}

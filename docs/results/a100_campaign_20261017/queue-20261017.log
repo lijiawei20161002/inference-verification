@@ -1,0 +1,14 @@
+2026-10-17T06:08:54.419672+00:00 Starting clock-window smoke
+NVIDIA A100-SXM4-80GB
+Run directory: /workspace/inference-verification/runs/campaign/a100-80-01/clock-window-smoke-20261017T060856.600109Z
+Log: /workspace/inference-verification/runs/campaign/a100-80-01/clock-window-smoke-20261017T060856.600109Z/run.log
+Finished: complete. Results: /workspace/inference-verification/runs/campaign/a100-80-01/clock-window-smoke-20261017T060856.600109Z/results
+Traceback (most recent call last):
+  File "/workspace/inference-verification/runs/campaign-lock/run_a100_queue.py", line 111, in <module>
+    main()
+  File "/workspace/inference-verification/runs/campaign-lock/run_a100_queue.py", line 96, in main
+    result = inspect_run(paths.pop())
+             ^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/inference-verification/runs/campaign-lock/run_a100_queue.py", line 61, in inspect_run
+    raise RuntimeError('Timing mean does not reproduce')
+RuntimeError: Timing mean does not reproduce

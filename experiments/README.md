@@ -16,6 +16,12 @@ documents all eight completed baseline tasks, including the successful batching
 retry and controlled second-GPU interference pilot. Rebuild its numerical
 summary without a GPU with `python3 experiments/analyze_h100_campaign.py`.
 
+The [17 October A100 campaign report](../docs/results/a100_campaign_20261017.md)
+records four completed independent baselines: token shape, context window,
+short-term stability and the 48-cell timing floor. Rebuild its summary with
+`python3 experiments/analyze_a100_campaign.py`; use `--check` to verify the
+archive and saved summary. Paired H100/A100 replay remains a separate experiment.
+
 ## First experiment
 
 ```sh

@@ -1,0 +1,258 @@
+{
+ "M": "Qwen/Qwen3-1.7B",
+ "n_prompts": 4,
+ "tokens": 16,
+ "n_boot": 20,
+ "baseline_shape": "chunked_b1",
+ "shapes": [
+  "chunked_b1",
+  "chunked_b4",
+  "chunked_b1_sdpa",
+  "sequential"
+ ],
+ "filler_batch": 4,
+ "detectors": [
+  "token_difr",
+  "cross_entropy",
+  "token_toploc",
+  "activation_difr"
+ ],
+ "reference_dprimes": {
+  "quant_4bit (token_difr, Qwen3-1.7B, pool_scaling.json)": 0.0775,
+  "kv_fp8 (token_difr, README grid)": 0.015
+ },
+ "delta_star_090": 3.76729816198349,
+ "arms": {
+  "clean": {
+   "shapes": {
+    "chunked_b4": {
+     "token_difr": {
+      "d_prime": 0.16291527941780906,
+      "ci": [
+       0.0,
+       0.24838750231265488
+      ],
+      "base_mean": 0.0012959830760177213,
+      "alt_mean": 0.0026037013363663947,
+      "base_sd": 0.008026983502462108,
+      "frac_tokens_changed": 0.0625
+     },
+     "cross_entropy": {
+      "d_prime": 0.0016501140116195133,
+      "ci": [
+       -0.005380342573427628,
+       0.0068624389880063185
+      ],
+      "base_mean": 0.9056371677552604,
+      "alt_mean": 0.9077933866068133,
+      "base_sd": 1.3067090130548276,
+      "frac_tokens_changed": 1.0
+     },
+     "token_toploc": {
+      "d_prime": -0.015711740918979613,
+      "ci": [
+       -0.0213046220040454,
+       -0.005195378231707291
+      ],
+      "base_mean": 1.2890000000000006,
+      "alt_mean": 1.2265000000000006,
+      "base_sd": 3.9779169171816577,
+      "frac_tokens_changed": 0.0625
+     },
+     "activation_difr": {
+      "d_prime": 0.003609727379972058,
+      "ci": [
+       -0.2708031529830343,
+       0.03987324758200628
+      ],
+      "base_mean": 0.24584217503461636,
+      "alt_mean": 0.246508280641837,
+      "base_sd": 0.18453072409645005,
+      "frac_tokens_changed": 1.0
+     }
+    },
+    "chunked_b1_sdpa": {
+     "token_difr": {
+      "d_prime": 0.07744305652296332,
+      "ci": [
+       0.0,
+       0.11534152140849695
+      ],
+      "base_mean": 0.0012959830760177213,
+      "alt_mean": 0.0019176172131852316,
+      "base_sd": 0.008026983502462108,
+      "frac_tokens_changed": 0.03125
+     },
+     "cross_entropy": {
+      "d_prime": 0.0007159962309480751,
+      "ci": [
+       -0.006024000672646693,
+       0.003781154168539608
+      ],
+      "base_mean": 0.9056371677552604,
+      "alt_mean": 0.9065727664835542,
+      "base_sd": 1.3067090130548276,
+      "frac_tokens_changed": 1.0
+     },
+     "token_toploc": {
+      "d_prime": -0.003927935229744903,
+      "ci": [
+       -0.006719929166489525,
+       0.0
+      ],
+      "base_mean": 1.2890000000000006,
+      "alt_mean": 1.2733750000000006,
+      "base_sd": 3.9779169171816577,
+      "frac_tokens_changed": 0.078125
+     },
+     "activation_difr": {
+      "d_prime": 0.022980550078852163,
+      "ci": [
+       -0.19370309218947926,
+       0.08126654936537454
+      ],
+      "base_mean": 0.24584217503461636,
+      "alt_mean": 0.25008279258082466,
+      "base_sd": 0.18453072409645005,
+      "frac_tokens_changed": 1.0
+     }
+    },
+    "sequential": {
+     "token_difr": {
+      "d_prime": -0.11944818451153827,
+      "ci": [
+       -0.1739614241438396,
+       0.0
+      ],
+      "base_mean": 0.0012959830760177213,
+      "alt_mean": 0.00033717446942510554,
+      "base_sd": 0.008026983502462108,
+      "frac_tokens_changed": 0.015625
+     },
+     "cross_entropy": {
+      "d_prime": -0.0022186616338631254,
+      "ci": [
+       -0.0055749678193099126,
+       -0.0010082201949131915
+      ],
+      "base_mean": 0.9056371677552604,
+      "alt_mean": 0.9027380226013703,
+      "base_sd": 1.3067090130548276,
+      "frac_tokens_changed": 1.0
+     },
+     "token_toploc": {
+      "d_prime": 0.0,
+      "ci": [
+       -0.008321120779207164,
+       0.004495446178435033
+      ],
+      "base_mean": 1.2890000000000006,
+      "alt_mean": 1.2890000000000006,
+      "base_sd": 3.9779169171816577,
+      "frac_tokens_changed": 0.0625
+     },
+     "activation_difr": {
+      "d_prime": -1.3322560578301743,
+      "ci": [
+       -4.090180619365353,
+       -1.29386132673423
+      ],
+      "base_mean": 0.24584217503461636,
+      "alt_mean": 0.0,
+      "base_sd": 0.18453072409645005,
+      "frac_tokens_changed": 1.0
+     }
+    }
+   },
+   "rerun_control": {
+    "token_difr": {
+     "d_prime": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "base_mean": 0.0012959830760177213,
+     "alt_mean": 0.0012959830760177213,
+     "base_sd": 0.008026983502462108,
+     "frac_tokens_changed": 0.0
+    },
+    "cross_entropy": {
+     "d_prime": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "base_mean": 0.9056371677552604,
+     "alt_mean": 0.9056371677552604,
+     "base_sd": 1.3067090130548276,
+     "frac_tokens_changed": 0.0
+    },
+    "token_toploc": {
+     "d_prime": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "base_mean": 1.2890000000000006,
+     "alt_mean": 1.2890000000000006,
+     "base_sd": 3.9779169171816577,
+     "frac_tokens_changed": 0.0
+    },
+    "activation_difr": {
+     "d_prime": 0.0,
+     "ci": [
+      0.0,
+      0.0
+     ],
+     "base_mean": 0.24584217503461636,
+     "alt_mean": 0.24584217503461636,
+     "base_sd": 0.18453072409645005,
+     "frac_tokens_changed": 0.0
+    }
+   }
+  }
+ },
+ "price_of_the_floor": {
+  "quant_4bit (token_difr, Qwen3-1.7B, pool_scaling.json)": {
+   "clean/chunked_b4": {
+    "d_benign_token_difr": 0.16291527941780906,
+    "d_effective": -0.08541527941780906,
+    "tokens_per_verdict": -1,
+    "price_multiplier": Infinity
+   },
+   "clean/chunked_b1_sdpa": {
+    "d_benign_token_difr": 0.07744305652296332,
+    "d_effective": 5.694347703667779e-05,
+    "tokens_per_verdict": 4376954411,
+    "price_multiplier": 1852287.0973338976
+   },
+   "clean/sequential": {
+    "d_benign_token_difr": -0.11944818451153827,
+    "d_effective": 0.19694818451153828,
+    "tokens_per_verdict": 366,
+    "price_multiplier": 0.15488785442234448
+   }
+  },
+  "kv_fp8 (token_difr, README grid)": {
+   "clean/chunked_b4": {
+    "d_benign_token_difr": 0.16291527941780906,
+    "d_effective": -0.14791527941780908,
+    "tokens_per_verdict": -1,
+    "price_multiplier": Infinity
+   },
+   "clean/chunked_b1_sdpa": {
+    "d_benign_token_difr": 0.07744305652296332,
+    "d_effective": -0.06244305652296332,
+    "tokens_per_verdict": -1,
+    "price_multiplier": Infinity
+   },
+   "clean/sequential": {
+    "d_benign_token_difr": -0.11944818451153827,
+    "d_effective": 0.13444818451153828,
+    "tokens_per_verdict": 786,
+    "price_multiplier": 0.012460762865024256
+   }
+  }
+ },
+ "elapsed_s": 14.707830905914307
+}
