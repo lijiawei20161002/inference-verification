@@ -1,6 +1,6 @@
 {
   "scope": "Independent H100 capture and local timing; no paired A100 replay, attack power, or deployment FPR",
-  "verified_artifacts": 42,
+  "verified_artifacts": 43,
   "timing": {
     "clock-stability": {
       "cells": [

@@ -32,7 +32,9 @@ completed a new 80 × 256 frozen capture/replay and immediate/delayed timing
 repeats. Verify its archived evidence with
 `python -m experiments.analyze_h100_followup --check`. The original A100 capture
 was unavailable on that host, so the cross-GPU paired comparison remains open;
-a portable bundle of the new H100 capture is retained for subsequent replay.
+a [portable bundle of the new H100 capture](../docs/results/h100_followup_20261018/h100-replay-transfer.tar.gz)
+is tracked in the result archive for subsequent replay; extraction instructions
+are in the report.
 
 ## Frozen capture and paired GPU replay
 
@@ -77,8 +79,10 @@ runtimes, numerical flags, incomplete runs, failed rerun controls, and modified
 score artifacts. Positive d′ means higher scores on the alternate host; intervals
 are 90% paired sequence bootstraps. GPU and driver metadata are preserved, so
 changing both must be interpreted as a combined shift. These honest comparisons
-do not measure attack power or deployment false-positive rates. Captures remain
-under ignored `runs/`; keep them and the source files with the run archive.
+do not measure attack power or deployment false-positive rates. New captures are
+written under ignored `runs/`; preserve them and the source files with the run
+archive. The reviewed H100 follow-up transfer bundle linked above is included in
+Git so it can be replayed on another host.
 
 ## First experiment
 

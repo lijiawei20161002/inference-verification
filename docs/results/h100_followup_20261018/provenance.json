@@ -43,7 +43,8 @@
     "run_timing.py": "56f505007445d6255e94c115200bca0e39f6bcdcb2402f27742e1faf1e5bb9f8",
     "run_frozen.py": "0780184196b30779b2b7ac55702a07ff37ad10e01ba8bf2f3c5b9b3cf63abc98",
     "pytest-after.log": "447d5943fd3e2468aa8e724508326033fead4a17c44675ddba6910f2e5d6fa4b",
-    "bundle-inspection.json": "f2497be73423c5316e7417acfafc7a5ab2521ea476a1d867af6ba3efc8eac5ac"
+    "bundle-inspection.json": "f2497be73423c5316e7417acfafc7a5ab2521ea476a1d867af6ba3efc8eac5ac",
+    "h100-replay-transfer.tar.gz": "9a233284bdd16a42df0f370b9729271fa6087d2cae934b7b9b5e816f7a905a31"
   },
   "timing_runs": [
     "clock-stability",
@@ -57,7 +58,7 @@
   "frozen_capture_size_bytes": 6127487,
   "source_archive": "runs/h100-followup-20261018/source.tar.gz",
   "source_archive_sha256": "c75e8bd1e9e30b916d89bd19a83cacfdcc4931e5971b0070256652f854184b57",
-  "transfer_bundle": "runs/h100-followup-20261018/h100-replay-transfer.tar.gz",
+  "transfer_bundle": "docs/results/h100_followup_20261018/h100-replay-transfer.tar.gz",
   "transfer_bundle_sha256": "9a233284bdd16a42df0f370b9729271fa6087d2cae934b7b9b5e816f7a905a31",
   "missing_a100_capture_sha256": "b63b753407f5395d4910730db661f9c6c97d95fcfb9aca7e9c569a63a2ee2d6a",
   "previous_h100_token_sha256": "456885f2d262e1e997420703cd965422174195f8962f9aebe11c000841d1cb8e",
