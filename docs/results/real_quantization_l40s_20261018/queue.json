@@ -1,0 +1,122 @@
+{
+  "status": "complete",
+  "settings": {
+    "CUDA_VISIBLE_DEVICES": "0",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "HF_HUB_OFFLINE": "1",
+    "TRANSFORMERS_OFFLINE": "1",
+    "HF_HUB_ENABLE_HF_TRANSFER": "0",
+    "PYTHONUNBUFFERED": "1",
+    "TOKENIZERS_PARALLELISM": "false"
+  },
+  "steps": [
+    {
+      "name": "pip-check",
+      "argv": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "-m",
+        "pip",
+        "check"
+      ],
+      "cwd": "/workspace/inference-verification",
+      "started_utc": "2026-10-18T22:48:58.274810+00:00",
+      "status": "complete",
+      "pid": 6406,
+      "returncode": 0,
+      "elapsed_seconds": 1.3847015970004577,
+      "finished_utc": "2026-10-18T22:48:59.660151+00:00"
+    },
+    {
+      "name": "tests",
+      "argv": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "-m",
+        "pytest",
+        "tests/",
+        "-q"
+      ],
+      "cwd": "/workspace/inference-verification",
+      "started_utc": "2026-10-18T22:48:59.661188+00:00",
+      "status": "complete",
+      "pid": 6407,
+      "returncode": 0,
+      "elapsed_seconds": 76.90236422700036,
+      "finished_utc": "2026-10-18T22:50:16.564160+00:00"
+    },
+    {
+      "name": "smoke",
+      "argv": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "-m",
+        "experiments.exp_real_quantization_gpu",
+        "--calibration",
+        "2",
+        "--evaluation",
+        "2",
+        "--tokens",
+        "16",
+        "--seed",
+        "202610180",
+        "--bootstrap",
+        "40",
+        "--output",
+        "/workspace/inference-verification/runs/real-quantization-l40s-20261018/smoke"
+      ],
+      "cwd": "/workspace/inference-verification",
+      "started_utc": "2026-10-18T22:50:16.565303+00:00",
+      "status": "complete",
+      "pid": 6782,
+      "returncode": 0,
+      "elapsed_seconds": 37.796966257999884,
+      "finished_utc": "2026-10-18T22:50:54.362883+00:00"
+    },
+    {
+      "name": "pilot",
+      "argv": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "-m",
+        "experiments.exp_real_quantization_gpu",
+        "--calibration",
+        "32",
+        "--evaluation",
+        "64",
+        "--tokens",
+        "128",
+        "--seed",
+        "20261018",
+        "--bootstrap",
+        "1000",
+        "--output",
+        "/workspace/inference-verification/runs/real-quantization-l40s-20261018/pilot"
+      ],
+      "cwd": "/workspace/inference-verification",
+      "started_utc": "2026-10-18T22:50:54.364007+00:00",
+      "status": "complete",
+      "pid": 6876,
+      "returncode": 0,
+      "elapsed_seconds": 2707.7683205099984,
+      "finished_utc": "2026-10-18T23:36:02.133049+00:00"
+    },
+    {
+      "name": "reanalyze",
+      "argv": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "-m",
+        "experiments.analyze_real_quantization",
+        "/workspace/inference-verification/runs/real-quantization-l40s-20261018/pilot",
+        "--output",
+        "/workspace/inference-verification/runs/real-quantization-l40s-20261018/recomputed-summary.json"
+      ],
+      "cwd": "/workspace/inference-verification",
+      "started_utc": "2026-10-18T23:36:02.134019+00:00",
+      "status": "complete",
+      "pid": 8101,
+      "returncode": 0,
+      "elapsed_seconds": 3.0110585959992022,
+      "finished_utc": "2026-10-18T23:36:05.145425+00:00"
+    }
+  ],
+  "source_commit": "a6e1966dc6843f15e63712f5de6ce8d37efe067f",
+  "offline_summary_exact": true
+}

@@ -1,0 +1,363 @@
+{
+  "schema": "ivgym-real-quantization-summary-v1",
+  "plan": {
+    "schema": "ivgym-real-quantization-plan-v1",
+    "model": "Qwen/Qwen3-1.7B",
+    "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+    "calibration": 2,
+    "evaluation": 2,
+    "tokens": 16,
+    "corpus_seed": 202610180,
+    "alpha": 0.05,
+    "bootstrap": 40,
+    "arms": [
+      "bf16",
+      "nf4",
+      "int8"
+    ],
+    "sampling": {
+      "temperature": 1.0,
+      "top_k": 50,
+      "top_p": 0.95,
+      "seed": 42
+    },
+    "sampling_seed_policy": "fresh per corpus row",
+    "sampling_arithmetic": "float32 provider logits; float64 verifier logits, matching harness",
+    "provider_shape": "sequential_eager_batch1",
+    "reference_shape": "chunked_eager_batch1",
+    "injected_noise": false,
+    "eos_policy": "continue to fixed token count",
+    "prompt_policy": "raw text; no chat template; no truncation",
+    "projection": {
+      "seed": 123,
+      "dimension": 32
+    },
+    "threshold_statistic": "raw mean of all token scores in one sequence",
+    "effect_statistic": "evaluation per-token mean shift / BF16 population SD",
+    "effect_cap": "BF16 evaluation 99.9 percentile; recomputed in each bootstrap draw",
+    "bootstrap_unit": "paired prompt and seed; generated tokens may differ",
+    "interval": "exploratory 90 percent; not simultaneous"
+  },
+  "same_shape_rerun_exact": true,
+  "detectors": {
+    "token_difr": {
+      "calibration": {
+        "alpha": 0.05,
+        "calibration_sequences": 2,
+        "order_statistic": 3,
+        "threshold": null,
+        "rule": "reject iff raw sequence mean > threshold",
+        "status": "insufficient_calibration"
+      },
+      "evaluation": {
+        "bf16": null,
+        "nf4": null,
+        "int8": null
+      },
+      "effect_vs_bf16": {
+        "nf4": {
+          "winsorized": {
+            "d_prime": null,
+            "cap": 0.0,
+            "honest_mean": 0.0,
+            "alternate_mean": 0.0,
+            "honest_sd": 0.0,
+            "bootstrap": 40,
+            "undefined_bootstrap_draws": 40,
+            "ci90": null,
+            "status": "undefined_zero_baseline_variance"
+          },
+          "raw": {
+            "d_prime": null,
+            "cap": null,
+            "honest_mean": 0.0,
+            "alternate_mean": 0.04923553787339119,
+            "honest_sd": 0.0,
+            "bootstrap": 40,
+            "undefined_bootstrap_draws": 40,
+            "ci90": null,
+            "status": "undefined_zero_baseline_variance"
+          }
+        },
+        "int8": {
+          "winsorized": {
+            "d_prime": null,
+            "cap": 0.0,
+            "honest_mean": 0.0,
+            "alternate_mean": 0.0,
+            "honest_sd": 0.0,
+            "bootstrap": 40,
+            "undefined_bootstrap_draws": 40,
+            "ci90": null,
+            "status": "undefined_zero_baseline_variance"
+          },
+          "raw": {
+            "d_prime": null,
+            "cap": null,
+            "honest_mean": 0.0,
+            "alternate_mean": 0.003518277846566109,
+            "honest_sd": 0.0,
+            "bootstrap": 40,
+            "undefined_bootstrap_draws": 40,
+            "ci90": null,
+            "status": "undefined_zero_baseline_variance"
+          }
+        }
+      }
+    },
+    "cross_entropy": {
+      "calibration": {
+        "alpha": 0.05,
+        "calibration_sequences": 2,
+        "order_statistic": 3,
+        "threshold": null,
+        "rule": "reject iff raw sequence mean > threshold",
+        "status": "insufficient_calibration"
+      },
+      "evaluation": {
+        "bf16": null,
+        "nf4": null,
+        "int8": null
+      },
+      "effect_vs_bf16": {
+        "nf4": {
+          "winsorized": {
+            "d_prime": 0.07412740455549932,
+            "cap": 4.628829624072135,
+            "honest_mean": 1.0779856125162737,
+            "alternate_mean": 1.1666842309708616,
+            "honest_sd": 1.196569864903055,
+            "bootstrap": 40,
+            "undefined_bootstrap_draws": 0,
+            "ci90": [
+              0.06269890435749166,
+              0.08768852662923506
+            ],
+            "status": "defined"
+          },
+          "raw": {
+            "d_prime": 0.07397388758235139,
+            "cap": null,
+            "honest_mean": 1.078820241588284,
+            "alternate_mean": 1.1675188600428719,
+            "honest_sd": 1.1990530895898128,
+            "bootstrap": 40,
+            "undefined_bootstrap_draws": 0,
+            "ci90": [
+              0.06269890435749166,
+              0.08768852662923506
+            ],
+            "status": "defined"
+          }
+        },
+        "int8": {
+          "winsorized": {
+            "d_prime": 0.07337885903812245,
+            "cap": 4.628829624072135,
+            "honest_mean": 1.0779856125162737,
+            "alternate_mean": 1.1657885439622602,
+            "honest_sd": 1.196569864903055,
+            "bootstrap": 40,
+            "undefined_bootstrap_draws": 0,
+            "ci90": [
+              0.0,
+              0.1361939029525082
+            ],
+            "status": "defined"
+          },
+          "raw": {
+            "d_prime": 0.07322689229383765,
+            "cap": null,
+            "honest_mean": 1.078820241588284,
+            "alternate_mean": 1.1666231730342704,
+            "honest_sd": 1.1990530895898128,
+            "bootstrap": 40,
+            "undefined_bootstrap_draws": 0,
+            "ci90": [
+              0.0,
+              0.1361939029525082
+            ],
+            "status": "defined"
+          }
+        }
+      }
+    },
+    "token_toploc": {
+      "calibration": {
+        "alpha": 0.05,
+        "calibration_sequences": 2,
+        "order_statistic": 3,
+        "threshold": null,
+        "rule": "reject iff raw sequence mean > threshold",
+        "status": "insufficient_calibration"
+      },
+      "evaluation": {
+        "bf16": null,
+        "nf4": null,
+        "int8": null
+      },
+      "effect_vs_bf16": {
+        "nf4": {
+          "winsorized": {
+            "d_prime": 0.151571222051483,
+            "cap": 10.0,
+            "honest_mean": 0.9375,
+            "alternate_mean": 1.3125,
+            "honest_sd": 2.474084426611186,
+            "bootstrap": 40,
+            "undefined_bootstrap_draws": 0,
+            "ci90": [
+              0.10101525445522107,
+              0.20228869496966945
+            ],
+            "status": "defined"
+          },
+          "raw": {
+            "d_prime": 0.151571222051483,
+            "cap": null,
+            "honest_mean": 0.9375,
+            "alternate_mean": 1.3125,
+            "honest_sd": 2.474084426611186,
+            "bootstrap": 40,
+            "undefined_bootstrap_draws": 0,
+            "ci90": [
+              0.10101525445522107,
+              0.20228869496966945
+            ],
+            "status": "defined"
+          }
+        },
+        "int8": {
+          "winsorized": {
+            "d_prime": 0.06315467585478457,
+            "cap": 10.0,
+            "honest_mean": 0.9375,
+            "alternate_mean": 1.09375,
+            "honest_sd": 2.474084426611186,
+            "bootstrap": 40,
+            "undefined_bootstrap_draws": 0,
+            "ci90": [
+              0.0,
+              0.1264304343560434
+            ],
+            "status": "defined"
+          },
+          "raw": {
+            "d_prime": 0.06315467585478457,
+            "cap": null,
+            "honest_mean": 0.9375,
+            "alternate_mean": 1.09375,
+            "honest_sd": 2.474084426611186,
+            "bootstrap": 40,
+            "undefined_bootstrap_draws": 0,
+            "ci90": [
+              0.0,
+              0.1264304343560434
+            ],
+            "status": "defined"
+          }
+        }
+      }
+    },
+    "activation_difr": {
+      "calibration": {
+        "alpha": 0.05,
+        "calibration_sequences": 2,
+        "order_statistic": 3,
+        "threshold": null,
+        "rule": "reject iff raw sequence mean > threshold",
+        "status": "insufficient_calibration"
+      },
+      "evaluation": {
+        "bf16": null,
+        "nf4": null,
+        "int8": null
+      },
+      "effect_vs_bf16": {
+        "nf4": {
+          "winsorized": {
+            "d_prime": 2.5712822585515394,
+            "cap": 0.31315014624077553,
+            "honest_mean": 0.19560936772242452,
+            "alternate_mean": 0.31315014624077553,
+            "honest_sd": 0.04571290379632004,
+            "bootstrap": 40,
+            "undefined_bootstrap_draws": 0,
+            "ci90": [
+              1.858019747419436,
+              2.6294583611198177
+            ],
+            "status": "defined"
+          },
+          "raw": {
+            "d_prime": 40.298598713063576,
+            "cap": null,
+            "honest_mean": 0.19564370744147042,
+            "alternate_mean": 2.041380575388014,
+            "honest_sd": 0.04580151486379629,
+            "bootstrap": 40,
+            "undefined_bootstrap_draws": 0,
+            "ci90": [
+              37.298115664401095,
+              47.83122803329118
+            ],
+            "status": "defined"
+          }
+        },
+        "int8": {
+          "winsorized": {
+            "d_prime": 2.5712822585515394,
+            "cap": 0.31315014624077553,
+            "honest_mean": 0.19560936772242452,
+            "alternate_mean": 0.31315014624077553,
+            "honest_sd": 0.04571290379632004,
+            "bootstrap": 40,
+            "undefined_bootstrap_draws": 0,
+            "ci90": [
+              1.858019747419436,
+              2.6294583611198177
+            ],
+            "status": "defined"
+          },
+          "raw": {
+            "d_prime": 9.4777484716596,
+            "cap": null,
+            "honest_mean": 0.19564370744147042,
+            "alternate_mean": 0.6297389449415102,
+            "honest_sd": 0.04580151486379629,
+            "bootstrap": 40,
+            "undefined_bootstrap_draws": 0,
+            "ci90": [
+              9.4777484716596,
+              9.865820567681814
+            ],
+            "status": "defined"
+          }
+        }
+      }
+    }
+  },
+  "logit_drift": {
+    "bf16": {
+      "mean_absolute_logit_difference": 0.056987124818191515,
+      "rms_logit_difference": 0.07169323487126038,
+      "max_absolute_logit_difference": 0.453125,
+      "position_mae_gini": 0.17065948269322995,
+      "mean_within_sequence_position_mae_gini": 0.14890324076854944
+    },
+    "nf4": {
+      "mean_absolute_logit_difference": 0.5403197833626139,
+      "rms_logit_difference": 0.682128595167591,
+      "max_absolute_logit_difference": 4.13671875,
+      "position_mae_gini": 0.11958130206756579,
+      "mean_within_sequence_position_mae_gini": 0.11571402875068648
+    },
+    "int8": {
+      "mean_absolute_logit_difference": 0.18493181916315396,
+      "rms_logit_difference": 0.23328209100787858,
+      "max_absolute_logit_difference": 1.625,
+      "position_mae_gini": 0.18494535782749577,
+      "mean_within_sequence_position_mae_gini": 0.18282492516313775
+    }
+  }
+}

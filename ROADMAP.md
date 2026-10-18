@@ -36,8 +36,10 @@ main requirement for interpreting deployment results.
   [first paired H100-to-A100 replay](docs/results/cross_gpu_replay_20261018.md)
   to fresh prompt/seed blocks and more hardware, then compare against matched
   attack controls.
-- **Actual quantization:** expand NF4/INT8/AWQ/GPTQ measurements beyond simulated
-  perturbations and the small NF4 pilot.
+- **Actual quantization:** extend the
+  [matched L40S NF4/INT8 pilot](docs/results/real_quantization_l40s_20261018.md)
+  to independent corpora, additional hardware, larger calibrated budgets and
+  AWQ/GPTQ. Complete the matched-Gaussian concentration comparison.
 - **Representative calibration:** collect fresh held-out blocks across serving
   conditions and measure false positives and detection power.
 - **Adaptive providers:** test attacks designed with knowledge of the verifier.

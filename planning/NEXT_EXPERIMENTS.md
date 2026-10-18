@@ -162,6 +162,20 @@ responses per block, capped at 24 output tokens each. That is a measured negativ
 result at a small budget, not the all-detector effect-size and concentration
 study proposed below.
 
+**2026-10-18 update:** the [L40S real-weight pilot](../docs/results/real_quantization_l40s_20261018.md)
+now measures all four detectors against actual NF4 and INT8 Qwen3-1.7B weights,
+with an independently loaded BF16 reference, 32 calibration and 64 held-out
+sequences per arm, and 128 tokens per sequence. Token-DiFR flags 34/64 NF4,
+5/64 INT8 and 0/64 BF16 sequences. Its descriptive NF4 d′ is +0.34435
+[+0.27621, +0.43242], and INT8 d′ is +0.07537 [+0.03451, +0.12258].
+Seed-free token-TOPLOC flags 32/64 NF4 but 4/64 BF16 sequences (6.25%), above
+the nominal 5% target in this sample. Activation-DiFR flags 64/64 NF4 and 52/64
+INT8 sequences with extra internal-activation evidence. All same-shape reruns
+and offline artifact/summary checks pass. These conditions differ from the
+earlier noisy simulated attacks and signed-audit pilot; they are not matched
+comparators. Fresh-corpus and cross-hardware calibration, larger decision budgets,
+AWQ/GPTQ and the matched-Gaussian concentration comparison remain open.
+
 **Experiment.** Serve `M̂` = a real `bitsandbytes` NF4 (and INT8, and AWQ/GPTQ)
 load of `M`, generate honestly *under `M̂`*, and verify against fp16 `M`. Report
 per-token d′ for all four Tier-1 verifiers, plus the batch each nominates for AUC

@@ -1,0 +1,77 @@
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.78it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  3.40it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  2.99it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:00<00:00,  1.78it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00,  3.02it/s]
+{"arm": "bf16", "sequences": 4, "total": 96, "elapsed_seconds": 22.0}
+{"arm": "bf16", "sequences": 8, "total": 96, "elapsed_seconds": 42.67}
+{"arm": "bf16", "sequences": 12, "total": 96, "elapsed_seconds": 63.36}
+{"arm": "bf16", "sequences": 16, "total": 96, "elapsed_seconds": 84.06}
+{"arm": "bf16", "sequences": 20, "total": 96, "elapsed_seconds": 104.74}
+{"arm": "bf16", "sequences": 24, "total": 96, "elapsed_seconds": 125.28}
+{"arm": "bf16", "sequences": 28, "total": 96, "elapsed_seconds": 146.02}
+{"arm": "bf16", "sequences": 32, "total": 96, "elapsed_seconds": 166.59}
+{"arm": "bf16", "sequences": 36, "total": 96, "elapsed_seconds": 187.46}
+{"arm": "bf16", "sequences": 40, "total": 96, "elapsed_seconds": 208.09}
+{"arm": "bf16", "sequences": 44, "total": 96, "elapsed_seconds": 228.92}
+{"arm": "bf16", "sequences": 48, "total": 96, "elapsed_seconds": 249.52}
+{"arm": "bf16", "sequences": 52, "total": 96, "elapsed_seconds": 270.57}
+{"arm": "bf16", "sequences": 56, "total": 96, "elapsed_seconds": 291.34}
+{"arm": "bf16", "sequences": 60, "total": 96, "elapsed_seconds": 311.93}
+{"arm": "bf16", "sequences": 64, "total": 96, "elapsed_seconds": 332.52}
+{"arm": "bf16", "sequences": 68, "total": 96, "elapsed_seconds": 353.31}
+{"arm": "bf16", "sequences": 72, "total": 96, "elapsed_seconds": 374.0}
+{"arm": "bf16", "sequences": 76, "total": 96, "elapsed_seconds": 394.79}
+{"arm": "bf16", "sequences": 80, "total": 96, "elapsed_seconds": 415.47}
+{"arm": "bf16", "sequences": 84, "total": 96, "elapsed_seconds": 436.26}
+{"arm": "bf16", "sequences": 88, "total": 96, "elapsed_seconds": 456.91}
+{"arm": "bf16", "sequences": 92, "total": 96, "elapsed_seconds": 477.63}
+{"arm": "bf16", "sequences": 96, "total": 96, "elapsed_seconds": 498.38}
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:01<00:01,  1.05s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:01<00:00,  1.74it/s]
+{"arm": "nf4", "sequences": 4, "total": 96, "elapsed_seconds": 26.84}
+{"arm": "nf4", "sequences": 8, "total": 96, "elapsed_seconds": 52.94}
+{"arm": "nf4", "sequences": 12, "total": 96, "elapsed_seconds": 78.39}
+{"arm": "nf4", "sequences": 16, "total": 96, "elapsed_seconds": 104.09}
+{"arm": "nf4", "sequences": 20, "total": 96, "elapsed_seconds": 129.98}
+{"arm": "nf4", "sequences": 24, "total": 96, "elapsed_seconds": 155.62}
+{"arm": "nf4", "sequences": 28, "total": 96, "elapsed_seconds": 182.28}
+{"arm": "nf4", "sequences": 32, "total": 96, "elapsed_seconds": 208.14}
+{"arm": "nf4", "sequences": 36, "total": 96, "elapsed_seconds": 234.0}
+{"arm": "nf4", "sequences": 40, "total": 96, "elapsed_seconds": 260.38}
+{"arm": "nf4", "sequences": 44, "total": 96, "elapsed_seconds": 286.55}
+{"arm": "nf4", "sequences": 48, "total": 96, "elapsed_seconds": 312.92}
+{"arm": "nf4", "sequences": 52, "total": 96, "elapsed_seconds": 339.53}
+{"arm": "nf4", "sequences": 56, "total": 96, "elapsed_seconds": 365.72}
+{"arm": "nf4", "sequences": 60, "total": 96, "elapsed_seconds": 391.86}
+{"arm": "nf4", "sequences": 64, "total": 96, "elapsed_seconds": 417.75}
+{"arm": "nf4", "sequences": 68, "total": 96, "elapsed_seconds": 443.96}
+{"arm": "nf4", "sequences": 72, "total": 96, "elapsed_seconds": 470.08}
+{"arm": "nf4", "sequences": 76, "total": 96, "elapsed_seconds": 496.2}
+{"arm": "nf4", "sequences": 80, "total": 96, "elapsed_seconds": 522.2}
+{"arm": "nf4", "sequences": 84, "total": 96, "elapsed_seconds": 548.07}
+{"arm": "nf4", "sequences": 88, "total": 96, "elapsed_seconds": 574.26}
+{"arm": "nf4", "sequences": 92, "total": 96, "elapsed_seconds": 600.4}
+{"arm": "nf4", "sequences": 96, "total": 96, "elapsed_seconds": 626.79}
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards:  50%|█████     | 1/2 [00:04<00:04,  4.51s/it]Loading checkpoint shards: 100%|██████████| 2/2 [00:04<00:00,  2.30s/it]
+MatMul8bitLt: inputs will be cast from torch.bfloat16 to float16 during quantization
+{"arm": "int8", "sequences": 4, "total": 96, "elapsed_seconds": 67.97}
+{"arm": "int8", "sequences": 8, "total": 96, "elapsed_seconds": 133.42}
+{"arm": "int8", "sequences": 12, "total": 96, "elapsed_seconds": 196.12}
+{"arm": "int8", "sequences": 16, "total": 96, "elapsed_seconds": 258.99}
+{"arm": "int8", "sequences": 20, "total": 96, "elapsed_seconds": 322.1}
+{"arm": "int8", "sequences": 24, "total": 96, "elapsed_seconds": 385.18}
+{"arm": "int8", "sequences": 28, "total": 96, "elapsed_seconds": 448.31}
+{"arm": "int8", "sequences": 32, "total": 96, "elapsed_seconds": 511.72}
+{"arm": "int8", "sequences": 36, "total": 96, "elapsed_seconds": 574.83}
+{"arm": "int8", "sequences": 40, "total": 96, "elapsed_seconds": 637.71}
+{"arm": "int8", "sequences": 44, "total": 96, "elapsed_seconds": 700.74}
+{"arm": "int8", "sequences": 48, "total": 96, "elapsed_seconds": 763.8}
+{"arm": "int8", "sequences": 52, "total": 96, "elapsed_seconds": 826.33}
+{"arm": "int8", "sequences": 56, "total": 96, "elapsed_seconds": 889.52}
+{"arm": "int8", "sequences": 60, "total": 96, "elapsed_seconds": 952.02}
+{"arm": "int8", "sequences": 64, "total": 96, "elapsed_seconds": 1015.08}
+{"arm": "int8", "sequences": 68, "total": 96, "elapsed_seconds": 1077.86}
+{"arm": "int8", "sequences": 72, "total": 96, "elapsed_seconds": 1140.56}
+{"arm": "int8", "sequences": 76, "total": 96, "elapsed_seconds": 1205.44}
+{"arm": "int8", "sequences": 80, "total": 96, "elapsed_seconds": 1283.21}
+{"arm": "int8", "sequences": 84, "total": 96, "elapsed_seconds": 1374.74}
+{"arm": "int8", "sequences": 88, "total": 96, "elapsed_seconds": 1439.36}
+{"arm": "int8", "sequences": 92, "total": 96, "elapsed_seconds": 1502.03}
+{"arm": "int8", "sequences": 96, "total": 96, "elapsed_seconds": 1564.85}

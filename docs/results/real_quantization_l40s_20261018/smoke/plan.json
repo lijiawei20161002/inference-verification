@@ -1,0 +1,38 @@
+{
+  "schema": "ivgym-real-quantization-plan-v1",
+  "model": "Qwen/Qwen3-1.7B",
+  "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "calibration": 2,
+  "evaluation": 2,
+  "tokens": 16,
+  "corpus_seed": 202610180,
+  "alpha": 0.05,
+  "bootstrap": 40,
+  "arms": [
+    "bf16",
+    "nf4",
+    "int8"
+  ],
+  "sampling": {
+    "temperature": 1.0,
+    "top_k": 50,
+    "top_p": 0.95,
+    "seed": 42
+  },
+  "sampling_seed_policy": "fresh per corpus row",
+  "sampling_arithmetic": "float32 provider logits; float64 verifier logits, matching harness",
+  "provider_shape": "sequential_eager_batch1",
+  "reference_shape": "chunked_eager_batch1",
+  "injected_noise": false,
+  "eos_policy": "continue to fixed token count",
+  "prompt_policy": "raw text; no chat template; no truncation",
+  "projection": {
+    "seed": 123,
+    "dimension": 32
+  },
+  "threshold_statistic": "raw mean of all token scores in one sequence",
+  "effect_statistic": "evaluation per-token mean shift / BF16 population SD",
+  "effect_cap": "BF16 evaluation 99.9 percentile; recomputed in each bootstrap draw",
+  "bootstrap_unit": "paired prompt and seed; generated tokens may differ",
+  "interval": "exploratory 90 percent; not simultaneous"
+}

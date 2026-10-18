@@ -50,6 +50,16 @@ statistics (`rtol=1e-12`, `atol=1e-14`) across NumPy versions and retain the
 verified archived precision in their summaries. Artifact hashes, changed-score
 fractions, and raw same-shape rerun equality remain exact checks.
 
+The [18 October L40S real-quantization pilot](../docs/results/real_quantization_l40s_20261018.md)
+completed BF16, actual NF4 and INT8 generation against an independent BF16
+reference: 32 calibration and 64 evaluation sequences per arm, 128 tokens each.
+Token-DiFR flagged 34/64 NF4, 5/64 INT8 and 0/64 BF16 sequences. Seed-free
+token-TOPLOC flagged 32/64 NF4 and 4/64 BF16 sequences; its observed 6.25% false
+positive rate exceeds the nominal 5% target in this sample. The report includes
+all four detectors, confidence intervals, exact rerun controls, raw captures and
+offline reproduction commands. This is a same-GPU pilot; calibration transfer
+and deployment false-positive rates remain open.
+
 ## Frozen capture and paired GPU replay
 
 `exp_frozen_replay_gpu.py` separates generation from verification. Generate one
