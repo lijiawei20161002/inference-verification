@@ -36,6 +36,11 @@ a [portable bundle of the new H100 capture](../docs/results/h100_followup_202610
 is tracked in the result archive for subsequent replay; extraction instructions
 are in the report.
 
+The follow-up artifact checkers allow float64 roundoff in recomputed bootstrap
+statistics (`rtol=1e-12`, `atol=1e-14`) across NumPy versions and retain the
+verified archived precision in their summaries. Artifact hashes, changed-score
+fractions, and raw same-shape rerun equality remain exact checks.
+
 ## Frozen capture and paired GPU replay
 
 `exp_frozen_replay_gpu.py` separates generation from verification. Generate one

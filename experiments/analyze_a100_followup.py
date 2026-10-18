@@ -13,6 +13,7 @@ from statistics import mean
 
 import numpy as np
 
+from experiments.artifact_checks import bootstrap_summary_matches
 from experiments.exp_frozen_replay_gpu import DETECTORS, SHAPES, paired_d_prime
 
 DATA = Path(__file__).resolve().parents[1] / "docs/results/a100_followup_20261018"
@@ -73,9 +74,11 @@ def build_summary():
                 if alternate.shape != (n, t):
                     raise ValueError(f"Incomplete scores: {shape}/{d}")
                 row = paired_d_prime(base.ravel(), alternate.ravel(), n, t, 400)
-                if row != saved["comparisons"][shape][d]:
+                archived = saved["comparisons"][shape][d]
+                if not bootstrap_summary_matches(row, archived):
                     raise ValueError(f"Bootstrap summary does not reproduce: {shape}/{d}")
-                comparisons.setdefault(shape, {})[d] = row
+                # Keep the verified archived precision stable across NumPy versions.
+                comparisons.setdefault(shape, {})[d] = archived
     smoke = json.loads((DATA / "smoke-process-comparison.json").read_text())
     if any(r["frac_tokens_changed"] != 0 for row in smoke["comparisons"].values() for r in row.values()):
         raise ValueError("Failed fresh-process smoke control")

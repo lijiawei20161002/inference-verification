@@ -13,6 +13,7 @@ from statistics import mean
 
 import numpy as np
 
+from experiments.artifact_checks import bootstrap_summary_matches
 from experiments.exp_frozen_replay_gpu import DETECTORS, SHAPES, paired_d_prime
 
 DATA = Path(__file__).resolve().parents[1] / 'docs/results/h100_followup_20261018'
@@ -95,9 +96,11 @@ def frozen_summary(data_dir, prefix, n, t):
                 raise ValueError(f'Failed same-shape control: {d}')
             for shape in SHAPES[1:]:
                 row = paired_d_prime(base.ravel(), scores[f'{shape}/{d}'].ravel(), n, t, 400)
-                if row != saved['comparisons'][shape][d]:
+                archived = saved['comparisons'][shape][d]
+                if not bootstrap_summary_matches(row, archived):
                     raise ValueError(f'Bootstrap summary does not reproduce: {shape}/{d}')
-                comparisons.setdefault(shape, {})[d] = row
+                # Keep the verified archived precision stable across NumPy versions.
+                comparisons.setdefault(shape, {})[d] = archived
     return dict(capture_sha256=capture['capture_sha256'], n_prompts=n, tokens_per_prompt=t,
                 same_shape_exact=True, comparisons=comparisons,
                 capture_elapsed_seconds=capture['elapsed_seconds'],
