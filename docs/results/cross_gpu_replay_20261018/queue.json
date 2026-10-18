@@ -1,0 +1,94 @@
+{
+  "status": "complete",
+  "started_utc": "2026-10-18T11:28:13.472251+00:00",
+  "jobs": [
+    {
+      "name": "smoke-replay",
+      "command": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "-m",
+        "experiments.exp_frozen_replay_gpu",
+        "replay",
+        "--node",
+        "a100-cross-gpu-20261018",
+        "--capture",
+        "/workspace/inference-verification/runs/cross-gpu-20261018/smoke-capture.json.gz",
+        "--capture-sha256",
+        "10eb072ca57de16ca0b07792bb01b2b5f814bb5788a4eeee1c75b9f4e2f0d6c5",
+        "--bootstrap",
+        "400",
+        "--output",
+        "/workspace/inference-verification/runs/cross-gpu-20261018/smoke-replay"
+      ],
+      "cwd": "/workspace/inference-verification/runs/cross-gpu-20261018/source",
+      "status": "complete",
+      "started_utc": "2026-10-18T11:28:14.268801+00:00",
+      "returncode": 0,
+      "elapsed_seconds": 13.06352418474853,
+      "finished_utc": "2026-10-18T11:28:27.332913+00:00"
+    },
+    {
+      "name": "a100-replay",
+      "command": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "-m",
+        "experiments.exp_frozen_replay_gpu",
+        "replay",
+        "--node",
+        "a100-cross-gpu-20261018",
+        "--capture",
+        "/workspace/inference-verification/runs/cross-gpu-20261018/h100-replay-transfer/capture/capture.json.gz",
+        "--capture-sha256",
+        "53985023de9acea63b76eaaa1c2183f4cc94917b95e49bf59597f6a6881e5bba",
+        "--bootstrap",
+        "400",
+        "--output",
+        "/workspace/inference-verification/runs/cross-gpu-20261018/a100-replay"
+      ],
+      "cwd": "/workspace/inference-verification/runs/cross-gpu-20261018/source",
+      "status": "complete",
+      "started_utc": "2026-10-18T11:28:27.333541+00:00",
+      "returncode": 0,
+      "elapsed_seconds": 1362.0621198220178,
+      "finished_utc": "2026-10-18T11:51:09.395958+00:00"
+    },
+    {
+      "name": "compare",
+      "command": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "-m",
+        "experiments.exp_frozen_replay_gpu",
+        "compare",
+        "--baseline",
+        "/workspace/inference-verification/runs/cross-gpu-20261018/h100-replay-transfer/h100",
+        "--alternate",
+        "/workspace/inference-verification/runs/cross-gpu-20261018/a100-replay",
+        "--bootstrap",
+        "400",
+        "--output",
+        "/workspace/inference-verification/runs/cross-gpu-20261018/comparison.json"
+      ],
+      "cwd": "/workspace/inference-verification/runs/cross-gpu-20261018/source",
+      "status": "complete",
+      "started_utc": "2026-10-18T11:51:09.396600+00:00",
+      "returncode": 0,
+      "elapsed_seconds": 3.4102281853556633,
+      "finished_utc": "2026-10-18T11:51:12.807100+00:00"
+    }
+  ],
+  "source_commit": "5b5667c60f478403a4132c2c9744c6b1ef21988b",
+  "environment": {
+    "HF_HOME": "/workspace/inference-verification/runs/huggingface",
+    "HF_HUB_CACHE": "/workspace/inference-verification/runs/huggingface/hub",
+    "HF_HUB_OFFLINE": "1",
+    "TRANSFORMERS_OFFLINE": "1",
+    "HF_HUB_ENABLE_HF_TRANSFER": "0",
+    "CUDA_VISIBLE_DEVICES": "0",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "TOKENIZERS_PARALLELISM": "false",
+    "PYTHONUNBUFFERED": "1"
+  },
+  "smoke_capture_sha256": "10eb072ca57de16ca0b07792bb01b2b5f814bb5788a4eeee1c75b9f4e2f0d6c5",
+  "finished_utc": "2026-10-18T11:51:12.807709+00:00"
+}

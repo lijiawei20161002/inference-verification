@@ -1,0 +1,12 @@
+{
+  "python": "3.12.3",
+  "packages": {
+    "torch": "2.8.0+cu128",
+    "numpy": "2.1.2",
+    "transformers": "4.57.6",
+    "accelerate": "1.15.0",
+    "huggingface-hub": "0.36.2",
+    "tokenizers": "0.22.2",
+    "safetensors": "0.8.0"
+  }
+}

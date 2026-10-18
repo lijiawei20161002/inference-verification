@@ -1,0 +1,158 @@
+{
+  "capture_sha256": "10eb072ca57de16ca0b07792bb01b2b5f814bb5788a4eeee1c75b9f4e2f0d6c5",
+  "n_prompts": 4,
+  "n_tokens": 16,
+  "same_shape_exact": {
+    "token_difr": true,
+    "cross_entropy": true,
+    "token_toploc": true,
+    "activation_difr": true
+  },
+  "comparisons": {
+    "chunked_b4": {
+      "token_difr": {
+        "d_prime": -0.0021150158221519264,
+        "ci": [
+          -0.004894159164209332,
+          0.0
+        ],
+        "base_mean": 0.057653494154886395,
+        "alt_mean": 0.0567131717559433,
+        "base_sd": 0.444593552961815,
+        "frac_tokens_changed": 0.046875
+      },
+      "cross_entropy": {
+        "d_prime": -0.0011285916731123937,
+        "ci": [
+          -0.006964583530778378,
+          0.003084878929864956
+        ],
+        "base_mean": 0.9170775266434261,
+        "alt_mean": 0.9156025519422373,
+        "base_sd": 1.3069161649226781,
+        "frac_tokens_changed": 1.0
+      },
+      "token_toploc": {
+        "d_prime": -0.01563688452479243,
+        "ci": [
+          -0.02615130970509254,
+          -0.007119827599732205
+        ],
+        "base_mean": 1.3671250000000006,
+        "alt_mean": 1.3046250000000006,
+        "base_sd": 3.996959874001117,
+        "frac_tokens_changed": 0.0625
+      },
+      "activation_difr": {
+        "d_prime": -0.06383288926816492,
+        "ci": [
+          -0.14117614790979552,
+          -0.0609340454897343
+        ],
+        "base_mean": 0.27168774208558605,
+        "alt_mean": 0.2575141991190354,
+        "base_sd": 0.2220413822558323,
+        "frac_tokens_changed": 1.0
+      }
+    },
+    "chunked_b1_sdpa": {
+      "token_difr": {
+        "d_prime": -0.0008074216482029791,
+        "ci": [
+          -0.001080220790969496,
+          0.0
+        ],
+        "base_mean": 0.057653494154886395,
+        "alt_mean": 0.05729451969557274,
+        "base_sd": 0.444593552961815,
+        "frac_tokens_changed": 0.046875
+      },
+      "cross_entropy": {
+        "d_prime": 0.003971975716797595,
+        "ci": [
+          -0.005030972157802368,
+          0.011305527784903648
+        ],
+        "base_mean": 0.9170775266434261,
+        "alt_mean": 0.9222685659143932,
+        "base_sd": 1.3069161649226781,
+        "frac_tokens_changed": 1.0
+      },
+      "token_toploc": {
+        "d_prime": -0.003909221131198107,
+        "ci": [
+          -0.007119827599732205,
+          0.0
+        ],
+        "base_mean": 1.3671250000000006,
+        "alt_mean": 1.3515000000000006,
+        "base_sd": 3.996959874001117,
+        "frac_tokens_changed": 0.078125
+      },
+      "activation_difr": {
+        "d_prime": -0.09539029277051751,
+        "ci": [
+          -0.19305200636986417,
+          0.041676393680273836
+        ],
+        "base_mean": 0.27168774208558605,
+        "alt_mean": 0.2505071496249364,
+        "base_sd": 0.2220413822558323,
+        "frac_tokens_changed": 1.0
+      }
+    },
+    "sequential": {
+      "token_difr": {
+        "d_prime": -0.12826927418220624,
+        "ci": [
+          -0.18274015653156075,
+          0.0
+        ],
+        "base_mean": 0.057653494154886395,
+        "alt_mean": 0.0006258018102578422,
+        "base_sd": 0.444593552961815,
+        "frac_tokens_changed": 0.03125
+      },
+      "cross_entropy": {
+        "d_prime": -0.001620860837092015,
+        "ci": [
+          -0.0060714512716443046,
+          0.001438564798973721
+        ],
+        "base_mean": 0.9170775266434261,
+        "alt_mean": 0.9149591974143388,
+        "base_sd": 1.3069161649226781,
+        "frac_tokens_changed": 1.0
+      },
+      "token_toploc": {
+        "d_prime": 0.0,
+        "ci": [
+          -0.011207704159325375,
+          0.006246388738455232
+        ],
+        "base_mean": 1.3671250000000006,
+        "alt_mean": 1.3671250000000006,
+        "base_sd": 3.996959874001117,
+        "frac_tokens_changed": 0.0625
+      },
+      "activation_difr": {
+        "d_prime": -0.14080017968566386,
+        "ci": [
+          -0.286403994736055,
+          -0.12664214497942541
+        ],
+        "base_mean": 0.27168774208558605,
+        "alt_mean": 0.24042427556617088,
+        "base_sd": 0.2220413822558323,
+        "frac_tokens_changed": 1.0
+      }
+    }
+  },
+  "bootstrap": {
+    "unit": "sequence",
+    "draws": 400,
+    "seed": 0,
+    "interval": 0.9
+  },
+  "scope": "Paired clean honest replay; no attack power or deployment FPR"
+}

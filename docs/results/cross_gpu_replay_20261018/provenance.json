@@ -1,0 +1,43 @@
+{
+  "experiment": "Frozen H100 capture replayed on A100, 2026-10-18",
+  "runtime_source_commit": "5b5667c60f478403a4132c2c9744c6b1ef21988b",
+  "parent_checkout_commit": "3c7d008db2e72bd6c9604e00f15001771443688f",
+  "files": {
+    "a100-manifest.json": "d4c581e8f4375f8cdb6faa33f67416ffdab6a3eb6d28efa9a7ca814fea7337a2",
+    "a100-replay.log": "ebae6749608af9303edc91bbd2df1986ffeddf12e6c474bdd75116e41e5000f6",
+    "a100-scores.npz": "f1f5ee4bdaf5d18cb80b1279b82ab9579fb32323470f0fdf35c90ee25998cc30",
+    "a100-summary.json": "25f14c50c913251599b6f37b218f7c0c9e89e72564477a7ec38cdbbf19f7fdc5",
+    "compare.log": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+    "comparison.json": "93c05abd3c74d88729c6f3440ff8c0bf5ca9117df666fc461af6b98a0ec1eb68",
+    "environment.json": "0a6e7b8e543d02fc7f8aab0eb245459faa60e0765215929d1c8a3538cbf93d61",
+    "model-files.json": "151f2d0ebc614bb414e4cbe3b524175d6b36ed362e85a9347cf64686eb496dc7",
+    "packages.json": "d50b5d4b7657c437de408ddf39cd665e24acd3dd3e5064c656834e25cc26e9ab",
+    "pytest-before.log": "4406c19438a1a3b387058bb8f12a9d89f239ee95a7cc8c5d9afbd7bd6b3c540b",
+    "queue.json": "fa5e8aef422d30195acfd2428d274ffde020e3f55deb450ed7c65ea584104ff5",
+    "run_paired_replay.py": "e1fd42f976235f0e9905280896b4abd0dcae2a81b34c3410f904f38d8e706003",
+    "runner.log": "8d82a9709b4ae76b6a0c3e43c81e5b5298450d3237cae74fb0a0d1e7ecaa34ad",
+    "smoke-capture.json.gz": "10eb072ca57de16ca0b07792bb01b2b5f814bb5788a4eeee1c75b9f4e2f0d6c5",
+    "smoke-manifest.json": "0cfa35dff952c95e8a4505bf4e1b8ca533519d0d87da493efbaa2bfab12f8b32",
+    "smoke-replay.log": "dd12564c88600596284b20c89106f3bbe075ae7b8d9497794cfa1376676b77ea",
+    "smoke-scores.npz": "653fedc1887ef26e3b2bc07f6af0a7a9a9d235044a6ad332b5fdc6bdf52dbc73",
+    "smoke-summary.json": "1d419c2100ea039faac7112148aceaf5d664951db69df4ac26a2d23231521b2f",
+    "pytest-after.log": "bdbbf5d84e34f93a33ce82cea985c1a5e75daa498ceb6068809fe7ed229b470b",
+    "nvidia-before.json": "6211070edad2d0645519929dd27f61acac722a17e300b8f13e34a986bb0b6ea9",
+    "nvidia-after.json": "bb2805e28513049e88437c28c4033a5d2f939bdd940e66c50b12ddb340de4448"
+  },
+  "baseline_directory": "docs/results/h100_followup_20261018",
+  "baseline_files": {
+    "replay-manifest.json": "2df12f7b0f00906313286dfa96dad4bd7eb5826dc5206100560245552dfef9ee",
+    "scores.npz": "0d14b09b79290d305a74bc7ea16d9ca1ea885fed8d23f6630e10fcafccebc1a4",
+    "token-summary.json": "5e7b06f438c12980f8ebbce6372f6e65245d5d774a5e05439cea5a139013085b",
+    "h100-replay-transfer.tar.gz": "9a233284bdd16a42df0f370b9729271fa6087d2cae934b7b9b5e816f7a905a31"
+  },
+  "analysis_command": "python -m experiments.analyze_cross_gpu_replay --check",
+  "note": "Fresh A100 scores paired with the archived H100 scores from the identical capture. No newly generated full capture, attack condition, or deployment calibration.",
+  "validation": {
+    "pre_experiment_tests": 186,
+    "final_tests": 198,
+    "warnings": 2,
+    "new_tests": 12
+  }
+}

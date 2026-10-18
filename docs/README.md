@@ -32,6 +32,7 @@ The signed-artifact protocol is a separate, optional experiment.
 ## Follow a claim to its evidence
 
 - [Claim → experiment → artifact index](RESEARCH_GUIDE.md#which-experiment-backs-which-claim)
+- [18 October paired H100-to-A100 replay: honest cross-GPU score differences](results/cross_gpu_replay_20261018.md)
 - [16 October H100 campaign: results, implications, and limitations](results/h100_campaign_20261016.md)
 - [17 October A100 campaign: four completed baselines and archived measurements](results/a100_campaign_20261017.md)
 - [Independent service H100 report](results/verification_service_h100.md)

@@ -32,8 +32,10 @@ main requirement for interpreting deployment results.
 
 ## Research priorities
 
-- **Cross-hardware honest controls:** compare benign variation to the attack
-  effect sizes used for decisions.
+- **Cross-hardware honest controls:** extend the
+  [first paired H100-to-A100 replay](docs/results/cross_gpu_replay_20261018.md)
+  to fresh prompt/seed blocks and more hardware, then compare against matched
+  attack controls.
 - **Actual quantization:** expand NF4/INT8/AWQ/GPTQ measurements beyond simulated
   perturbations and the small NF4 pilot.
 - **Representative calibration:** collect fresh held-out blocks across serving

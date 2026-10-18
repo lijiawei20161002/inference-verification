@@ -1,0 +1,535 @@
+{
+  "scope": "Paired honest H100 capture replayed on A100; hardware and driver both differ; no attack power or deployment FPR",
+  "direction": "baseline H100, alternate A100; positive means higher scores on A100",
+  "primary_schedule": "chunked_b1",
+  "capture_sha256": "53985023de9acea63b76eaaa1c2183f4cc94917b95e49bf59597f6a6881e5bba",
+  "model": "Qwen/Qwen3-1.7B",
+  "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "n_prompts": 80,
+  "tokens_per_prompt": 256,
+  "bootstrap": {
+    "unit": "sequence",
+    "draws": 400,
+    "seed": 0,
+    "interval": 0.9
+  },
+  "same_shape_exact": {
+    "h100": true,
+    "a100": true,
+    "smoke": true
+  },
+  "baseline": {
+    "device": "NVIDIA H100 80GB HBM3",
+    "driver": "595.91.07",
+    "source_commit": "5b5667c60f478403a4132c2c9744c6b1ef21988b"
+  },
+  "alternate": {
+    "device": "NVIDIA A100-SXM4-80GB",
+    "driver": "580.126.16",
+    "source_commit": "5b5667c60f478403a4132c2c9744c6b1ef21988b"
+  },
+  "replay_elapsed_seconds": 1360.9560287371278,
+  "comparisons": {
+    "chunked_b1": {
+      "token_difr": {
+        "effect_size_status": "defined",
+        "d_prime": 0.005909178536982136,
+        "ci": [
+          -0.006403366910584648,
+          0.016629025099250128
+        ],
+        "legacy_statistic": {
+          "d_prime": 0.005909178536982136,
+          "ci": [
+            -0.006403366910584648,
+            0.016629025099250128
+          ],
+          "base_mean": 0.14049538126545463,
+          "alt_mean": 0.1524227077999548,
+          "base_sd": 2.018440712164643,
+          "frac_tokens_changed": 0.018994140625
+        },
+        "raw": {
+          "baseline_mean": 0.14049538126545463,
+          "alternate_mean": 0.1524227077999548,
+          "mean_difference": 0.011927326534500163,
+          "mean_absolute_difference": 0.1354660468987417,
+          "max_absolute_difference": 30.0,
+          "baseline_sd": 2.018440712164643,
+          "alternate_sd": 2.1030616691984143,
+          "changed_positions": 389
+        },
+        "winsor_cap": 30.0,
+        "alternate_positions_above_cap": 0
+      },
+      "cross_entropy": {
+        "effect_size_status": "defined",
+        "d_prime": -0.000242251940669964,
+        "ci": [
+          -0.0007239668019262696,
+          0.0002506279494845178
+        ],
+        "legacy_statistic": {
+          "d_prime": -0.000242251940669964,
+          "ci": [
+            -0.0007239668019262696,
+            0.0002506279494845178
+          ],
+          "base_mean": 0.6422917331511436,
+          "alt_mean": 0.6420449916472151,
+          "base_sd": 1.0185326204031135,
+          "frac_tokens_changed": 0.999951171875
+        },
+        "raw": {
+          "baseline_mean": 0.6424419537784807,
+          "alternate_mean": 0.6421875038043167,
+          "mean_difference": -0.00025444997416408167,
+          "mean_absolute_difference": 0.021892570711934338,
+          "max_absolute_difference": 1.2018296847506367,
+          "baseline_sd": 1.0192604122390794,
+          "alternate_sd": 1.0192838843625018,
+          "changed_positions": 20479
+        },
+        "winsor_cap": 5.466721573611051,
+        "alternate_positions_above_cap": 18
+      },
+      "token_toploc": {
+        "effect_size_status": "defined",
+        "d_prime": 0.0042444888825985344,
+        "ci": [
+          -0.005854864567416501,
+          0.012856688166732324
+        ],
+        "legacy_statistic": {
+          "d_prime": 0.0042444888825985344,
+          "ci": [
+            -0.005854864567416501,
+            0.012856688166732324
+          ],
+          "base_mean": 0.809716796875,
+          "alt_mean": 0.82646484375,
+          "base_sd": 3.9458336064111323,
+          "frac_tokens_changed": 0.035888671875
+        },
+        "raw": {
+          "baseline_mean": 0.809716796875,
+          "alternate_mean": 0.82646484375,
+          "mean_difference": 0.016748046875,
+          "mean_absolute_difference": 0.248291015625,
+          "max_absolute_difference": 50.0,
+          "baseline_sd": 3.9458336064111323,
+          "alternate_sd": 4.050506671954175,
+          "changed_positions": 735
+        },
+        "winsor_cap": 50.0,
+        "alternate_positions_above_cap": 0
+      },
+      "activation_difr": {
+        "effect_size_status": "defined",
+        "d_prime": 0.06402008540186334,
+        "ci": [
+          0.04954574188842439,
+          0.0840180222356255
+        ],
+        "legacy_statistic": {
+          "d_prime": 0.06402008540186334,
+          "ci": [
+            0.04954574188842439,
+            0.0840180222356255
+          ],
+          "base_mean": 0.24499657690800003,
+          "alt_mean": 0.25469065111790895,
+          "base_sd": 0.15142238797392715,
+          "frac_tokens_changed": 1.0
+        },
+        "raw": {
+          "baseline_mean": 0.24593018345224374,
+          "alternate_mean": 0.25607696469412666,
+          "mean_difference": 0.010146781241882955,
+          "mean_absolute_difference": 0.053901728489141744,
+          "max_absolute_difference": 4.384182692428877,
+          "baseline_sd": 0.16905573113140437,
+          "alternate_sd": 0.18669424069262536,
+          "changed_positions": 20480
+        },
+        "winsor_cap": 2.466400778272419,
+        "alternate_positions_above_cap": 27
+      }
+    },
+    "chunked_b4": {
+      "token_difr": {
+        "effect_size_status": "defined",
+        "d_prime": 0.014068077288873961,
+        "ci": [
+          0.0018506218682900683,
+          0.025703545563327504
+        ],
+        "legacy_statistic": {
+          "d_prime": 0.014068077288873961,
+          "ci": [
+            0.0018506218682900683,
+            0.025703545563327504
+          ],
+          "base_mean": 0.14049538126545463,
+          "alt_mean": 0.1688909612072107,
+          "base_sd": 2.018440712164643,
+          "frac_tokens_changed": 0.01904296875
+        },
+        "raw": {
+          "baseline_mean": 0.14049538126545463,
+          "alternate_mean": 0.1688909612072107,
+          "mean_difference": 0.028395579941756077,
+          "mean_absolute_difference": 0.14005544813313375,
+          "max_absolute_difference": 30.0,
+          "baseline_sd": 2.018440712164643,
+          "alternate_sd": 2.2139425208089265,
+          "changed_positions": 390
+        },
+        "winsor_cap": 30.0,
+        "alternate_positions_above_cap": 0
+      },
+      "cross_entropy": {
+        "effect_size_status": "defined",
+        "d_prime": 6.404260328299553e-05,
+        "ci": [
+          -0.0006898019280381203,
+          0.0009026167916580633
+        ],
+        "legacy_statistic": {
+          "d_prime": 6.404260328299553e-05,
+          "ci": [
+            -0.0006898019280381203,
+            0.0009026167916580633
+          ],
+          "base_mean": 0.6422917331511436,
+          "alt_mean": 0.642356962631683,
+          "base_sd": 1.0185326204031135,
+          "frac_tokens_changed": 1.0
+        },
+        "raw": {
+          "baseline_mean": 0.6424419537784807,
+          "alternate_mean": 0.6425155258176899,
+          "mean_difference": 7.357203920908863e-05,
+          "mean_absolute_difference": 0.02203680841258059,
+          "max_absolute_difference": 4.430770354689765,
+          "baseline_sd": 1.0192604122390794,
+          "alternate_sd": 1.0194407985374447,
+          "changed_positions": 20480
+        },
+        "winsor_cap": 5.466721573611051,
+        "alternate_positions_above_cap": 19
+      },
+      "token_toploc": {
+        "effect_size_status": "defined",
+        "d_prime": 0.009986304747105025,
+        "ci": [
+          0.00016515098331001664,
+          0.0189344788585233
+        ],
+        "legacy_statistic": {
+          "d_prime": 0.009986304747105025,
+          "ci": [
+            0.00016515098331001664,
+            0.0189344788585233
+          ],
+          "base_mean": 0.809716796875,
+          "alt_mean": 0.84912109375,
+          "base_sd": 3.9458336064111323,
+          "frac_tokens_changed": 0.034375
+        },
+        "raw": {
+          "baseline_mean": 0.809716796875,
+          "alternate_mean": 0.84912109375,
+          "mean_difference": 0.039404296875,
+          "mean_absolute_difference": 0.252490234375,
+          "max_absolute_difference": 50.0,
+          "baseline_sd": 3.9458336064111323,
+          "alternate_sd": 4.1971424906594255,
+          "changed_positions": 704
+        },
+        "winsor_cap": 50.0,
+        "alternate_positions_above_cap": 0
+      },
+      "activation_difr": {
+        "effect_size_status": "defined",
+        "d_prime": 0.08487012916754404,
+        "ci": [
+          0.06200843704771537,
+          0.10824647830053842
+        ],
+        "legacy_statistic": {
+          "d_prime": 0.08487012916754404,
+          "ci": [
+            0.06200843704771537,
+            0.10824647830053842
+          ],
+          "base_mean": 0.24499657690800003,
+          "alt_mean": 0.25784781453429007,
+          "base_sd": 0.15142238797392715,
+          "frac_tokens_changed": 1.0
+        },
+        "raw": {
+          "baseline_mean": 0.24593018345224374,
+          "alternate_mean": 0.25919871730997135,
+          "mean_difference": 0.01326853385772769,
+          "mean_absolute_difference": 0.05452467971873424,
+          "max_absolute_difference": 3.9775230375253265,
+          "baseline_sd": 0.16905573113140437,
+          "alternate_sd": 0.19186035409984603,
+          "changed_positions": 20480
+        },
+        "winsor_cap": 2.466400778272419,
+        "alternate_positions_above_cap": 30
+      }
+    },
+    "chunked_b1_sdpa": {
+      "token_difr": {
+        "effect_size_status": "defined",
+        "d_prime": -0.0015161087198526442,
+        "ci": [
+          -0.011673776922751632,
+          0.009256926310593612
+        ],
+        "legacy_statistic": {
+          "d_prime": -0.0015161087198526442,
+          "ci": [
+            -0.011673776922751632,
+            0.009256926310593612
+          ],
+          "base_mean": 0.16439993726718033,
+          "alt_mean": 0.16108836308571214,
+          "base_sd": 2.184259042971887,
+          "frac_tokens_changed": 0.017236328125
+        },
+        "raw": {
+          "baseline_mean": 0.16439993726718033,
+          "alternate_mean": 0.16108836308571214,
+          "mean_difference": -0.0033115741814681516,
+          "mean_absolute_difference": 0.10605916335654235,
+          "max_absolute_difference": 30.0,
+          "baseline_sd": 2.184259042971887,
+          "alternate_sd": 2.163924960703874,
+          "changed_positions": 353
+        },
+        "winsor_cap": 30.0,
+        "alternate_positions_above_cap": 0
+      },
+      "cross_entropy": {
+        "effect_size_status": "defined",
+        "d_prime": -0.0002644350126908456,
+        "ci": [
+          -0.0006616839404828194,
+          0.00015152108862856475
+        ],
+        "legacy_statistic": {
+          "d_prime": -0.0002644350126908456,
+          "ci": [
+            -0.0006616839404828194,
+            0.00015152108862856475
+          ],
+          "base_mean": 0.6421889296621008,
+          "alt_mean": 0.6419196433891272,
+          "base_sd": 1.01834575623382,
+          "frac_tokens_changed": 1.0
+        },
+        "raw": {
+          "baseline_mean": 0.6423495539383743,
+          "alternate_mean": 0.6420874731861874,
+          "mean_difference": -0.0002620807521870758,
+          "mean_absolute_difference": 0.018114753984983786,
+          "max_absolute_difference": 0.7510918352656704,
+          "baseline_sd": 1.0191234572066608,
+          "alternate_sd": 1.0189331563561892,
+          "changed_positions": 20480
+        },
+        "winsor_cap": 5.455195447004091,
+        "alternate_positions_above_cap": 20
+      },
+      "token_toploc": {
+        "effect_size_status": "defined",
+        "d_prime": -0.0016875987405989283,
+        "ci": [
+          -0.010606134816317975,
+          0.0069161949673455245
+        ],
+        "legacy_statistic": {
+          "d_prime": -0.0016875987405989283,
+          "ci": [
+            -0.010606134816317975,
+            0.0069161949673455245
+          ],
+          "base_mean": 0.8453125,
+          "alt_mean": 0.83828125,
+          "base_sd": 4.166422876982574,
+          "frac_tokens_changed": 0.028271484375
+        },
+        "raw": {
+          "baseline_mean": 0.8453125,
+          "alternate_mean": 0.83828125,
+          "mean_difference": -0.00703125,
+          "mean_absolute_difference": 0.19248046875,
+          "max_absolute_difference": 50.0,
+          "baseline_sd": 4.166422876982574,
+          "alternate_sd": 4.134638287038957,
+          "changed_positions": 579
+        },
+        "winsor_cap": 50.0,
+        "alternate_positions_above_cap": 0
+      },
+      "activation_difr": {
+        "effect_size_status": "defined",
+        "d_prime": 0.038527196512826496,
+        "ci": [
+          0.027980307008724118,
+          0.0518194952403678
+        ],
+        "legacy_statistic": {
+          "d_prime": 0.038527196512826496,
+          "ci": [
+            0.027980307008724118,
+            0.0518194952403678
+          ],
+          "base_mean": 0.23676912870463834,
+          "alt_mean": 0.24300963239947934,
+          "base_sd": 0.16197658432595477,
+          "frac_tokens_changed": 1.0
+        },
+        "raw": {
+          "baseline_mean": 0.23797625524780677,
+          "alternate_mean": 0.24403209327625439,
+          "mean_difference": 0.006055838028447664,
+          "mean_absolute_difference": 0.043671805615838714,
+          "max_absolute_difference": 2.249726967876887,
+          "baseline_sd": 0.18618464752570493,
+          "alternate_sd": 0.18248621742633658,
+          "changed_positions": 20480
+        },
+        "winsor_cap": 2.6520364935495806,
+        "alternate_positions_above_cap": 19
+      }
+    },
+    "sequential": {
+      "token_difr": {
+        "effect_size_status": "defined",
+        "d_prime": 0.04596182130543957,
+        "ci": [
+          0.028358984978123176,
+          0.06413940027899018
+        ],
+        "legacy_statistic": {
+          "d_prime": 0.04596182130543957,
+          "ci": [
+            0.028358984978123176,
+            0.06413940027899018
+          ],
+          "base_mean": 0.0837071606893192,
+          "alt_mean": 0.15575701659534302,
+          "base_sd": 1.5676022807531949,
+          "frac_tokens_changed": 0.01806640625
+        },
+        "raw": {
+          "baseline_mean": 0.0837071606893192,
+          "alternate_mean": 0.15575701659534302,
+          "mean_difference": 0.07204985590602384,
+          "mean_absolute_difference": 0.13752824504232883,
+          "max_absolute_difference": 30.0,
+          "baseline_sd": 1.5676022807531949,
+          "alternate_sd": 2.1240011459359978,
+          "changed_positions": 370
+        },
+        "winsor_cap": 30.0,
+        "alternate_positions_above_cap": 0
+      },
+      "cross_entropy": {
+        "effect_size_status": "defined",
+        "d_prime": 0.0013668809982151856,
+        "ci": [
+          0.0007304009286210723,
+          0.002131136892133653
+        ],
+        "legacy_statistic": {
+          "d_prime": 0.0013668809982151856,
+          "ci": [
+            0.0007304009286210723,
+            0.002131136892133653
+          ],
+          "base_mean": 0.6404756333018378,
+          "alt_mean": 0.6418648600321335,
+          "base_sd": 1.0163479718485804,
+          "frac_tokens_changed": 1.0
+        },
+        "raw": {
+          "baseline_mean": 0.6406305278585813,
+          "alternate_mean": 0.642026546335176,
+          "mean_difference": 0.0013960184765945134,
+          "mean_absolute_difference": 0.021530247593712814,
+          "max_absolute_difference": 3.4422062155511277,
+          "baseline_sd": 1.0170973963953536,
+          "alternate_sd": 1.018421480257206,
+          "changed_positions": 20480
+        },
+        "winsor_cap": 5.458235252133338,
+        "alternate_positions_above_cap": 23
+      },
+      "token_toploc": {
+        "effect_size_status": "defined",
+        "d_prime": 0.03362382203962165,
+        "ci": [
+          0.021537329704288392,
+          0.04587692287272105
+        ],
+        "legacy_statistic": {
+          "d_prime": 0.03362382203962165,
+          "ci": [
+            0.021537329704288392,
+            0.04587692287272105
+          ],
+          "base_mean": 0.717041015625,
+          "alt_mean": 0.829345703125,
+          "base_sd": 3.3400333658567645,
+          "frac_tokens_changed": 0.035498046875
+        },
+        "raw": {
+          "baseline_mean": 0.717041015625,
+          "alternate_mean": 0.829345703125,
+          "mean_difference": 0.1123046875,
+          "mean_absolute_difference": 0.2482421875,
+          "max_absolute_difference": 50.0,
+          "baseline_sd": 3.3400333658567645,
+          "alternate_sd": 4.077236273087825,
+          "changed_positions": 727
+        },
+        "winsor_cap": 50.0,
+        "alternate_positions_above_cap": 0
+      },
+      "activation_difr": {
+        "effect_size_status": "undefined_zero_baseline_variance",
+        "d_prime": null,
+        "ci": null,
+        "legacy_statistic": {
+          "d_prime": 0.0,
+          "ci": [
+            0.0,
+            0.0
+          ],
+          "base_mean": 0.0,
+          "alt_mean": 0.0,
+          "base_sd": 0.0,
+          "frac_tokens_changed": 1.0
+        },
+        "raw": {
+          "baseline_mean": 0.0,
+          "alternate_mean": 0.25181686158152095,
+          "mean_difference": 0.25181686158152095,
+          "mean_absolute_difference": 0.25181686158152095,
+          "max_absolute_difference": 7.526129731628896,
+          "baseline_sd": 0.0,
+          "alternate_sd": 0.18440656402868283,
+          "changed_positions": 20480
+        },
+        "winsor_cap": 0.0,
+        "alternate_positions_above_cap": 20480
+      }
+    }
+  }
+}

@@ -12,9 +12,10 @@ them:
   perturbations. The new real-NF4 protocol pilot below adds an end-to-end
   measurement, but does not validate those earlier effect sizes.
 - **B** — the verifier is passive; no adversary has ever adapted to it.
-- **C** — independent H100 and A100 baselines are now recorded, but paired
-  cross-hardware scoring and held-out deployment false-positive rates remain
-  untested. Separate per-host runs do not establish calibration transfer.
+- **C** — the first paired H100-to-A100 scoring experiment is now recorded,
+  alongside independent baselines. Broader hardware/driver replication and
+  held-out deployment false-positive rates remain untested. One frozen capture
+  does not establish calibration transfer.
 
 Of these, **C is the one that decides whether any of this deploys**, and it is
 the cheapest to run. It is first for that reason.
@@ -39,7 +40,7 @@ detection nor closes the deployment-calibration requirement.
 
 ### 1. Cross-GPU benign variation: the false-positive side of the ROC
 
-**Claim at risk:** every AUC in the repo. The honest null is currently "the same
+**Claim at risk:** the historical AUCs whose honest null was "the same
 model, on the same H100, run twice". A real verifier calibrates on one machine
 and audits a provider on another, so the honest distribution it must not flag
 includes a *different accelerator, driver, kernel selection and batch shape*.
@@ -95,9 +96,9 @@ small and, here, helpfully signed", not "there is no floor". Nothing in the
 mechanism argument makes that sign a property of the hardware rather than a
 coincidence of this detector and this deviation.
 
-**Still open, and now the whole of the item:** the cross-GPU arm. Different SKU,
-different driver, different kernel selection. The shapes above are a lower bound
-on it, and they are the part that needed no new hardware.
+**Next step identified by those single-card results:** the cross-GPU arm, changing
+SKU, driver and kernel selection. The dated updates below track its progress;
+the first paired result now exists, while representative calibration remains open.
 
 **2026-10-17 update:** the [A100 campaign](../docs/results/a100_campaign_20261017.md)
 completed all four independent baselines (token shape, context window,
@@ -118,11 +119,31 @@ clean timing runs measured 61.743 and 61.765 ms context gaps. The paired replay
 CLI now exists, but only its A100 phase has run; H100 scoring of the identical
 capture and held-out deployment FPR remain open.
 
+**2026-10-18 paired replay completed:** the
+[H100-to-A100 result](../docs/results/cross_gpu_replay_20261018.md) uses the exact
+H100 capture and scores, with a new A100 replay of all 80 × 256 positions.
+All four raw same-shape controls pass on both GPUs. Batch-1 eager token-DiFR
+d′ is +0.00591 [−0.00640, +0.01663]; all three token-detector intervals include
+zero at that schedule. Batch 4 gives +0.01407 [+0.00185, +0.02570] and sequential
+replay gives +0.04596 [+0.02836, +0.06414] for token-DiFR. These are exploratory
+90% paired sequence intervals, not simultaneous bounds. Positive honest shifts
+are present under some schedules. The sequential activation baseline has zero
+variance; the report marks its standardized effect undefined and exposes the raw
+shift instead of interpreting the legacy clipped zero as agreement.
+
+This clean-arm GPU/driver pair is not a matched comparison against the historical
+noisy-arm simulated attacks. Next, collect independent prompt/seed blocks,
+additional hardware/driver conditions and matched real-quantization attacks;
+freeze thresholds and evaluate on held-out blocks. The original A100-origin
+capture's replay on H100 and L40S replication remain separate unfinished tasks.
+
 **Falsifies the deployment story if:** `d′(benign) ≳ d′(quant_4bit)` *with a
 positive sign*. Then no pool size fixes it, because growing the pool sharpens the
 false positive exactly as fast as the true one.
 
-**Cost:** the single-card arm is done (~1.3 GPU-hours). A second card for the rest.
+**Cost:** the single-card arm is done (~1.3 GPU-hours). The new paired A100 replay
+took 22.68 minutes of process time, including loading and scoring; representative
+calibration and additional hardware need further runs.
 
 ---
 

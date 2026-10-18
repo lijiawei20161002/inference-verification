@@ -31,10 +31,19 @@ The [18 October H100 follow-up](../docs/results/h100_followup_20261018.md)
 completed a new 80 × 256 frozen capture/replay and immediate/delayed timing
 repeats. Verify its archived evidence with
 `python -m experiments.analyze_h100_followup --check`. The original A100 capture
-was unavailable on that host, so the cross-GPU paired comparison remains open;
+was unavailable on that host;
 a [portable bundle of the new H100 capture](../docs/results/h100_followup_20261018/h100-replay-transfer.tar.gz)
-is tracked in the result archive for subsequent replay; extraction instructions
+is tracked in the result archive for replay; extraction instructions
 are in the report.
+
+The [18 October paired H100-to-A100 replay](../docs/results/cross_gpu_replay_20261018.md)
+now scores that identical H100 capture on A100: 80 × 256 positions, four schedules,
+four detectors, and exact rerun controls. Batch-1 eager token intervals include
+zero; sequential token-DiFR shifts by +0.04596 d′. Verify all sixteen paired
+comparisons with `python -m experiments.analyze_cross_gpu_replay --check`.
+The report flags the sequential activation effect as undefined because its H100
+baseline variance is zero. This is one honest GPU/driver comparison, not a
+deployment false-positive-rate measurement or an attack-power experiment.
 
 The follow-up artifact checkers allow float64 roundoff in recomputed bootstrap
 statistics (`rtol=1e-12`, `atol=1e-14`) across NumPy versions and retain the
