@@ -1,0 +1,308 @@
+{
+  "capture_sha256": "32c462f67724a9ba6c875d05e17569c4a02bbe3d59a5fa90237c43d26264e328",
+  "provenance": [
+    {
+      "hostname": "5254a004ce7c",
+      "device": "NVIDIA A100-SXM4-80GB",
+      "gpu_uuid": "GPU-9491c62c-af0c-011d-2016-309ea9578e99",
+      "driver": "570.133.20",
+      "software": {
+        "torch": "2.8.0+cu128",
+        "transformers": "4.57.6",
+        "numpy": "2.1.2",
+        "accelerate": "1.15.0"
+      },
+      "cuda_runtime": "12.8",
+      "tf32_matmul": false,
+      "tf32_cudnn": true,
+      "torch_threads": 1,
+      "source_commit": "9092f324c1c04aa1a3dcf6ac20417455a86ca450",
+      "source_sha256": {
+        "experiments/exp_benign_shape_dprime_gpu.py": "a80ad4dfd2eba52fa0d61a8ed6afb532cdad9de182be3b9e7fd4ebd7b56bfdbc",
+        "experiments/exp_frozen_replay_gpu.py": "1402efb5adbccc0d611b458777dc482222c966141f24cb6247f9d3caafb6a78a",
+        "ivgym/__init__.py": "f6f497ea7d6c44908b1f35532ba5093c32cfbb5db629b69ea14a02594422954a",
+        "ivgym/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+        "ivgym/attacks.py": "89ea2a665f78bd38ca67304bfad2ffa4e8cad2fe55b631d9c1724d6ca2c54945",
+        "ivgym/audit/__init__.py": "250aaffd1adf8a05f521d932fc7ab70f7e1824114ab5ae8d3d0ddc63d3b577ea",
+        "ivgym/audit/cli.py": "64430cc8190446e5961f42684dbbd861aef991dab5bd576c22c72d588d5d1dca",
+        "ivgym/audit/contract.py": "ea4fdd22e799c1bbf725d98bd0b551e7183f1671097a9a60b2f2ad5f0af291ff",
+        "ivgym/audit/crypto.py": "27d26414a0e563817b5b9ba190d7c48e9bb7fbac4c9828c204c26665a4ac4eff",
+        "ivgym/audit/hf.py": "19b415bb2551f0da942e7c4e2fd08be8ab7c4a80ec289530bb52c1a708f87885",
+        "ivgym/audit/http.py": "113e449b4938c5951ecbd7547893a234396e9aa5bd08b55e9ae83593ae9c29f6",
+        "ivgym/audit/protocol.py": "9525cb76d3d4c29ddd0e3f9b27bfe3ee24b0660aec3050ee204515a47b432a1b",
+        "ivgym/backends/__init__.py": "6ba0b4b23b701ce5f7326d603ab6512a51fe18415169ab05264799a604e20a1d",
+        "ivgym/backends/base.py": "efe69a047cc4043c9a47083003b6fba3dc04c428b43b62d39738c6b46c860d3b",
+        "ivgym/backends/hf_gpu.py": "d2e0ea537515db932a02462c39e01801a367b0a5646b15cc09ef9a941728b9a7",
+        "ivgym/backends/reference.py": "31d02aba962614ed091901c78f362c65b5bfbc8bc3224c25c3b88b75e4ca83b3",
+        "ivgym/backends/vllm_adapter.py": "ca47397fce8006fc0ddbe1605d34471f1991f92619c3c7334743eabf9263327a",
+        "ivgym/cli.py": "f70599bd68977df99639f5d0a9ad0c106134aacf1313ba96db28dfe12e6ab3d7",
+        "ivgym/clock.py": "21410ade1f7bdfa017b48f2ae7d75abe1c60d2e46ef13ef718576abc104abed4",
+        "ivgym/core.py": "5d4a85c54713657b9fb1b554d5c0f8a8e060068b83ee3bc7606511cc2b2e0823",
+        "ivgym/harness.py": "8ee490af566c78fecb61d515b4629133c80669731bad437fc4983b776154f984",
+        "ivgym/infogain.py": "b7ff7eaeb919c63edffe0d30e73069093f126901c117560241bcc7754f0685ab",
+        "ivgym/metrics.py": "d1d3c2edfd0212906c8a0c9d7587ad591bd30f4f7e8bd8ecf87fc286ff357ed8",
+        "ivgym/model_registry.py": "1f33cdda487c9391586b7dc9f0502d8fb1bb581d99749a92bf4875f943dc9ff4",
+        "ivgym/model_taxonomy.py": "cc125fca15a9be899c82b16f46018e5464e8bc92540bee48be722dbc36752a54",
+        "ivgym/sampling.py": "0f3cc409a52f5c9f26195c86988c530c40de8403fd565a1a2c2e9d0db9122b31",
+        "ivgym/service/__init__.py": "b86ebbaea61a31e47f544870369e938d8e0fed93341c0ffdb2ad462f42b756e0",
+        "ivgym/service/app.py": "9d6f1f268d484fe77c64fa876de7bb6df35f7375635aa143e19165334d02815e",
+        "ivgym/service/calibrate.py": "544d04fe7c179f704637eabd2a23b49f028981f06524a574b427fb1f375a7f3a",
+        "ivgym/service/engine.py": "53f3d4017c8f4d8c6460c3678504ee9509a860cadcba8dfa7e58e54cdae11be6",
+        "ivgym/service/errors.py": "3aa1bfa859d511c77453ccf8a1f75bd1147b691a6b19e93a3ba1b1ef58da562d",
+        "ivgym/service/jobs.py": "768747d2a1ce9da4940f841f754d38b38ab2a0e42f68f4d3c7a4830d34be1295",
+        "ivgym/service/provider.py": "eb435aa1f1b6532601f3dc0ce406d06344bdf81a51e892389e7d342c8d24f794",
+        "ivgym/service/schemas.py": "b386ab0d1d39b1bf9d735b1e2db14b77097d69d8085f4201e8148a87f10909e0",
+        "ivgym/signal.py": "7a57010f28b2753423914b66137559f6be2e5d5eafc34134fde91aff88982fbc",
+        "ivgym/spec_decode.py": "8700a1316b6efbb910cbf59e0d6f39d450d935458c58d17f420fe1d1a125ae73",
+        "ivgym/triage.py": "b7dbb425152943b623c101b671674619c616ad06f9dac428f9e41e54bf9ae95a",
+        "ivgym/verifiers.py": "cff8c0db529d9d74daa1256380504bbd667afb4f588519bebeeb452e231e4ae0",
+        "scripts/run_research_job.py": "f8293af8552e86b4590927ad9882a9f3e2b8916a1381e7e0870a8d0b9e14cee7"
+      }
+    },
+    {
+      "hostname": "5254a004ce7c",
+      "device": "NVIDIA A100-SXM4-80GB",
+      "gpu_uuid": "GPU-9491c62c-af0c-011d-2016-309ea9578e99",
+      "driver": "570.133.20",
+      "software": {
+        "torch": "2.8.0+cu128",
+        "transformers": "4.57.6",
+        "numpy": "2.1.2",
+        "accelerate": "1.15.0"
+      },
+      "cuda_runtime": "12.8",
+      "tf32_matmul": false,
+      "tf32_cudnn": true,
+      "torch_threads": 1,
+      "source_commit": "9092f324c1c04aa1a3dcf6ac20417455a86ca450",
+      "source_sha256": {
+        "experiments/exp_benign_shape_dprime_gpu.py": "a80ad4dfd2eba52fa0d61a8ed6afb532cdad9de182be3b9e7fd4ebd7b56bfdbc",
+        "experiments/exp_frozen_replay_gpu.py": "1402efb5adbccc0d611b458777dc482222c966141f24cb6247f9d3caafb6a78a",
+        "ivgym/__init__.py": "f6f497ea7d6c44908b1f35532ba5093c32cfbb5db629b69ea14a02594422954a",
+        "ivgym/__main__.py": "935a1c1166b0c1ea35a82256345000bf2c73ded718d77773bc27a71ecce28f7d",
+        "ivgym/attacks.py": "89ea2a665f78bd38ca67304bfad2ffa4e8cad2fe55b631d9c1724d6ca2c54945",
+        "ivgym/audit/__init__.py": "250aaffd1adf8a05f521d932fc7ab70f7e1824114ab5ae8d3d0ddc63d3b577ea",
+        "ivgym/audit/cli.py": "64430cc8190446e5961f42684dbbd861aef991dab5bd576c22c72d588d5d1dca",
+        "ivgym/audit/contract.py": "ea4fdd22e799c1bbf725d98bd0b551e7183f1671097a9a60b2f2ad5f0af291ff",
+        "ivgym/audit/crypto.py": "27d26414a0e563817b5b9ba190d7c48e9bb7fbac4c9828c204c26665a4ac4eff",
+        "ivgym/audit/hf.py": "19b415bb2551f0da942e7c4e2fd08be8ab7c4a80ec289530bb52c1a708f87885",
+        "ivgym/audit/http.py": "113e449b4938c5951ecbd7547893a234396e9aa5bd08b55e9ae83593ae9c29f6",
+        "ivgym/audit/protocol.py": "9525cb76d3d4c29ddd0e3f9b27bfe3ee24b0660aec3050ee204515a47b432a1b",
+        "ivgym/backends/__init__.py": "6ba0b4b23b701ce5f7326d603ab6512a51fe18415169ab05264799a604e20a1d",
+        "ivgym/backends/base.py": "efe69a047cc4043c9a47083003b6fba3dc04c428b43b62d39738c6b46c860d3b",
+        "ivgym/backends/hf_gpu.py": "d2e0ea537515db932a02462c39e01801a367b0a5646b15cc09ef9a941728b9a7",
+        "ivgym/backends/reference.py": "31d02aba962614ed091901c78f362c65b5bfbc8bc3224c25c3b88b75e4ca83b3",
+        "ivgym/backends/vllm_adapter.py": "ca47397fce8006fc0ddbe1605d34471f1991f92619c3c7334743eabf9263327a",
+        "ivgym/cli.py": "f70599bd68977df99639f5d0a9ad0c106134aacf1313ba96db28dfe12e6ab3d7",
+        "ivgym/clock.py": "21410ade1f7bdfa017b48f2ae7d75abe1c60d2e46ef13ef718576abc104abed4",
+        "ivgym/core.py": "5d4a85c54713657b9fb1b554d5c0f8a8e060068b83ee3bc7606511cc2b2e0823",
+        "ivgym/harness.py": "8ee490af566c78fecb61d515b4629133c80669731bad437fc4983b776154f984",
+        "ivgym/infogain.py": "b7ff7eaeb919c63edffe0d30e73069093f126901c117560241bcc7754f0685ab",
+        "ivgym/metrics.py": "d1d3c2edfd0212906c8a0c9d7587ad591bd30f4f7e8bd8ecf87fc286ff357ed8",
+        "ivgym/model_registry.py": "1f33cdda487c9391586b7dc9f0502d8fb1bb581d99749a92bf4875f943dc9ff4",
+        "ivgym/model_taxonomy.py": "cc125fca15a9be899c82b16f46018e5464e8bc92540bee48be722dbc36752a54",
+        "ivgym/sampling.py": "0f3cc409a52f5c9f26195c86988c530c40de8403fd565a1a2c2e9d0db9122b31",
+        "ivgym/service/__init__.py": "b86ebbaea61a31e47f544870369e938d8e0fed93341c0ffdb2ad462f42b756e0",
+        "ivgym/service/app.py": "9d6f1f268d484fe77c64fa876de7bb6df35f7375635aa143e19165334d02815e",
+        "ivgym/service/calibrate.py": "544d04fe7c179f704637eabd2a23b49f028981f06524a574b427fb1f375a7f3a",
+        "ivgym/service/engine.py": "53f3d4017c8f4d8c6460c3678504ee9509a860cadcba8dfa7e58e54cdae11be6",
+        "ivgym/service/errors.py": "3aa1bfa859d511c77453ccf8a1f75bd1147b691a6b19e93a3ba1b1ef58da562d",
+        "ivgym/service/jobs.py": "768747d2a1ce9da4940f841f754d38b38ab2a0e42f68f4d3c7a4830d34be1295",
+        "ivgym/service/provider.py": "eb435aa1f1b6532601f3dc0ce406d06344bdf81a51e892389e7d342c8d24f794",
+        "ivgym/service/schemas.py": "b386ab0d1d39b1bf9d735b1e2db14b77097d69d8085f4201e8148a87f10909e0",
+        "ivgym/signal.py": "7a57010f28b2753423914b66137559f6be2e5d5eafc34134fde91aff88982fbc",
+        "ivgym/spec_decode.py": "8700a1316b6efbb910cbf59e0d6f39d450d935458c58d17f420fe1d1a125ae73",
+        "ivgym/triage.py": "b7dbb425152943b623c101b671674619c616ad06f9dac428f9e41e54bf9ae95a",
+        "ivgym/verifiers.py": "cff8c0db529d9d74daa1256380504bbd667afb4f588519bebeeb452e231e4ae0",
+        "scripts/run_research_job.py": "f8293af8552e86b4590927ad9882a9f3e2b8916a1381e7e0870a8d0b9e14cee7"
+      }
+    }
+  ],
+  "comparisons": {
+    "chunked_b1": {
+      "token_difr": {
+        "d_prime": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "base_mean": 0.0012959830760177213,
+        "alt_mean": 0.0012959830760177213,
+        "base_sd": 0.008026983502462108,
+        "frac_tokens_changed": 0.0
+      },
+      "cross_entropy": {
+        "d_prime": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "base_mean": 0.9056371677552604,
+        "alt_mean": 0.9056371677552604,
+        "base_sd": 1.3067090130548276,
+        "frac_tokens_changed": 0.0
+      },
+      "token_toploc": {
+        "d_prime": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "base_mean": 1.2890000000000006,
+        "alt_mean": 1.2890000000000006,
+        "base_sd": 3.9779169171816577,
+        "frac_tokens_changed": 0.0
+      },
+      "activation_difr": {
+        "d_prime": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "base_mean": 0.24584217503461636,
+        "alt_mean": 0.24584217503461636,
+        "base_sd": 0.18453072409645005,
+        "frac_tokens_changed": 0.0
+      }
+    },
+    "chunked_b4": {
+      "token_difr": {
+        "d_prime": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "base_mean": 0.0042430392767284055,
+        "alt_mean": 0.0042430392767284055,
+        "base_sd": 0.02104844563516395,
+        "frac_tokens_changed": 0.0
+      },
+      "cross_entropy": {
+        "d_prime": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "base_mean": 0.9077703880253158,
+        "alt_mean": 0.9077703880253158,
+        "base_sd": 1.3062086779052011,
+        "frac_tokens_changed": 0.0
+      },
+      "token_toploc": {
+        "d_prime": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "base_mean": 1.2704218750000007,
+        "alt_mean": 1.2704218750000007,
+        "base_sd": 4.122658535477626,
+        "frac_tokens_changed": 0.0
+      },
+      "activation_difr": {
+        "d_prime": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "base_mean": 0.2463457644460973,
+        "alt_mean": 0.2463457644460973,
+        "base_sd": 0.19982037856743445,
+        "frac_tokens_changed": 0.0
+      }
+    },
+    "chunked_b1_sdpa": {
+      "token_difr": {
+        "d_prime": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "base_mean": 0.004137422762502412,
+        "alt_mean": 0.004137422762502412,
+        "base_sd": 0.02601336806923418,
+        "frac_tokens_changed": 0.0
+      },
+      "cross_entropy": {
+        "d_prime": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "base_mean": 0.9065129201295486,
+        "alt_mean": 0.9065129201295486,
+        "base_sd": 1.3160925427460144,
+        "frac_tokens_changed": 0.0
+      },
+      "token_toploc": {
+        "d_prime": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "base_mean": 1.346578125000001,
+        "alt_mean": 1.346578125000001,
+        "base_sd": 4.312263239169953,
+        "frac_tokens_changed": 0.0
+      },
+      "activation_difr": {
+        "d_prime": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "base_mean": 0.2502176417707812,
+        "alt_mean": 0.2502176417707812,
+        "base_sd": 0.21436180386343595,
+        "frac_tokens_changed": 0.0
+      }
+    },
+    "sequential": {
+      "token_difr": {
+        "d_prime": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "base_mean": 0.00031593247785132545,
+        "alt_mean": 0.00031593247785132545,
+        "base_sd": 0.002507636302449087,
+        "frac_tokens_changed": 0.0
+      },
+      "cross_entropy": {
+        "d_prime": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "base_mean": 0.9026969701162211,
+        "alt_mean": 0.9026969701162211,
+        "base_sd": 1.304490090610786,
+        "frac_tokens_changed": 0.0
+      },
+      "token_toploc": {
+        "d_prime": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "base_mean": 1.377828125000001,
+        "alt_mean": 1.377828125000001,
+        "base_sd": 4.487887342456809,
+        "frac_tokens_changed": 0.0
+      },
+      "activation_difr": {
+        "d_prime": 0.0,
+        "ci": [
+          0.0,
+          0.0
+        ],
+        "base_mean": 0.0,
+        "alt_mean": 0.0,
+        "base_sd": 0.0,
+        "frac_tokens_changed": 0.0
+      }
+    }
+  },
+  "scope": "Paired honest scores; hardware and driver may both differ"
+}

@@ -110,6 +110,14 @@ A100 each generated their own pool, so this does **not** close the paired
 cross-GPU experiment above or establish deployment FPR. Next, replay the same
 frozen honest capture on both GPUs with aligned revisions and scoring settings.
 
+**2026-10-18 update:** the [A100 follow-up](../docs/results/a100_followup_20261018.md)
+adds a reusable frozen capture (80 × 256 positions), per-token score arrays and
+an exact same-shape control across four replay schedules. All twelve aggregate
+effect sizes and intervals reproduce the previous A100 artifact exactly. Two
+clean timing runs measured 61.743 and 61.765 ms context gaps. The paired replay
+CLI now exists, but only its A100 phase has run; H100 scoring of the identical
+capture and held-out deployment FPR remain open.
+
 **Falsifies the deployment story if:** `d′(benign) ≳ d′(quant_4bit)` *with a
 positive sign*. Then no pool size fixes it, because growing the pool sharpens the
 false positive exactly as fast as the true one.

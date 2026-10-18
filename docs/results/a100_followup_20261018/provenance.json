@@ -1,0 +1,51 @@
+{
+  "status": "complete",
+  "scope": "A100 phase only; H100 paired replay remains open",
+  "files": {
+    "clock-window.json": "fcd36232ed04a77a4a73b1058db5a82730dfa521c7f11b5cdf697e060b987488",
+    "clock-window-manifest.json": "8a994f48c855b87520fbfd862ec2ac93cd6ef16c3768d74671c4d2c76df70b1d",
+    "clock-window.log": "3887ce2d95c838eaca804feb47f0a7c254986a5dbe0e79c0faeeac10efb29774",
+    "clock-stability.json": "903e9cb2d6d8d2314e8c2176c849e30fb602eb1f7c8140738607e599b0f7da9f",
+    "clock-stability-manifest.json": "79dc48f9882d26f72fb82d6511b881ad657cc2f0be6085aa6c2f6e3671ac5fd0",
+    "clock-stability.log": "e3f214dddf67b24b4133450fde17d3d760fcd0e1a2dcdefcb61fc688ab0ca0f1",
+    "clock-window-preliminary.json": "03bf467941d02a1b10cca05fcc1bbbdbe3de2ece3994519abb0ece489bd79ce8",
+    "clock-window-preliminary-manifest.json": "610880ffce90756009673a52d08afb5588e5cba566782d86a81ea32068677867",
+    "clock-window-preliminary.log": "526b88d0872c363ab61805ea5a41b56ea8c791725f578378657930778ea40d5a",
+    "clock-window-smoke.json": "3aba5c3b3e342ae26ba28914aa9ebc226a956aedb3aa2ed191dc63e31aeacd47",
+    "clock-window-smoke-manifest.json": "a3605f65d5c2fbd720fd4139a73a2e9a20bd3bbca70ad81f7d39ba681acbde7a",
+    "clock-window-smoke.log": "c6dfc93403a2c34381bf89c01d1426ec6b5e77c0b0b287385f1709ec00d5dca9",
+    "packages.json": "2d185ca674535ed4b5e75e303be72ba13fe5286d937670a968af43393ba840da",
+    "nvidia-before.json": "7e04bbb1970da045ed6917cfda38b0dd1a01302bcfa52906f8bfdba509ae72c7",
+    "nvidia-after.json": "d2b71682584d2501b5f38a9f635690be97ee0c0d78f9d638003dc3389ab4fd7f",
+    "capture-manifest.json": "9e4bbd7f1ee652340b9568b43c231ad17fbb6796e18149300e4cc1750e9f81f3",
+    "replay-manifest.json": "8094d4482f60943a923cfe3ea71481ccea783b75a36fbdd11c386194115d33a7",
+    "token-summary.json": "7508b1e7e75f9750366d542889de5c8dac69c17039811b340695a5193d2794ef",
+    "scores.npz": "94de697cffd0d24919613659481cfe4e56066d942741f9c3f71bcd65150694cd",
+    "smoke-process-comparison.json": "7ebd7fcb80e9a687ad460437fd0d8f6f62a8942c392f359e5c04dea3b2b82d50",
+    "queue.json": "c8e8aeb7278baff1bdb1faeeee110906df05a8af623730c34bfac8a80732c2d3",
+    "capture-smoke-manifest.json": "893120ef703c1cc9aed27b9001b05078da2ef0da389c8904f708312a981d5ff3",
+    "capture-smoke.log": "e3def5139aa35ea180e76c6d1f7fe18f3cb1fd137e81ebe16a9fd503dd37e876",
+    "replay-smoke-manifest.json": "a1815a02bd2a195329cc4e424ba83a00a7da524c28c526f0ed179b0130fa92c3",
+    "replay-smoke.log": "316054154900397399f0de82db9d694a969545d0dcf5261ac8aaa5037b8e112c",
+    "replay-smoke-process2-manifest.json": "f57cb22ca9fb62e9879c8deb87930a2f2fb48c1a99f4143cdf344ef079550477",
+    "replay-smoke-process2.log": "ee4a932f624f09e7fc066bc0fdd8e7ffe862545352be37498d56a526be49565b",
+    "capture-baseline-manifest.json": "9e4bbd7f1ee652340b9568b43c231ad17fbb6796e18149300e4cc1750e9f81f3",
+    "capture-baseline.log": "25105f2e582f7ca032f96acecfb8de66c9a6fb368736cafef445cf5f8da7a4db",
+    "replay-baseline-manifest.json": "8094d4482f60943a923cfe3ea71481ccea783b75a36fbdd11c386194115d33a7",
+    "replay-baseline.log": "a885fc9270b46e3fc1f34c158b8c3ce7058c8d699b2abc37ad2a521a7cf2a8fe"
+  },
+  "frozen_capture": "runs/frozen-20261018/capture-baseline/capture.json.gz",
+  "frozen_capture_sha256": "b63b753407f5395d4910730db661f9c6c97d95fcfb9aca7e9c569a63a2ee2d6a",
+  "source_archive": "runs/frozen-source.tar.gz",
+  "source_archive_sha256": "e1687f0679d4c534b58775e1bc7a01c774be50a6f62b97f2149835520d697b30",
+  "timing_exclusions": {
+    "clock-window-preliminary": "Overlapped CPU pytest; excluded from headline timing comparisons"
+  },
+  "previous_campaign_comparison": "Different A100 host and driver; not an isolated cross-day or GPU-SKU effect",
+  "validation": {
+    "existing_tests": 151,
+    "after_replay_tests": 164
+  },
+  "previous_token_artifact": "docs/results/a100_campaign_20261017/token-shape.json",
+  "previous_token_sha256": "4a8f8e3d2c22b795aa91905466ed2518cdcdfe4775c1a7816ff5faec2b5e0ad6"
+}

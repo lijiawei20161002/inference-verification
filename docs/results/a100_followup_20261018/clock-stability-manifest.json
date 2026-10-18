@@ -1,0 +1,50 @@
+{
+  "node": "a100-80-02",
+  "job": "clock-stability",
+  "size": "baseline",
+  "gpu": "0",
+  "module": "experiments.exp_slope_verifier_gpu",
+  "settings": {
+    "IVGYM_SLOPE_ARMS": "stability",
+    "IVGYM_SLOPE_TAG": "stability",
+    "IVGYM_SLOPE_STEPS": "192",
+    "IVGYM_SLOPE_REPS": "4",
+    "IVGYM_SLOPE_KEEP": "1"
+  },
+  "output_artifact": "slope_verifier_stability.json",
+  "commit": "9092f324c1c04aa1a3dcf6ac20417455a86ca450",
+  "hostname": "5254a004ce7c",
+  "gpu_uuids": {
+    "0": "GPU-9491c62c-af0c-011d-2016-309ea9578e99"
+  },
+  "load_gpu": null,
+  "host_access": "exclusive-timing",
+  "started_utc": "20261018T030641.959752Z",
+  "python": "3.12.3 (main, Aug 14 2025, 17:47:21) [GCC 13.3.0]",
+  "status": "complete",
+  "observations": "local GPU experiments; no joint or network validation",
+  "model_lock": {
+    "Qwen/Qwen3-0.6B": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "Qwen/Qwen3-1.7B": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e"
+  },
+  "model_refs_before": {
+    "Qwen/Qwen3-0.6B": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "Qwen/Qwen3-1.7B": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+    "Qwen/Qwen3-4B": null
+  },
+  "offline_models": true,
+  "returncode": 0,
+  "validation": {
+    "coverage": "complete",
+    "cells": 6,
+    "expected_cells": 6
+  },
+  "artifact_sha256": "903e9cb2d6d8d2314e8c2176c849e30fb602eb1f7c8140738607e599b0f7da9f",
+  "elapsed_seconds": 204.42113514989614,
+  "model_refs_after": {
+    "Qwen/Qwen3-0.6B": "c1899de289a04d12100db370d81485cdf75e47ca",
+    "Qwen/Qwen3-1.7B": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+    "Qwen/Qwen3-4B": null
+  },
+  "finished_utc": "2026-10-18T03:10:07.322658+00:00"
+}
