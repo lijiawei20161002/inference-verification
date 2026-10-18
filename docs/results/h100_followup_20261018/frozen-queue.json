@@ -1,0 +1,118 @@
+{
+  "started_utc": "2026-10-18T10:20:31.519890+00:00",
+  "status": "complete",
+  "jobs": [
+    {
+      "name": "capture-smoke",
+      "command": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "-m",
+        "experiments.exp_frozen_replay_gpu",
+        "capture",
+        "--node",
+        "h100-80-02",
+        "--prompts",
+        "4",
+        "--tokens",
+        "16",
+        "--output",
+        "/workspace/inference-verification/runs/h100-followup-20261018/capture-smoke"
+      ],
+      "started_utc": "2026-10-18T10:20:31.520160+00:00",
+      "status": "complete",
+      "returncode": 0,
+      "elapsed_seconds": 10.730482621991541,
+      "finished_utc": "2026-10-18T10:20:42.251416+00:00"
+    },
+    {
+      "name": "replay-smoke",
+      "command": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "-m",
+        "experiments.exp_frozen_replay_gpu",
+        "replay",
+        "--node",
+        "h100-80-02",
+        "--capture",
+        "/workspace/inference-verification/runs/h100-followup-20261018/capture-smoke/capture.json.gz",
+        "--capture-sha256",
+        "93cb1e3b4803c07f265b6a9235887f15954b82d657f8f9978e381a5ecd170f82",
+        "--output",
+        "/workspace/inference-verification/runs/h100-followup-20261018/replay-smoke"
+      ],
+      "started_utc": "2026-10-18T10:20:42.252431+00:00",
+      "status": "complete",
+      "returncode": 0,
+      "elapsed_seconds": 14.829473154997686,
+      "finished_utc": "2026-10-18T10:20:57.082140+00:00"
+    },
+    {
+      "name": "capture-baseline",
+      "command": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "-m",
+        "experiments.exp_frozen_replay_gpu",
+        "capture",
+        "--node",
+        "h100-80-02",
+        "--prompts",
+        "80",
+        "--tokens",
+        "256",
+        "--output",
+        "/workspace/inference-verification/runs/h100-followup-20261018/capture-baseline"
+      ],
+      "started_utc": "2026-10-18T10:20:57.087489+00:00",
+      "status": "complete",
+      "returncode": 0,
+      "elapsed_seconds": 766.5794911849953,
+      "finished_utc": "2026-10-18T10:33:43.667259+00:00"
+    },
+    {
+      "name": "replay-baseline",
+      "command": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "-m",
+        "experiments.exp_frozen_replay_gpu",
+        "replay",
+        "--node",
+        "h100-80-02",
+        "--capture",
+        "/workspace/inference-verification/runs/h100-followup-20261018/capture-baseline/capture.json.gz",
+        "--capture-sha256",
+        "53985023de9acea63b76eaaa1c2183f4cc94917b95e49bf59597f6a6881e5bba",
+        "--output",
+        "/workspace/inference-verification/runs/h100-followup-20261018/replay-baseline"
+      ],
+      "started_utc": "2026-10-18T10:33:43.682323+00:00",
+      "status": "complete",
+      "returncode": 0,
+      "elapsed_seconds": 1255.0228115429927,
+      "finished_utc": "2026-10-18T10:54:38.705601+00:00"
+    },
+    {
+      "name": "clock-stability-delayed",
+      "command": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "scripts/run_research_job.py",
+        "--node",
+        "h100-80-02",
+        "--gpu",
+        "0",
+        "--job",
+        "clock-stability",
+        "--size",
+        "baseline",
+        "--model-lock",
+        "/workspace/inference-verification/runs/campaign-lock/model-refs.json"
+      ],
+      "started_utc": "2026-10-18T10:54:38.707198+00:00",
+      "status": "complete",
+      "returncode": 0,
+      "elapsed_seconds": 154.417019540997,
+      "finished_utc": "2026-10-18T10:57:13.124880+00:00"
+    }
+  ],
+  "capture_origin": "new independent H100 capture; unpaired with A100",
+  "finished_utc": "2026-10-18T10:57:13.125943+00:00"
+}

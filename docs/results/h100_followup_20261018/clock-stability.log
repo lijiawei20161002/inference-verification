@@ -1,0 +1,16 @@
+================================================================================================
+The context-slope verifier: predictable floor? real detection? stable null?
+  steps=192 reps=4 arms=['stability']
+================================================================================================
+  card: NVIDIA H100 80GB HBM3  3.04 TB/s
+
+  ARM stability: the same honest cells, a different process
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 57.83it/s]
+    Qwen3-1.7B-rerun                   B=1   ctx=256    graph  mean   5.507  min   5.464  sd  0.152 ms
+    Qwen3-1.7B-rerun                   B=1   ctx=1024   graph  mean   6.496  min   6.453  sd  0.131 ms
+    Qwen3-1.7B-rerun                   B=1   ctx=4096   graph  mean  10.996  min  10.834  sd  0.154 ms
+    Qwen3-1.7B-rerun                   B=1   ctx=8192   graph  mean  16.852  min  16.526  sd  0.102 ms
+    Qwen3-1.7B-rerun                   B=1   ctx=16384  graph  mean  28.413  min  27.616  sd  0.126 ms
+    Qwen3-1.7B-rerun                   B=1   ctx=32768  graph  mean  50.850  min  49.933  sd  0.622 ms
+
+  wrote /workspace/inference-verification/runs/campaign/h100-80-02/clock-stability-baseline-20261018T101738.641771Z/source/docs/results/slope_verifier_stability.json  (158s, 6 cells)

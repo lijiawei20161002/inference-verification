@@ -25,7 +25,14 @@ archive and saved summary. Paired H100/A100 replay remains a separate experiment
 The [18 October A100 follow-up](../docs/results/a100_followup_20261018.md)
 completed frozen capture/replay and clean timing repeats. Its score arrays and
 hashes support offline verification with
-`python -m experiments.analyze_a100_followup --check`. The H100 phase remains open.
+`python -m experiments.analyze_a100_followup --check`. Paired replay of that A100 capture on H100 remains open.
+
+The [18 October H100 follow-up](../docs/results/h100_followup_20261018.md)
+completed a new 80 × 256 frozen capture/replay and immediate/delayed timing
+repeats. Verify its archived evidence with
+`python -m experiments.analyze_h100_followup --check`. The original A100 capture
+was unavailable on that host, so the cross-GPU paired comparison remains open;
+a portable bundle of the new H100 capture is retained for subsequent replay.
 
 ## Frozen capture and paired GPU replay
 

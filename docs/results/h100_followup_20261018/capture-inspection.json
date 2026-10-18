@@ -1,0 +1,16 @@
+{
+  "capture_sha256": "53985023de9acea63b76eaaa1c2183f4cc94917b95e49bf59597f6a6881e5bba",
+  "bytes": 6127487,
+  "model": "Qwen/Qwen3-1.7B",
+  "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "prompts": 80,
+  "unique_prompt_token_sequences": 80,
+  "generated_positions": 20480,
+  "sampling": {
+    "temperature": 1.0,
+    "top_k": 50,
+    "top_p": 0.95,
+    "seed": 42
+  },
+  "capture_elapsed_seconds": 765.3032597610145
+}

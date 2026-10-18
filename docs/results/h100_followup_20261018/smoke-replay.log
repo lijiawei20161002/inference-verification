@@ -1,0 +1,6 @@
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 79.25it/s]
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 81.51it/s]
+Replayed 1/4 sequences, 4 shapes + control
+Replayed 2/4 sequences, 4 shapes + control
+Replayed 3/4 sequences, 4 shapes + control
+Replayed 4/4 sequences, 4 shapes + control

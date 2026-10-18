@@ -1,0 +1,76 @@
+{
+  "started_utc": "2026-10-18T10:14:16.980206+00:00",
+  "status": "complete",
+  "jobs": [
+    {
+      "job": "clock-window",
+      "size": "smoke",
+      "command": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "scripts/run_research_job.py",
+        "--node",
+        "h100-80-02",
+        "--gpu",
+        "0",
+        "--job",
+        "clock-window",
+        "--size",
+        "smoke",
+        "--model-lock",
+        "/workspace/inference-verification/runs/campaign-lock/model-refs.json"
+      ],
+      "started_utc": "2026-10-18T10:14:16.980508+00:00",
+      "status": "complete",
+      "returncode": 0,
+      "elapsed_seconds": 33.07672687800368,
+      "finished_utc": "2026-10-18T10:14:50.058044+00:00"
+    },
+    {
+      "job": "clock-window",
+      "size": "baseline",
+      "command": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "scripts/run_research_job.py",
+        "--node",
+        "h100-80-02",
+        "--gpu",
+        "0",
+        "--job",
+        "clock-window",
+        "--size",
+        "baseline",
+        "--model-lock",
+        "/workspace/inference-verification/runs/campaign-lock/model-refs.json"
+      ],
+      "started_utc": "2026-10-18T10:14:50.058890+00:00",
+      "status": "complete",
+      "returncode": 0,
+      "elapsed_seconds": 165.43580448199646,
+      "finished_utc": "2026-10-18T10:17:35.496035+00:00"
+    },
+    {
+      "job": "clock-stability",
+      "size": "baseline",
+      "command": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "scripts/run_research_job.py",
+        "--node",
+        "h100-80-02",
+        "--gpu",
+        "0",
+        "--job",
+        "clock-stability",
+        "--size",
+        "baseline",
+        "--model-lock",
+        "/workspace/inference-verification/runs/campaign-lock/model-refs.json"
+      ],
+      "started_utc": "2026-10-18T10:17:35.496963+00:00",
+      "status": "complete",
+      "returncode": 0,
+      "elapsed_seconds": 166.33907618600642,
+      "finished_utc": "2026-10-18T10:20:21.836618+00:00"
+    }
+  ],
+  "finished_utc": "2026-10-18T10:20:21.837489+00:00"
+}

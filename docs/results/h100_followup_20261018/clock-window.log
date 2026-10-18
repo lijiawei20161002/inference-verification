@@ -1,0 +1,16 @@
+================================================================================================
+The context-slope verifier: predictable floor? real detection? stable null?
+  steps=192 reps=4 arms=['window']
+================================================================================================
+  card: NVIDIA H100 80GB HBM3  3.04 TB/s
+
+  ARM window: claims 32768 tokens of context, holds W
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 63.69it/s]
+    probe_lo                           B=1   ctx=256    graph  mean   5.168  min   4.805  sd  0.473 ms
+    window_512                         B=1   ctx=512    graph  mean   5.841  min   5.803  sd  0.137 ms
+    window_2048                        B=1   ctx=2048   graph  mean   7.882  min   7.818  sd  0.218 ms
+    window_8192                        B=1   ctx=8192   graph  mean  16.843  min  16.559  sd  0.065 ms
+    window_16384                       B=1   ctx=16384  graph  mean  28.433  min  27.789  sd  0.113 ms
+    honest_hi                          B=1   ctx=32768  graph  mean  50.821  min  49.950  sd  0.612 ms
+
+  wrote /workspace/inference-verification/runs/campaign/h100-80-02/clock-window-baseline-20261018T101453.491410Z/source/docs/results/slope_verifier_window.json  (156s, 6 cells)
