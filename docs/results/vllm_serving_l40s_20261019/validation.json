@@ -1,0 +1,18 @@
+{
+  "validated_utc": "2026-10-19T02:45:17.975661+00:00",
+  "test_command": ".venv/bin/python -m pytest tests/ -q",
+  "tests_passed": 231,
+  "test_warnings": 2,
+  "test_duration_s": 87.23,
+  "server_runs": 18,
+  "measured_requests": 1200,
+  "generated_tokens": 153600,
+  "priming_requests_excluded": 120,
+  "warmup_requests_excluded": 90,
+  "raw_campaign_validation": "passed",
+  "summary_reproduction": "byte-identical",
+  "report_reproduction": "byte-identical",
+  "analysis_source_snapshots": "match repository scripts",
+  "figures": "rendered and visually inspected",
+  "gpu_after": "no running compute processes"
+}

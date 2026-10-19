@@ -1,0 +1,3 @@
+# Install into a separate environment; archive the full resolved package list.
+vllm==0.22.0
+transformers==4.57.6

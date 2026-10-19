@@ -1,0 +1,37 @@
+[
+  {
+    "block": 0,
+    "length": 512,
+    "concurrency": 1,
+    "arm": "full",
+    "outputs": 16
+  },
+  {
+    "block": 0,
+    "length": 16384,
+    "concurrency": 4,
+    "arm": "full",
+    "outputs": 16
+  },
+  {
+    "block": 0,
+    "length": 16384,
+    "concurrency": 4,
+    "arm": "truncate",
+    "outputs": 16
+  },
+  {
+    "block": 0,
+    "length": 8192,
+    "concurrency": 1,
+    "arm": "cold",
+    "outputs": 16
+  },
+  {
+    "block": 0,
+    "length": 8192,
+    "concurrency": 1,
+    "arm": "hit",
+    "outputs": 16
+  }
+]

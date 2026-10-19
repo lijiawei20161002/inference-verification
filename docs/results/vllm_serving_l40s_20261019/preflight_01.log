@@ -1,0 +1,11 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/workspace/inference-verification/experiments/exp_vllm_serving.py", line 416, in <module>
+    main()
+  File "/workspace/inference-verification/experiments/exp_vllm_serving.py", line 401, in main
+    result=run_server(args,args.output/f"session_{session}_{config}",config,session,corpus)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/inference-verification/experiments/exp_vllm_serving.py", line 272, in run_server
+    raise RuntimeError(f"Server exited {process.returncode}; see {root/'server.log'}")
+RuntimeError: Server exited 2; see runs/vllm_serving_l40s_20261019/preflight_01/session_0_graph_on/server.log

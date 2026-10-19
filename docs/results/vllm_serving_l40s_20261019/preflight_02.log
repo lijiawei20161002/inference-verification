@@ -1,0 +1,13 @@
+Traceback (most recent call last):
+  File "<frozen runpy>", line 198, in _run_module_as_main
+  File "<frozen runpy>", line 88, in _run_code
+  File "/workspace/inference-verification/experiments/exp_vllm_serving.py", line 420, in <module>
+    main()
+  File "/workspace/inference-verification/experiments/exp_vllm_serving.py", line 405, in main
+    result=run_server(args,args.output/f"session_{session}_{config}",config,session,corpus)
+           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+  File "/workspace/inference-verification/experiments/exp_vllm_serving.py", line 296, in run_server
+    local_api(port, "/reset_prefix_cache", "POST")
+  File "/workspace/inference-verification/experiments/exp_vllm_serving.py", line 214, in local_api
+    raise RuntimeError(f"{path}: HTTP {response.status}: {body}")
+RuntimeError: /reset_prefix_cache: HTTP 404: {"detail":"Not Found"}

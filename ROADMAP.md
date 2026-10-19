@@ -41,7 +41,10 @@ main requirement for interpreting deployment results.
   to independent corpora, additional hardware, larger calibrated budgets and
   AWQ/GPTQ. Complete the matched-Gaussian concentration comparison.
 - **Representative calibration:** collect fresh held-out blocks across serving
-  conditions and measure false positives and detection power.
+  conditions and measure false positives and detection power. The
+  [L40S vLLM serving pilot and temporal repeat](docs/results/vllm_serving_l40s_20261019.md)
+  identify eager execution, prefix reuse, concurrency, and stream position as
+  controls to include; they do not yet provide a calibrated detector.
 - **Adaptive providers:** test attacks designed with knowledge of the verifier.
 
 The [research plan](planning/NEXT_EXPERIMENTS.md) specifies hypotheses, controls,

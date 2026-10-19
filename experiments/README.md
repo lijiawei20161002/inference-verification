@@ -80,6 +80,16 @@ through a pinned production engine: optimized/eager execution, concurrent HTTP
 requests, and verified prefix-cache cold/hit controls. Use a separate environment
 and run the documented preflight before the formal pilot.
 
+The [L40S serving report](../docs/results/vllm_serving_l40s_20261019.md) archives
+the 600-request pilot and a separate 600-request temporal repeat. It retains
+optimized/eager and cache controls, exact token comparisons, and an exploratory
+early/late arrival-window diagnostic. Recompute both phases without a GPU:
+
+```sh
+python -m experiments.analyze_vllm_serving_campaign \
+  docs/results/vllm_serving_l40s_20261019 --output /tmp/vllm-serving-summary.json
+```
+
 ## Frozen capture and paired GPU replay
 
 `exp_frozen_replay_gpu.py` separates generation from verification. Generate one

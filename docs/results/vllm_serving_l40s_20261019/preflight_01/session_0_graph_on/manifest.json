@@ -1,0 +1,60 @@
+{
+  "config": "graph_on",
+  "session": 0,
+  "command": [
+    "/workspace/.venvs/ivgym-vllm-0.22.0/bin/python",
+    "-m",
+    "vllm.entrypoints.openai.api_server",
+    "--model",
+    "/workspace/.cache/huggingface/hub/models--Qwen--Qwen3-1.7B/snapshots/70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+    "--served-model-name",
+    "ivgym-qwen3-1.7b",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "59677",
+    "--dtype",
+    "bfloat16",
+    "--max-model-len",
+    "16512",
+    "--max-num-seqs",
+    "8",
+    "--max-num-batched-tokens",
+    "2048",
+    "--kv-cache-memory-bytes",
+    "12884901888",
+    "--gpu-memory-utilization",
+    "0.8",
+    "--block-size",
+    "16",
+    "--attention-backend",
+    "FLASH_ATTN",
+    "--enable-chunked-prefill",
+    "--enable-prompt-tokens-details",
+    "--disable-log-requests",
+    "--seed",
+    "20261021",
+    "--enable-prefix-caching"
+  ],
+  "started_utc": "2026-10-19T01:56:21Z",
+  "gpu_before": {
+    "returncode": 0,
+    "stdout": "name, uuid, driver_version, memory.used [MiB], utilization.gpu [%], temperature.gpu, power.draw [W], clocks.current.sm [MHz]\nNVIDIA L40S, GPU-fb956e24-61ce-b6b8-287b-23ead346e87a, 595.91.07, 0 MiB, 0 %, 36, 37.15 W, 210 MHz\n",
+    "stderr": ""
+  },
+  "status": "failed",
+  "server_pid": 15822,
+  "error": "RuntimeError('Server exited 2; see runs/vllm_serving_l40s_20261019/preflight_01/session_0_graph_on/server.log')",
+  "finished_utc": "2026-10-19T01:56:33Z",
+  "elapsed_s": 12.01096254300137,
+  "server_returncode_after_shutdown": 2,
+  "gpu_after": {
+    "returncode": 0,
+    "stdout": "name, uuid, driver_version, memory.used [MiB], utilization.gpu [%], temperature.gpu, power.draw [W], clocks.current.sm [MHz]\nNVIDIA L40S, GPU-fb956e24-61ce-b6b8-287b-23ead346e87a, 595.91.07, 0 MiB, 0 %, 36, 37.53 W, 210 MHz\n",
+    "stderr": ""
+  },
+  "hashes": {
+    "plan.json": "43b246d2e2211e89bb082dfdb216c27664e955bc9be218e71c55c92ebe5e1f69",
+    "server.log": "e0730afa96c035ec71122a9e83c018d472071ebaac5c75429a7bac558018685f"
+  }
+}

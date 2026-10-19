@@ -3,6 +3,11 @@
 19 October 2026. Follow-up to the [local mechanism pilot](results/performance_probes_l40s_20261019.md).
 Status: preflight passed; the protocol below is frozen before the formal pilot.
 
+The [L40S serving results and delayed replication](results/vllm_serving_l40s_20261019.md)
+report the collected evidence. This document retains the original measurement
+protocol; the arrival-window diagnostic in the report was added after inspecting
+the first pilot.
+
 ## Question
 
 Does the local context-length signal remain visible through an optimized serving engine,

@@ -34,6 +34,7 @@ The signed-artifact protocol is a separate, optional experiment.
 ## Follow a claim to its evidence
 
 - [Claim → experiment → artifact index](RESEARCH_GUIDE.md#which-experiment-backs-which-claim)
+- [19 October L40S vLLM serving: optimized/eager controls, prefix caching, and delayed replication](results/vllm_serving_l40s_20261019.md)
 - [19 October L40S performance probes: context, prefix reuse, kernel selection, and HTTP limits](results/performance_probes_l40s_20261019.md)
 - [18 October L40S real NF4/INT8 pilot: independent calibration and held-out detection](results/real_quantization_l40s_20261018.md)
 - [18 October paired H100-to-A100 replay: honest cross-GPU score differences](results/cross_gpu_replay_20261018.md)

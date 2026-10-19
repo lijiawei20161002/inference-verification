@@ -1,0 +1,83 @@
+{
+  "status": "complete",
+  "suite": "pilot",
+  "started_utc": "2026-10-19T02:01:36Z",
+  "jobs": [
+    {
+      "session": 0,
+      "config": "graph_off",
+      "status": "complete",
+      "elapsed_s": 75.1409888369999
+    },
+    {
+      "session": 0,
+      "config": "graph_on",
+      "status": "complete",
+      "elapsed_s": 53.79714429100204
+    },
+    {
+      "session": 0,
+      "config": "eager_off",
+      "status": "complete",
+      "elapsed_s": 98.71942911199949
+    },
+    {
+      "session": 1,
+      "config": "graph_on",
+      "status": "complete",
+      "elapsed_s": 55.10080345099777
+    },
+    {
+      "session": 1,
+      "config": "eager_off",
+      "status": "complete",
+      "elapsed_s": 99.55009685499681
+    },
+    {
+      "session": 1,
+      "config": "graph_off",
+      "status": "complete",
+      "elapsed_s": 75.28150858899971
+    },
+    {
+      "session": 2,
+      "config": "eager_off",
+      "status": "complete",
+      "elapsed_s": 99.38148138799806
+    },
+    {
+      "session": 2,
+      "config": "graph_off",
+      "status": "complete",
+      "elapsed_s": 74.34303371799979
+    },
+    {
+      "session": 2,
+      "config": "graph_on",
+      "status": "complete",
+      "elapsed_s": 53.88225862000036
+    }
+  ],
+  "source_commit": "762acaa3e2b96d2514e5abe2d95a0c1eeb93e7b1",
+  "source_status": "",
+  "source_sha256": {
+    "experiments/exp_vllm_serving.py": "3d11c4a6083dd0e8ba7d04d3b811a699019c92802376400629180496021b24aa",
+    "experiments/analyze_vllm_serving.py": "b691dbd4c557210bf6aebf40583fc214e289f1f329c05e51e577fdf307927099",
+    "experiments/requirements_vllm_serving.txt": "096f480e4e6ceae9b41b24523e7e8a5ea96901cdaf688e1154ae999d04ee2dd5"
+  },
+  "fixture_sha256": "642ab0f71b99f50eefbde22552386e2c45b0dd51ec5564cce45a406f93cee708",
+  "model_revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "model_config_sha256": "1ddb5b89ebc90dcb417a45c213d818577e65976454d29385c8f6140771d95197",
+  "scope": "loopback production engine mechanism pilot; C is not B; no calibrated detector",
+  "clock": "client monotonic time after sending request; connection establishment excluded",
+  "truncation": "vLLM preprocessing keeps last 2048 prompt tokens; positions restart at zero",
+  "generation": "greedy, fixed 128 output tokens, ignore EOS; no frozen-continuation replay",
+  "cache": "APC off or explicit reset; hit primes L-128 input tokens outside measured request",
+  "configs": "graph modes use default compiler/CUDA-Graph optimizations; eager disables both",
+  "gpu_before": {
+    "returncode": 0,
+    "stdout": "name, uuid, driver_version, memory.used [MiB], utilization.gpu [%], temperature.gpu, power.draw [W], clocks.current.sm [MHz]\nNVIDIA L40S, GPU-fb956e24-61ce-b6b8-287b-23ead346e87a, 595.91.07, 0 MiB, 0 %, 36, 37.40 W, 210 MHz\n",
+    "stderr": ""
+  },
+  "finished_utc": "2026-10-19T02:13:02Z"
+}

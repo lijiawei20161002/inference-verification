@@ -1,0 +1,111 @@
+{
+  "config": "graph_off",
+  "session": 1,
+  "command": [
+    "/workspace/.venvs/ivgym-vllm-0.22.0/bin/python",
+    "-m",
+    "vllm.entrypoints.openai.api_server",
+    "--model",
+    "/workspace/.cache/huggingface/hub/models--Qwen--Qwen3-1.7B/snapshots/70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+    "--served-model-name",
+    "ivgym-qwen3-1.7b",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "42921",
+    "--dtype",
+    "bfloat16",
+    "--max-model-len",
+    "16512",
+    "--max-num-seqs",
+    "8",
+    "--max-num-batched-tokens",
+    "2048",
+    "--kv-cache-memory-bytes",
+    "12884901888",
+    "--gpu-memory-utilization",
+    "0.8",
+    "--block-size",
+    "16",
+    "--attention-backend",
+    "FLASH_ATTN",
+    "--enable-chunked-prefill",
+    "--enable-prompt-tokens-details",
+    "--no-enable-log-requests",
+    "--seed",
+    "20261021",
+    "--no-enable-prefix-caching"
+  ],
+  "started_utc": "2026-10-19T02:07:58Z",
+  "gpu_before": {
+    "returncode": 0,
+    "stdout": "name, uuid, driver_version, memory.used [MiB], utilization.gpu [%], temperature.gpu, power.draw [W], clocks.current.sm [MHz]\nNVIDIA L40S, GPU-fb956e24-61ce-b6b8-287b-23ead346e87a, 595.91.07, 0 MiB, 24 %, 53, 146.72 W, 2520 MHz\n",
+    "stderr": ""
+  },
+  "status": "complete",
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "0",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "HF_HUB_OFFLINE": "1",
+    "TRANSFORMERS_OFFLINE": "1",
+    "VLLM_NO_USAGE_STATS": "1",
+    "DO_NOT_TRACK": "1",
+    "HF_HOME": "/workspace/.cache/huggingface",
+    "VLLM_CACHE_ROOT": "/workspace/.cache/vllm-round2",
+    "TORCHINDUCTOR_CACHE_DIR": "/workspace/.cache/vllm-round2/inductor",
+    "TRITON_CACHE_DIR": "/workspace/.cache/vllm-round2/triton",
+    "MAX_JOBS": "8",
+    "VLLM_LOGGING_LEVEL": "INFO",
+    "VLLM_SERVER_DEV_MODE": "1"
+  },
+  "server_pid": 17867,
+  "startup_s": 29.068170008999004,
+  "models": {
+    "object": "list",
+    "data": [
+      {
+        "id": "ivgym-qwen3-1.7b",
+        "object": "model",
+        "created": 1792375708,
+        "owned_by": "vllm",
+        "root": "/workspace/.cache/huggingface/hub/models--Qwen--Qwen3-1.7B/snapshots/70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+        "parent": null,
+        "max_model_len": 16512,
+        "permission": [
+          {
+            "id": "modelperm-afbe8d0f0b2bf739",
+            "object": "model_permission",
+            "created": 1792375708,
+            "allow_create_engine": false,
+            "allow_sampling": true,
+            "allow_logprobs": true,
+            "allow_search_indices": false,
+            "allow_view": true,
+            "allow_fine_tuning": false,
+            "organization": "*",
+            "group": null,
+            "is_blocking": false
+          }
+        ]
+      }
+    ]
+  },
+  "finished_utc": "2026-10-19T02:09:14Z",
+  "elapsed_s": 75.28150858899971,
+  "server_returncode_after_shutdown": 0,
+  "gpu_after": {
+    "returncode": 0,
+    "stdout": "name, uuid, driver_version, memory.used [MiB], utilization.gpu [%], temperature.gpu, power.draw [W], clocks.current.sm [MHz]\nNVIDIA L40S, GPU-fb956e24-61ce-b6b8-287b-23ead346e87a, 595.91.07, 0 MiB, 81 %, 56, 182.27 W, 2520 MHz\n",
+    "stderr": ""
+  },
+  "hashes": {
+    "plan.json": "6aabb1318b3534f439a7d9cfb7069d84bbcc08fac6974967e797e965bc0b63a2",
+    "server.log": "0111ce65330a2719fc3672f97cf785cc70c33265e9be167094a5d99a09977ae9",
+    "warmup.jsonl.gz": "69ad5d1c00c4f83cd15cb5f59ad5b924ba15d5840f4d9ac9ee7a4c40b20ff1d9",
+    "requests.jsonl.gz": "36ef8bc7ffd5e6712d6e781b55a4a220cc0551f23b2be4937b45b2122a6ee490",
+    "primers.jsonl.gz": "a408cf2b58c04991604dee563edf8c35e1af7f971875dd3aeee50d0c0f82ebaa",
+    "metrics.jsonl.gz": "a35e71126f0fef9eeaefa1ae558c8aea88be43b6febd915c2a239335cd2f72d3",
+    "groups.jsonl": "be23cadeaf26eb82f3981d7c7914be4b7385f9d56b70646f83abfc8db696ce6c"
+  }
+}

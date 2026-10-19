@@ -1,0 +1,131 @@
+{
+  "scope": "loopback production engine mechanism pilot; C is not B; no calibrated detector",
+  "source_commit": "0bc5c4c924209c3b3d4d9fef967b55fe5b33178b",
+  "suite": "smoke",
+  "server_runs": 1,
+  "measurement_groups": 5,
+  "measured_requests": 11,
+  "request_outputs": [
+    16
+  ],
+  "groups": [
+    {
+      "config": "graph_on",
+      "length": 512,
+      "concurrency": 1,
+      "arm": "full",
+      "groups": 1,
+      "blocks": [
+        0
+      ],
+      "sessions": [
+        0
+      ],
+      "ttft_ms_median": 21.682035,
+      "post_first_ms_per_token_median": 5.572794333333333,
+      "post_first_ms_per_token_min": 5.572794333333333,
+      "post_first_ms_per_token_max": 5.572794333333333,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_on",
+      "length": 8192,
+      "concurrency": 1,
+      "arm": "cold",
+      "groups": 1,
+      "blocks": [
+        0
+      ],
+      "sessions": [
+        0
+      ],
+      "ttft_ms_median": 193.393581,
+      "post_first_ms_per_token_median": 6.556520066666665,
+      "post_first_ms_per_token_min": 6.556520066666665,
+      "post_first_ms_per_token_max": 6.556520066666665,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_on",
+      "length": 8192,
+      "concurrency": 1,
+      "arm": "hit",
+      "groups": 1,
+      "blocks": [
+        0
+      ],
+      "sessions": [
+        0
+      ],
+      "ttft_ms_median": 41.874375,
+      "post_first_ms_per_token_median": 6.370475466666667,
+      "post_first_ms_per_token_min": 6.370475466666667,
+      "post_first_ms_per_token_max": 6.370475466666667,
+      "cached_tokens_min": 8064,
+      "cached_tokens_max": 8064
+    },
+    {
+      "config": "graph_on",
+      "length": 16384,
+      "concurrency": 4,
+      "arm": "full",
+      "groups": 1,
+      "blocks": [
+        0
+      ],
+      "sessions": [
+        0
+      ],
+      "ttft_ms_median": 1276.31713,
+      "post_first_ms_per_token_median": 46.55755983333334,
+      "post_first_ms_per_token_min": 46.55755983333334,
+      "post_first_ms_per_token_max": 46.55755983333334,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_on",
+      "length": 16384,
+      "concurrency": 4,
+      "arm": "truncate",
+      "groups": 1,
+      "blocks": [
+        0
+      ],
+      "sessions": [
+        0
+      ],
+      "ttft_ms_median": 143.121909,
+      "post_first_ms_per_token_median": 8.186917433333335,
+      "post_first_ms_per_token_min": 8.186917433333335,
+      "post_first_ms_per_token_max": 8.186917433333335,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    }
+  ],
+  "paired_comparisons": [
+    {
+      "config": "graph_on",
+      "block": 0,
+      "length": 16384,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 8.917692189251053,
+      "post_first_ratio": 5.686824157255151
+    }
+  ],
+  "output_controls": {
+    "cold_vs_hit": {
+      "pairs": 1,
+      "identical_sequences": 1,
+      "matching_positions": 16,
+      "positions": 16
+    }
+  },
+  "coalesced_tokens": 0,
+  "total_generated_tokens": 176,
+  "max_cached_tokens": 8064
+}

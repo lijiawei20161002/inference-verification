@@ -1,0 +1,35 @@
+{
+  "status": "failed",
+  "suite": "smoke",
+  "started_utc": "2026-10-19T01:57:11Z",
+  "jobs": [
+    {
+      "session": 0,
+      "config": "graph_on",
+      "status": "failed"
+    }
+  ],
+  "source_commit": "0bc5c4c924209c3b3d4d9fef967b55fe5b33178b",
+  "source_status": "?? experiments/analyze_vllm_serving.py\n?? experiments/exp_vllm_serving.py\n?? experiments/requirements_vllm_serving.txt\n?? tests/test_vllm_serving.py",
+  "source_sha256": {
+    "experiments/exp_vllm_serving.py": "68ef7a772a46a4a532f6f815788527d91f8fc437fd82e5fbee469166e5d3600e",
+    "experiments/analyze_vllm_serving.py": "b691dbd4c557210bf6aebf40583fc214e289f1f329c05e51e577fdf307927099",
+    "experiments/requirements_vllm_serving.txt": "096f480e4e6ceae9b41b24523e7e8a5ea96901cdaf688e1154ae999d04ee2dd5"
+  },
+  "fixture_sha256": "642ab0f71b99f50eefbde22552386e2c45b0dd51ec5564cce45a406f93cee708",
+  "model_revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "model_config_sha256": "1ddb5b89ebc90dcb417a45c213d818577e65976454d29385c8f6140771d95197",
+  "scope": "loopback production engine mechanism pilot; C is not B; no calibrated detector",
+  "clock": "client monotonic time after sending request; connection establishment excluded",
+  "truncation": "vLLM preprocessing keeps last 2048 prompt tokens; positions restart at zero",
+  "generation": "greedy, fixed 128 output tokens, ignore EOS; no frozen-continuation replay",
+  "cache": "APC off or explicit reset; hit primes L-128 input tokens outside measured request",
+  "configs": "graph modes use default compiler/CUDA-Graph optimizations; eager disables both",
+  "gpu_before": {
+    "returncode": 0,
+    "stdout": "name, uuid, driver_version, memory.used [MiB], utilization.gpu [%], temperature.gpu, power.draw [W], clocks.current.sm [MHz]\nNVIDIA L40S, GPU-fb956e24-61ce-b6b8-287b-23ead346e87a, 595.91.07, 0 MiB, 0 %, 36, 37.38 W, 210 MHz\n",
+    "stderr": ""
+  },
+  "error": "RuntimeError('/reset_prefix_cache: HTTP 404: {\"detail\":\"Not Found\"}')",
+  "finished_utc": "2026-10-19T01:58:31Z"
+}

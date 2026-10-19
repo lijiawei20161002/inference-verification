@@ -830,6 +830,7 @@ into that check**:
 | the floor is a stack property; fewer bytes ≠ proportionally less time | `exp_clock_channel_gpu` | `clock_channel.json`, `clock_channel_arch.json`, `clock_channel_kvq.json` |
 | the context-slope verifier: predictable floor? real detection? stable null? | `exp_slope_verifier_gpu` | `slope_verifier.json`, `slope_verifier_window.json` |
 | the prefill clock, the low-quantile estimator, the probe schedule | `exp_clock_algos_gpu` | `clock_algos.json`, `clock_algos_ttft.json` |
+| vLLM context response depends on execution mode, concurrency, cache reuse, and stream window | `exp_vllm_serving`, `analyze_vllm_serving_campaign` | [L40S serving pilot and delayed repeat](results/vllm_serving_l40s_20261019.md) |
 
 ---
 
@@ -899,13 +900,13 @@ quantize + temperature-retune cheat against the seed-free verifier
   enough to flip 0.88% of tokens (above). That is a lower bound on the
   cross-machine case, and it is not yet expressed as a `d′` the detection numbers
   can be compared against.
-- **The clock channel is measured on research stacks, and the wire is swept rather
-  than measured.** The clock grid runs HF eager and HF + CUDA graphs on one H100
-  PCIe; a production stack (vLLM, TensorRT-LLM) would lower the additive stack
-  constant and might move the KV term back toward bandwidth-bound, restoring
-  `kv_fp8` detectability. Auditor-side wire jitter is swept (a pessimistic 50 ms),
-  not measured against a public endpoint, and no provider here pads or shapes
-  traffic against the slope test.
+- **Public-network and deployment timing remain uncalibrated.** The original
+  clock grid uses HF eager and CUDA graphs on an H100. A later
+  [L40S vLLM pilot and delayed repeat](results/vllm_serving_l40s_20261019.md)
+  measure loopback streaming with optimized/eager execution, concurrent requests,
+  and prefix caching. Those serving controls change the observable context
+  response; they do not establish KV-precision detection or a deployment operating
+  point. Public-network jitter and adaptive traffic shaping remain unmeasured.
 
 See **[`NEXT_EXPERIMENTS.md`](../planning/NEXT_EXPERIMENTS.md)** for what to run about them.
 

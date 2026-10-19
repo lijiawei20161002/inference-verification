@@ -1,0 +1,2278 @@
+{
+  "scope": "loopback production engine mechanism pilot; C is not B; no calibrated detector",
+  "source_commit": "762acaa3e2b96d2514e5abe2d95a0c1eeb93e7b1",
+  "suite": "pilot",
+  "server_runs": 9,
+  "measurement_groups": 240,
+  "measured_requests": 600,
+  "request_outputs": [
+    128
+  ],
+  "groups": [
+    {
+      "config": "eager_off",
+      "length": 512,
+      "concurrency": 1,
+      "arm": "full",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 36.2302865,
+      "post_first_ms_per_token_median": 14.031674066929135,
+      "post_first_ms_per_token_min": 13.872633606299212,
+      "post_first_ms_per_token_max": 14.501722590551182,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "eager_off",
+      "length": 512,
+      "concurrency": 1,
+      "arm": "truncate",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 35.3787345,
+      "post_first_ms_per_token_median": 14.046213858267716,
+      "post_first_ms_per_token_min": 13.873152338582678,
+      "post_first_ms_per_token_max": 14.593552551181103,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "eager_off",
+      "length": 512,
+      "concurrency": 4,
+      "arm": "full",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 57.9570615,
+      "post_first_ms_per_token_median": 14.42783455511811,
+      "post_first_ms_per_token_min": 14.265579177165353,
+      "post_first_ms_per_token_max": 14.517410480314961,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "eager_off",
+      "length": 512,
+      "concurrency": 4,
+      "arm": "truncate",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 54.17168275,
+      "post_first_ms_per_token_median": 14.540763082677165,
+      "post_first_ms_per_token_min": 14.1417257007874,
+      "post_first_ms_per_token_max": 14.697299881889766,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "eager_off",
+      "length": 2048,
+      "concurrency": 1,
+      "arm": "full",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 45.0152225,
+      "post_first_ms_per_token_median": 14.022893346456694,
+      "post_first_ms_per_token_min": 13.734130133858269,
+      "post_first_ms_per_token_max": 14.744936992125984,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "eager_off",
+      "length": 2048,
+      "concurrency": 1,
+      "arm": "truncate",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 44.7818985,
+      "post_first_ms_per_token_median": 13.941396232283466,
+      "post_first_ms_per_token_min": 13.860646795275592,
+      "post_first_ms_per_token_max": 14.259611952755906,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "eager_off",
+      "length": 2048,
+      "concurrency": 4,
+      "arm": "full",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 142.72927725,
+      "post_first_ms_per_token_median": 14.907051618110236,
+      "post_first_ms_per_token_min": 14.445572673228346,
+      "post_first_ms_per_token_max": 15.30709203543307,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "eager_off",
+      "length": 2048,
+      "concurrency": 4,
+      "arm": "truncate",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 146.971163,
+      "post_first_ms_per_token_median": 14.69176696456693,
+      "post_first_ms_per_token_min": 14.478466622047243,
+      "post_first_ms_per_token_max": 14.932809948818896,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "eager_off",
+      "length": 8192,
+      "concurrency": 1,
+      "arm": "full",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 199.274271,
+      "post_first_ms_per_token_median": 13.919254842519685,
+      "post_first_ms_per_token_min": 13.652489811023623,
+      "post_first_ms_per_token_max": 14.174392582677166,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "eager_off",
+      "length": 8192,
+      "concurrency": 1,
+      "arm": "truncate",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 45.4088555,
+      "post_first_ms_per_token_median": 13.910917661417322,
+      "post_first_ms_per_token_min": 13.760867645669292,
+      "post_first_ms_per_token_max": 14.142753968503937,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "eager_off",
+      "length": 8192,
+      "concurrency": 4,
+      "arm": "full",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 546.46433925,
+      "post_first_ms_per_token_median": 16.170248791338583,
+      "post_first_ms_per_token_min": 15.775211811023624,
+      "post_first_ms_per_token_max": 16.495823358267717,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "eager_off",
+      "length": 8192,
+      "concurrency": 4,
+      "arm": "truncate",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 151.0798115,
+      "post_first_ms_per_token_median": 14.693982541338583,
+      "post_first_ms_per_token_min": 14.571643192913386,
+      "post_first_ms_per_token_max": 14.882725078740158,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "eager_off",
+      "length": 16384,
+      "concurrency": 1,
+      "arm": "full",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 487.8459825,
+      "post_first_ms_per_token_median": 13.896328303149605,
+      "post_first_ms_per_token_min": 13.684184803149604,
+      "post_first_ms_per_token_max": 14.110167960629921,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "eager_off",
+      "length": 16384,
+      "concurrency": 1,
+      "arm": "truncate",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 47.300142,
+      "post_first_ms_per_token_median": 14.191358992125984,
+      "post_first_ms_per_token_min": 14.048550937007873,
+      "post_first_ms_per_token_max": 14.323411763779529,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "eager_off",
+      "length": 16384,
+      "concurrency": 4,
+      "arm": "full",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 1303.2028902499999,
+      "post_first_ms_per_token_median": 20.75066285629921,
+      "post_first_ms_per_token_min": 20.69464277559055,
+      "post_first_ms_per_token_max": 20.853113248031498,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "eager_off",
+      "length": 16384,
+      "concurrency": 4,
+      "arm": "truncate",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 156.69518925,
+      "post_first_ms_per_token_median": 14.667322192913385,
+      "post_first_ms_per_token_min": 14.569884031496064,
+      "post_first_ms_per_token_max": 15.20329375984252,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_off",
+      "length": 512,
+      "concurrency": 1,
+      "arm": "full",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 22.001237,
+      "post_first_ms_per_token_median": 5.667906866141733,
+      "post_first_ms_per_token_min": 5.659964606299212,
+      "post_first_ms_per_token_max": 5.678946425196851,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_off",
+      "length": 512,
+      "concurrency": 1,
+      "arm": "truncate",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 19.060704,
+      "post_first_ms_per_token_median": 5.670312822834646,
+      "post_first_ms_per_token_min": 5.66084474015748,
+      "post_first_ms_per_token_max": 5.674280086614173,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_off",
+      "length": 512,
+      "concurrency": 4,
+      "arm": "full",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 51.23883875,
+      "post_first_ms_per_token_median": 6.291324574803149,
+      "post_first_ms_per_token_min": 6.278926527559055,
+      "post_first_ms_per_token_max": 6.321693181102362,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_off",
+      "length": 512,
+      "concurrency": 4,
+      "arm": "truncate",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 53.3906185,
+      "post_first_ms_per_token_median": 6.27861687007874,
+      "post_first_ms_per_token_min": 6.263474933070866,
+      "post_first_ms_per_token_max": 6.334914385826772,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_off",
+      "length": 2048,
+      "concurrency": 1,
+      "arm": "full",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 43.610874,
+      "post_first_ms_per_token_median": 5.946494641732284,
+      "post_first_ms_per_token_min": 5.939529472440945,
+      "post_first_ms_per_token_max": 5.956597803149607,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_off",
+      "length": 2048,
+      "concurrency": 1,
+      "arm": "truncate",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 44.0756085,
+      "post_first_ms_per_token_median": 5.948482492125985,
+      "post_first_ms_per_token_min": 5.941939842519685,
+      "post_first_ms_per_token_max": 5.958308787401576,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_off",
+      "length": 2048,
+      "concurrency": 4,
+      "arm": "full",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 140.83366,
+      "post_first_ms_per_token_median": 7.359940135826772,
+      "post_first_ms_per_token_min": 7.341268066929135,
+      "post_first_ms_per_token_max": 7.372575901574804,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_off",
+      "length": 2048,
+      "concurrency": 4,
+      "arm": "truncate",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 140.76192774999998,
+      "post_first_ms_per_token_median": 7.360842055118111,
+      "post_first_ms_per_token_min": 7.341369594488189,
+      "post_first_ms_per_token_max": 7.366886263779527,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_off",
+      "length": 8192,
+      "concurrency": 1,
+      "arm": "full",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 197.70748650000002,
+      "post_first_ms_per_token_median": 6.865815562992125,
+      "post_first_ms_per_token_min": 6.810543377952755,
+      "post_first_ms_per_token_max": 6.883241519685039,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_off",
+      "length": 8192,
+      "concurrency": 1,
+      "arm": "truncate",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 44.4871585,
+      "post_first_ms_per_token_median": 5.949145767716535,
+      "post_first_ms_per_token_min": 5.925238039370079,
+      "post_first_ms_per_token_max": 5.956884535433071,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_off",
+      "length": 8192,
+      "concurrency": 4,
+      "arm": "full",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 533.9505275,
+      "post_first_ms_per_token_median": 12.48723281102362,
+      "post_first_ms_per_token_min": 12.466791440944881,
+      "post_first_ms_per_token_max": 12.509845531496062,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_off",
+      "length": 8192,
+      "concurrency": 4,
+      "arm": "truncate",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 148.701313,
+      "post_first_ms_per_token_median": 7.361428872047244,
+      "post_first_ms_per_token_min": 7.348209854330708,
+      "post_first_ms_per_token_max": 7.362655728346457,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_off",
+      "length": 16384,
+      "concurrency": 1,
+      "arm": "full",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 481.49778249999997,
+      "post_first_ms_per_token_median": 8.095263468503937,
+      "post_first_ms_per_token_min": 8.02741348031496,
+      "post_first_ms_per_token_max": 8.105142047244094,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_off",
+      "length": 16384,
+      "concurrency": 1,
+      "arm": "truncate",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 48.885169,
+      "post_first_ms_per_token_median": 5.944305779527559,
+      "post_first_ms_per_token_min": 5.917192,
+      "post_first_ms_per_token_max": 5.94911425984252,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_off",
+      "length": 16384,
+      "concurrency": 4,
+      "arm": "full",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 1285.86299025,
+      "post_first_ms_per_token_median": 20.10738006889764,
+      "post_first_ms_per_token_min": 19.984991586614175,
+      "post_first_ms_per_token_max": 20.162029401574806,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_off",
+      "length": 16384,
+      "concurrency": 4,
+      "arm": "truncate",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 150.75383674999998,
+      "post_first_ms_per_token_median": 7.35866967519685,
+      "post_first_ms_per_token_min": 7.3571221102362205,
+      "post_first_ms_per_token_max": 7.375869881889765,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_on",
+      "length": 2048,
+      "concurrency": 1,
+      "arm": "cold",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 43.901694,
+      "post_first_ms_per_token_median": 5.946976732283465,
+      "post_first_ms_per_token_min": 5.913841637795276,
+      "post_first_ms_per_token_max": 5.958024669291339,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_on",
+      "length": 2048,
+      "concurrency": 1,
+      "arm": "hit",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 19.9799165,
+      "post_first_ms_per_token_median": 5.93231029527559,
+      "post_first_ms_per_token_min": 5.930616858267717,
+      "post_first_ms_per_token_max": 5.948207,
+      "cached_tokens_min": 1920,
+      "cached_tokens_max": 1920
+    },
+    {
+      "config": "graph_on",
+      "length": 2048,
+      "concurrency": 4,
+      "arm": "cold",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 144.99674775,
+      "post_first_ms_per_token_median": 7.3633395255905505,
+      "post_first_ms_per_token_min": 7.357794409448819,
+      "post_first_ms_per_token_max": 7.372282826771653,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_on",
+      "length": 2048,
+      "concurrency": 4,
+      "arm": "hit",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 50.531291249999995,
+      "post_first_ms_per_token_median": 7.190819301181103,
+      "post_first_ms_per_token_min": 7.155685433070866,
+      "post_first_ms_per_token_max": 7.205957267716536,
+      "cached_tokens_min": 1920,
+      "cached_tokens_max": 1920
+    },
+    {
+      "config": "graph_on",
+      "length": 8192,
+      "concurrency": 1,
+      "arm": "cold",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 198.3600905,
+      "post_first_ms_per_token_median": 6.856711251968505,
+      "post_first_ms_per_token_min": 6.80460662992126,
+      "post_first_ms_per_token_max": 6.9000756456692915,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_on",
+      "length": 8192,
+      "concurrency": 1,
+      "arm": "hit",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 34.1038145,
+      "post_first_ms_per_token_median": 6.85735251968504,
+      "post_first_ms_per_token_min": 6.834509968503936,
+      "post_first_ms_per_token_max": 6.862088582677165,
+      "cached_tokens_min": 8064,
+      "cached_tokens_max": 8064
+    },
+    {
+      "config": "graph_on",
+      "length": 8192,
+      "concurrency": 4,
+      "arm": "cold",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 543.6358805,
+      "post_first_ms_per_token_median": 12.480043212598424,
+      "post_first_ms_per_token_min": 12.446996,
+      "post_first_ms_per_token_max": 12.512365877952757,
+      "cached_tokens_min": 0,
+      "cached_tokens_max": 0
+    },
+    {
+      "config": "graph_on",
+      "length": 8192,
+      "concurrency": 4,
+      "arm": "hit",
+      "groups": 6,
+      "blocks": [
+        0,
+        1,
+        2,
+        3,
+        4,
+        5
+      ],
+      "sessions": [
+        0,
+        1,
+        2
+      ],
+      "ttft_ms_median": 100.38205175,
+      "post_first_ms_per_token_median": 10.890699441585426,
+      "post_first_ms_per_token_min": 10.855706318897639,
+      "post_first_ms_per_token_max": 10.92019922047244,
+      "cached_tokens_min": 8064,
+      "cached_tokens_max": 8064
+    }
+  ],
+  "paired_comparisons": [
+    {
+      "config": "eager_off",
+      "block": 0,
+      "length": 512,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.0732645995306929,
+      "post_first_ratio": 0.9999626089103035
+    },
+    {
+      "config": "eager_off",
+      "block": 0,
+      "length": 512,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.137868463282721,
+      "post_first_ratio": 0.9938946407864707
+    },
+    {
+      "config": "eager_off",
+      "block": 0,
+      "length": 2048,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.0704773759873734,
+      "post_first_ratio": 0.9754828791218478
+    },
+    {
+      "config": "eager_off",
+      "block": 0,
+      "length": 2048,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.9854111898243109,
+      "post_first_ratio": 0.9977280778636595
+    },
+    {
+      "config": "eager_off",
+      "block": 0,
+      "length": 8192,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 4.38415211226528,
+      "post_first_ratio": 1.0061502874313422
+    },
+    {
+      "config": "eager_off",
+      "block": 0,
+      "length": 8192,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 3.619903349737534,
+      "post_first_ratio": 1.0727898669393878
+    },
+    {
+      "config": "eager_off",
+      "block": 0,
+      "length": 16384,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 9.594246826985172,
+      "post_first_ratio": 0.9591101028261142
+    },
+    {
+      "config": "eager_off",
+      "block": 0,
+      "length": 16384,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 8.860317705452257,
+      "post_first_ratio": 1.4210679761773117
+    },
+    {
+      "config": "eager_off",
+      "block": 1,
+      "length": 512,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.221153665432565,
+      "post_first_ratio": 0.9978185929951333
+    },
+    {
+      "config": "eager_off",
+      "block": 1,
+      "length": 512,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.8640066977366769,
+      "post_first_ratio": 1.0164526212440932
+    },
+    {
+      "config": "eager_off",
+      "block": 1,
+      "length": 2048,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.0253768852353566,
+      "post_first_ratio": 1.0358217994020826
+    },
+    {
+      "config": "eager_off",
+      "block": 1,
+      "length": 2048,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.9713638026727285,
+      "post_first_ratio": 0.9901902074546848
+    },
+    {
+      "config": "eager_off",
+      "block": 1,
+      "length": 8192,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 4.498426664011608,
+      "post_first_ratio": 0.9942961418026283
+    },
+    {
+      "config": "eager_off",
+      "block": 1,
+      "length": 8192,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 3.891526096131743,
+      "post_first_ratio": 1.1234551316003396
+    },
+    {
+      "config": "eager_off",
+      "block": 1,
+      "length": 16384,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 10.35651453031021,
+      "post_first_ratio": 0.9780915544455644
+    },
+    {
+      "config": "eager_off",
+      "block": 1,
+      "length": 16384,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 8.05850555755753,
+      "post_first_ratio": 1.420371138909167
+    },
+    {
+      "config": "eager_off",
+      "block": 2,
+      "length": 512,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.0074633304955678,
+      "post_first_ratio": 1.0062822423758742
+    },
+    {
+      "config": "eager_off",
+      "block": 2,
+      "length": 512,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.162704302921155,
+      "post_first_ratio": 0.9905474412935202
+    },
+    {
+      "config": "eager_off",
+      "block": 2,
+      "length": 2048,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.9289831156164582,
+      "post_first_ratio": 1.0515623760694346
+    },
+    {
+      "config": "eager_off",
+      "block": 2,
+      "length": 2048,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.9492907855360512,
+      "post_first_ratio": 1.056425244861705
+    },
+    {
+      "config": "eager_off",
+      "block": 2,
+      "length": 8192,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 4.447952151275326,
+      "post_first_ratio": 1.0072932769571437
+    },
+    {
+      "config": "eager_off",
+      "block": 2,
+      "length": 8192,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 3.535500970577636,
+      "post_first_ratio": 1.079726868611187
+    },
+    {
+      "config": "eager_off",
+      "block": 2,
+      "length": 16384,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 10.356174100486815,
+      "post_first_ratio": 0.983268764499117
+    },
+    {
+      "config": "eager_off",
+      "block": 2,
+      "length": 16384,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 8.311771853952223,
+      "post_first_ratio": 1.412648682596043
+    },
+    {
+      "config": "eager_off",
+      "block": 3,
+      "length": 512,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.9942944003079945,
+      "post_first_ratio": 1.021043943064205
+    },
+    {
+      "config": "eager_off",
+      "block": 3,
+      "length": 512,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.9776301893547836,
+      "post_first_ratio": 0.9865771998784719
+    },
+    {
+      "config": "eager_off",
+      "block": 3,
+      "length": 2048,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.9920799549893459,
+      "post_first_ratio": 1.0198499088005712
+    },
+    {
+      "config": "eager_off",
+      "block": 3,
+      "length": 2048,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.9828096179956134,
+      "post_first_ratio": 1.033369403136667
+    },
+    {
+      "config": "eager_off",
+      "block": 3,
+      "length": 8192,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 4.245390871862338,
+      "post_first_ratio": 1.0079255128167506
+    },
+    {
+      "config": "eager_off",
+      "block": 3,
+      "length": 8192,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 3.6444413111460916,
+      "post_first_ratio": 1.109435009547809
+    },
+    {
+      "config": "eager_off",
+      "block": 3,
+      "length": 16384,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 11.386527366937601,
+      "post_first_ratio": 0.9837805211823407
+    },
+    {
+      "config": "eager_off",
+      "block": 3,
+      "length": 16384,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 8.553762088894743,
+      "post_first_ratio": 1.3910165350828583
+    },
+    {
+      "config": "eager_off",
+      "block": 4,
+      "length": 512,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.9123353229148697,
+      "post_first_ratio": 0.9675762941573938
+    },
+    {
+      "config": "eager_off",
+      "block": 4,
+      "length": 512,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.9792001168640385,
+      "post_first_ratio": 0.9706258490883496
+    },
+    {
+      "config": "eager_off",
+      "block": 4,
+      "length": 2048,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.167991225483747,
+      "post_first_ratio": 0.9921068387116475
+    },
+    {
+      "config": "eager_off",
+      "block": 4,
+      "length": 2048,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.991268805925703,
+      "post_first_ratio": 1.0246402576566727
+    },
+    {
+      "config": "eager_off",
+      "block": 4,
+      "length": 8192,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 4.363793632286016,
+      "post_first_ratio": 0.9921242004911095
+    },
+    {
+      "config": "eager_off",
+      "block": 4,
+      "length": 8192,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 3.5425876699868946,
+      "post_first_ratio": 1.1098410627016684
+    },
+    {
+      "config": "eager_off",
+      "block": 4,
+      "length": 16384,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 9.841135428032354,
+      "post_first_ratio": 0.9851122200027196
+    },
+    {
+      "config": "eager_off",
+      "block": 4,
+      "length": 16384,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 8.434941228055685,
+      "post_first_ratio": 1.3716181228512616
+    },
+    {
+      "config": "eager_off",
+      "block": 5,
+      "length": 512,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.9076626161563733,
+      "post_first_ratio": 0.9919591875470195
+    },
+    {
+      "config": "eager_off",
+      "block": 5,
+      "length": 512,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.1710568156870858,
+      "post_first_ratio": 1.016302878808133
+    },
+    {
+      "config": "eager_off",
+      "block": 5,
+      "length": 2048,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.0128505337991873,
+      "post_first_ratio": 0.9884912909325047
+    },
+    {
+      "config": "eager_off",
+      "block": 5,
+      "length": 2048,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.9821019315694113,
+      "post_first_ratio": 0.9930039953299812
+    },
+    {
+      "config": "eager_off",
+      "block": 5,
+      "length": 8192,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 4.392672680294423,
+      "post_first_ratio": 0.9812192243211401
+    },
+    {
+      "config": "eager_off",
+      "block": 5,
+      "length": 8192,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 3.6254226301070402,
+      "post_first_ratio": 1.1011547203436074
+    },
+    {
+      "config": "eager_off",
+      "block": 5,
+      "length": 16384,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 10.289453973613698,
+      "post_first_ratio": 0.985368633256803
+    },
+    {
+      "config": "eager_off",
+      "block": 5,
+      "length": 16384,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 8.079821535319784,
+      "post_first_ratio": 1.4133607441214977
+    },
+    {
+      "config": "graph_off",
+      "block": 0,
+      "length": 512,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.18485411492258,
+      "post_first_ratio": 0.9998560483953091
+    },
+    {
+      "config": "graph_off",
+      "block": 0,
+      "length": 512,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.761069892067771,
+      "post_first_ratio": 1.0092948800232449
+    },
+    {
+      "config": "graph_off",
+      "block": 0,
+      "length": 2048,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.9969090790963343,
+      "post_first_ratio": 0.9993690868611316
+    },
+    {
+      "config": "graph_off",
+      "block": 0,
+      "length": 2048,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.026810597098413,
+      "post_first_ratio": 0.9965225203792886
+    },
+    {
+      "config": "graph_off",
+      "block": 0,
+      "length": 8192,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 4.7107874514619,
+      "post_first_ratio": 1.1497596569590416
+    },
+    {
+      "config": "graph_off",
+      "block": 0,
+      "length": 8192,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 3.5169868042172454,
+      "post_first_ratio": 1.700447379785873
+    },
+    {
+      "config": "graph_off",
+      "block": 0,
+      "length": 16384,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 9.462813478981138,
+      "post_first_ratio": 1.363050827160056
+    },
+    {
+      "config": "graph_off",
+      "block": 0,
+      "length": 16384,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 8.43905503798925,
+      "post_first_ratio": 2.720429883958277
+    },
+    {
+      "config": "graph_off",
+      "block": 1,
+      "length": 512,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.1495780981202077,
+      "post_first_ratio": 0.9996615812451555
+    },
+    {
+      "config": "graph_off",
+      "block": 1,
+      "length": 512,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.9280992219341415,
+      "post_first_ratio": 1.0020357421898527
+    },
+    {
+      "config": "graph_off",
+      "block": 1,
+      "length": 2048,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.0113273274232233,
+      "post_first_ratio": 1.0015286691018852
+    },
+    {
+      "config": "graph_off",
+      "block": 1,
+      "length": 2048,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.0136409076170503,
+      "post_first_ratio": 0.9991256646365977
+    },
+    {
+      "config": "graph_off",
+      "block": 1,
+      "length": 8192,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 4.422312308176839,
+      "post_first_ratio": 1.1562972570553802
+    },
+    {
+      "config": "graph_off",
+      "block": 1,
+      "length": 8192,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 3.5147517204762733,
+      "post_first_ratio": 1.6978027235479491
+    },
+    {
+      "config": "graph_off",
+      "block": 1,
+      "length": 16384,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 10.129075978012859,
+      "post_first_ratio": 1.3631656771378813
+    },
+    {
+      "config": "graph_off",
+      "block": 1,
+      "length": 16384,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 8.563064724223091,
+      "post_first_ratio": 2.716052098581758
+    },
+    {
+      "config": "graph_off",
+      "block": 2,
+      "length": 512,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.4598383633813434,
+      "post_first_ratio": 0.9975244214649556
+    },
+    {
+      "config": "graph_off",
+      "block": 2,
+      "length": 512,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.0571853996198357,
+      "post_first_ratio": 1.0005514170996916
+    },
+    {
+      "config": "graph_off",
+      "block": 2,
+      "length": 2048,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.037254693765961,
+      "post_first_ratio": 0.9993953506337734
+    },
+    {
+      "config": "graph_off",
+      "block": 2,
+      "length": 2048,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.9752626101860137,
+      "post_first_ratio": 1.0024669134810547
+    },
+    {
+      "config": "graph_off",
+      "block": 2,
+      "length": 8192,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 4.495235886738024,
+      "post_first_ratio": 1.1546474930583066
+    },
+    {
+      "config": "graph_off",
+      "block": 2,
+      "length": 8192,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 3.9713262277774035,
+      "post_first_ratio": 1.6980488689902742
+    },
+    {
+      "config": "graph_off",
+      "block": 2,
+      "length": 16384,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 10.648059497657952,
+      "post_first_ratio": 1.3493459916379982
+    },
+    {
+      "config": "graph_off",
+      "block": 2,
+      "length": 16384,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 8.381228029349545,
+      "post_first_ratio": 2.7318753173087633
+    },
+    {
+      "config": "graph_off",
+      "block": 3,
+      "length": 512,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.0935957681389654,
+      "post_first_ratio": 1.00086815873542
+    },
+    {
+      "config": "graph_off",
+      "block": 3,
+      "length": 512,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.0307994300721723,
+      "post_first_ratio": 0.9959433725891924
+    },
+    {
+      "config": "graph_off",
+      "block": 3,
+      "length": 2048,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.925654331687592,
+      "post_first_ratio": 1.0011886237602763
+    },
+    {
+      "config": "graph_off",
+      "block": 3,
+      "length": 2048,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.9985235457360327,
+      "post_first_ratio": 1.0007344352000913
+    },
+    {
+      "config": "graph_off",
+      "block": 3,
+      "length": 8192,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 4.300422981753873,
+      "post_first_ratio": 1.1558032312372684
+    },
+    {
+      "config": "graph_off",
+      "block": 3,
+      "length": 8192,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 3.7519727141472514,
+      "post_first_ratio": 1.6944148828973786
+    },
+    {
+      "config": "graph_off",
+      "block": 3,
+      "length": 16384,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 9.529516611686983,
+      "post_first_ratio": 1.3631827506665672
+    },
+    {
+      "config": "graph_off",
+      "block": 3,
+      "length": 16384,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 8.337104323085551,
+      "post_first_ratio": 2.733990107210999
+    },
+    {
+      "config": "graph_off",
+      "block": 4,
+      "length": 512,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.0086329950403259,
+      "post_first_ratio": 0.9995159926157924
+    },
+    {
+      "config": "graph_off",
+      "block": 4,
+      "length": 512,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.3125410407258675,
+      "post_first_ratio": 0.9934850420583835
+    },
+    {
+      "config": "graph_off",
+      "block": 4,
+      "length": 2048,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.9978379261963467,
+      "post_first_ratio": 0.9987292636298285
+    },
+    {
+      "config": "graph_off",
+      "block": 4,
+      "length": 2048,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.0011383338750697,
+      "post_first_ratio": 0.9997880667634413
+    },
+    {
+      "config": "graph_off",
+      "block": 4,
+      "length": 8192,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 4.189735483832802,
+      "post_first_ratio": 1.1568319317105187
+    },
+    {
+      "config": "graph_off",
+      "block": 4,
+      "length": 8192,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 3.6011350054005855,
+      "post_first_ratio": 1.6936952118233635
+    },
+    {
+      "config": "graph_off",
+      "block": 4,
+      "length": 16384,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 9.383330311030756,
+      "post_first_ratio": 1.368868146524448
+    },
+    {
+      "config": "graph_off",
+      "block": 4,
+      "length": 16384,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 8.822215264631728,
+      "post_first_ratio": 2.739690497460461
+    },
+    {
+      "config": "graph_off",
+      "block": 5,
+      "length": 512,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.9251317575327984,
+      "post_first_ratio": 1.0016305249942228
+    },
+    {
+      "config": "graph_off",
+      "block": 5,
+      "length": 512,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.9236636089090412,
+      "post_first_ratio": 1.002701770469792
+    },
+    {
+      "config": "graph_off",
+      "block": 5,
+      "length": 2048,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 0.9814042078073998,
+      "post_first_ratio": 0.9982321002000334
+    },
+    {
+      "config": "graph_off",
+      "block": 5,
+      "length": 2048,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 1.0118588531019246,
+      "post_first_ratio": 1.0022043339307756
+    },
+    {
+      "config": "graph_off",
+      "block": 5,
+      "length": 8192,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 4.6936767648918964,
+      "post_first_ratio": 1.1455825370098023
+    },
+    {
+      "config": "graph_off",
+      "block": 5,
+      "length": 8192,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 3.6031120373338053,
+      "post_first_ratio": 1.6992103526203521
+    },
+    {
+      "config": "graph_off",
+      "block": 5,
+      "length": 16384,
+      "concurrency": 1,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 10.691650207661977,
+      "post_first_ratio": 1.3607374247219544
+    },
+    {
+      "config": "graph_off",
+      "block": 5,
+      "length": 16384,
+      "concurrency": 4,
+      "first": "full",
+      "second": "truncate",
+      "ttft_ratio": 8.577925631280122,
+      "post_first_ratio": 2.7300413972988955
+    },
+    {
+      "config": "graph_on",
+      "block": 0,
+      "length": 2048,
+      "concurrency": 1,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 2.220483183447039,
+      "post_first_ratio": 1.0030586700070532
+    },
+    {
+      "config": "graph_on",
+      "block": 0,
+      "length": 2048,
+      "concurrency": 4,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 2.6652189981998697,
+      "post_first_ratio": 1.0240387263662387
+    },
+    {
+      "config": "graph_on",
+      "block": 0,
+      "length": 8192,
+      "concurrency": 1,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 6.0436314268118165,
+      "post_first_ratio": 0.9922541636736439
+    },
+    {
+      "config": "graph_on",
+      "block": 0,
+      "length": 8192,
+      "concurrency": 4,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 4.903053223573889,
+      "post_first_ratio": 1.148757154181032
+    },
+    {
+      "config": "graph_on",
+      "block": 1,
+      "length": 2048,
+      "concurrency": 1,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 2.5048434002886792,
+      "post_first_ratio": 0.9965277717471414
+    },
+    {
+      "config": "graph_on",
+      "block": 1,
+      "length": 2048,
+      "concurrency": 4,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 2.50878130039274,
+      "post_first_ratio": 1.0284512221739215
+    },
+    {
+      "config": "graph_on",
+      "block": 1,
+      "length": 8192,
+      "concurrency": 1,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 5.477346806773185,
+      "post_first_ratio": 0.9986243308105008
+    },
+    {
+      "config": "graph_on",
+      "block": 1,
+      "length": 8192,
+      "concurrency": 4,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 6.851427266942156,
+      "post_first_ratio": 1.1422218256219823
+    },
+    {
+      "config": "graph_on",
+      "block": 2,
+      "length": 2048,
+      "concurrency": 1,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 1.7109156435213857,
+      "post_first_ratio": 1.0043261730968411
+    },
+    {
+      "config": "graph_on",
+      "block": 2,
+      "length": 2048,
+      "concurrency": 4,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 3.1362439119456686,
+      "post_first_ratio": 1.023081869962454
+    },
+    {
+      "config": "graph_on",
+      "block": 2,
+      "length": 8192,
+      "concurrency": 1,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 5.724638642417401,
+      "post_first_ratio": 1.003046617510569
+    },
+    {
+      "config": "graph_on",
+      "block": 2,
+      "length": 8192,
+      "concurrency": 4,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 5.033231946396338,
+      "post_first_ratio": 1.1400656220277283
+    },
+    {
+      "config": "graph_on",
+      "block": 3,
+      "length": 2048,
+      "concurrency": 1,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 2.1384302371495103,
+      "post_first_ratio": 0.9988408689401101
+    },
+    {
+      "config": "graph_on",
+      "block": 3,
+      "length": 2048,
+      "concurrency": 4,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 3.1039354118944793,
+      "post_first_ratio": 1.0235309484968511
+    },
+    {
+      "config": "graph_on",
+      "block": 3,
+      "length": 8192,
+      "concurrency": 1,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 6.177156156787974,
+      "post_first_ratio": 0.9981450104864081
+    },
+    {
+      "config": "graph_on",
+      "block": 3,
+      "length": 8192,
+      "concurrency": 4,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 5.603788334307002,
+      "post_first_ratio": 1.1466024921434326
+    },
+    {
+      "config": "graph_on",
+      "block": 4,
+      "length": 2048,
+      "concurrency": 1,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 2.1548857481082084,
+      "post_first_ratio": 1.0033868822859369
+    },
+    {
+      "config": "graph_on",
+      "block": 4,
+      "length": 2048,
+      "concurrency": 4,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 2.561528734548393,
+      "post_first_ratio": 1.0247060350278003
+    },
+    {
+      "config": "graph_on",
+      "block": 4,
+      "length": 8192,
+      "concurrency": 1,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 5.821377608704271,
+      "post_first_ratio": 1.0062849910152125
+    },
+    {
+      "config": "graph_on",
+      "block": 4,
+      "length": 8192,
+      "concurrency": 4,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 5.536209160089715,
+      "post_first_ratio": 1.149112458963103
+    },
+    {
+      "config": "graph_on",
+      "block": 5,
+      "length": 2048,
+      "concurrency": 1,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 2.2306448139834276,
+      "post_first_ratio": 0.9992167890614093
+    },
+    {
+      "config": "graph_on",
+      "block": 5,
+      "length": 2048,
+      "concurrency": 4,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 3.991678044851914,
+      "post_first_ratio": 1.0230816743530071
+    },
+    {
+      "config": "graph_on",
+      "block": 5,
+      "length": 8192,
+      "concurrency": 1,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 5.652396704826903,
+      "post_first_ratio": 1.0039385205950049
+    },
+    {
+      "config": "graph_on",
+      "block": 5,
+      "length": 8192,
+      "concurrency": 4,
+      "first": "cold",
+      "second": "hit",
+      "ttft_ratio": 5.242000378164588,
+      "post_first_ratio": 1.1500831142322898
+    }
+  ],
+  "output_controls": {
+    "noop_truncation": {
+      "pairs": 120,
+      "identical_sequences": 74,
+      "matching_positions": 11577,
+      "positions": 15360
+    },
+    "cold_vs_hit": {
+      "pairs": 60,
+      "identical_sequences": 19,
+      "matching_positions": 3990,
+      "positions": 7680
+    },
+    "cache_off_vs_cold": {
+      "pairs": 60,
+      "identical_sequences": 35,
+      "matching_positions": 5722,
+      "positions": 7680
+    }
+  },
+  "coalesced_tokens": 67,
+  "total_generated_tokens": 76800,
+  "max_cached_tokens": 8064
+}
