@@ -75,6 +75,11 @@ python -m experiments.analyze_performance_probes \
 The report includes source snapshots, raw records, hashes, plotting commands,
 and separate instructions for reproducing the main and SDPA runs.
 
+The [vLLM serving follow-up](../docs/VLLM_SERVING_EXPERIMENT.md) tests the same L40S
+through a pinned production engine: optimized/eager execution, concurrent HTTP
+requests, and verified prefix-cache cold/hit controls. Use a separate environment
+and run the documented preflight before the formal pilot.
+
 ## Frozen capture and paired GPU replay
 
 `exp_frozen_replay_gpu.py` separates generation from verification. Generate one
