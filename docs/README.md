@@ -25,6 +25,7 @@ The signed-artifact protocol is a separate, optional experiment.
 | Results, methodology, costs, and limitations | [Research guide](RESEARCH_GUIDE.md) · [paper](../paper/paper.pdf) · [poster](../paper/mats_poster.pdf) |
 | Attacker/verifier game and evaluation pipeline | [Game specification](GAME.md) |
 | What timing can detect | [Clock measurements](CLOCK_MEASURED.md) · [clock algorithms](CLOCK_ALGORITHMS.md) |
+| Design hardware-based performance probes | [Performance probe experiments](PERFORMANCE_PROBE_EXPERIMENTS.md) (中文) — proposed mechanisms, controls, hardware, and falsification criteria |
 | Selective recomputation and evaluation pitfalls | [Triage and audit cost](TRIAGE_AND_AUDIT_COST.md) |
 | Proxy detection and speculative decoding | [Acceptance-rate fingerprint](ACCEPTANCE_RATE_FINGERPRINT.md) · [speculative decoding study](SPEC_DECODING_AND_PROXY_DETECTION.md) |
 | Optional signed receipts | [Protocol RFC](AUDIT_PROTOCOL_RFC.md) · [implementation](AUDIT_IMPLEMENTATION.md) |
