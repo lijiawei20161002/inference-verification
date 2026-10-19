@@ -1,0 +1,7 @@
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 103.92it/s]
+{"completed": 1, "total": 6, "case": "profile_0_512_4_full_5_static_replay_events_0_graph", "status": "complete", "prefill_ms": 57.51409599906765, "decode_ms_per_step": 11.696486500113679, "elapsed_s": 1.2748933940019924}
+{"completed": 2, "total": 6, "case": "profile_0_512_1_full_5_static_replay_events_0_graph", "status": "complete", "prefill_ms": 72.88843800051836, "decode_ms_per_step": 9.349757499876432, "elapsed_s": 2.4309002210029576}
+{"completed": 3, "total": 6, "case": "profile_0_8192_4_full_5_static_replay_events_0_graph", "status": "complete", "prefill_ms": 2094.416605999868, "decode_ms_per_step": 36.17078799925366, "elapsed_s": 6.012658987001487}
+{"completed": 4, "total": 6, "case": "profile_0_8192_1_full_5_static_replay_events_0_eager", "status": "complete", "prefill_ms": 990.4504770020139, "decode_ms_per_step": 47.88894450030057, "elapsed_s": 11.874734787001216}
+{"completed": 5, "total": 6, "case": "profile_0_8192_1_full_5_dynamic_replay_events_0_eager", "status": "complete", "prefill_ms": 1204.8628669981554, "decode_ms_per_step": 50.82850175040221, "elapsed_s": 17.433723753001686}
+{"completed": 6, "total": 6, "case": "profile_0_8192_1_full_5_static_replay_events_0_graph", "status": "complete", "prefill_ms": 1027.8069939995476, "decode_ms_per_step": 20.369457750348374, "elapsed_s": 20.20505851300186}

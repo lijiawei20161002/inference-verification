@@ -1,6 +1,12 @@
 # Inference Verification：基于硬件机制的性能探针实验设计
 
-版本：v0.1 · 2026-10-19 · 状态：实验设计，尚未执行本文新增实验。
+Version: v0.2 · 2026-10-19 · Status: first L40S mechanism pilot completed.
+
+[English results and reproducible evidence](results/performance_probes_l40s_20261019.md):
+524 local measurements covering P0/P1/P4, 42 loopback HTTP requests, and 96
+equivalent-SDPA controls. The pilot does not complete production calibration,
+precision probes, capacity frontiers, or adaptive evasion. Proposed thresholds
+and acceptance criteria below remain design targets.
 
 目标是检验：能否利用推理过程中的访存、计算、缓存、流水线和调度机制，构造一组主动性能探针，在明确的服务条件下区分符合声明的执行与上下文截断、未声明的精度降级等偏差。
 
@@ -189,14 +195,16 @@ A 层观察到的硬件指标不得作为 B/C 层检测器的隐藏输入。服�
 
 如果 P1/P2 的曲线可被合法实现轻易复现，应及时停止扩大栅格，转向条件更严格的服务契约，或把性能探针作为与 token 证据组合的辅助通道。组合后的总误报率需要重新校准。
 
-**16. 建议实现与归档接口。** 以下是拟新增的模块职责和文件名，不表示仓库已实现这些接口。
+**16. Implementation status and archive interfaces.**
 
-| 拟新增组件 | 职责 |
+| Component | Implemented scope / remaining work |
 |---|---|
-| experiments/exp_performance_probe_gpu.py | 固定 batch/前缀的本地机制实验；计时与诊断模式分开 |
-| experiments/exp_performance_probe_http.py | C/L/缓存条件的请求编排和原始流式事件采集 |
-| experiments/analyze_performance_probes.py | 预注册特征、会话聚类统计、正常条件校准及基线比较 |
-| experiments/performance_probe_proxy.py | 自有测试代理中的缓冲、延迟与条件化伪装 |
+| experiments/exp_performance_probe_gpu.py | Implemented: fixed-batch context/prefix controls; separate timing and diagnostic runs |
+| experiments/exp_performance_probe_http.py | Implemented: serial loopback requests and token-frame collection; general concurrency and production cache orchestration remain open |
+| experiments/analyze_performance_probes.py | Implemented: artifact checks and descriptive paired summaries; detector calibration and deployment error rates remain open |
+| experiments/exp_sdpa_representation_gpu.py | Implemented: identical-Q/K/V representation controls with FP32 reference checks |
+| experiments/plot_performance_probes.py | Implemented: response, prefix, HTTP, and kernel plots from archived data |
+| experiments/performance_probe_proxy.py | Planned: general buffering, delay, and adaptive timing camouflage |
 
 每次运行保留 plan.json、manifest.json、requests.jsonl、events.jsonl、server_trace.jsonl（若本地可用）、gpu_snapshots.jsonl、少量 profiler 报告、features、summary 与文件哈希。plan 写入假设、主指标、访问层、独立统计单位、样本划分、停止条件和所有排除规则。
 

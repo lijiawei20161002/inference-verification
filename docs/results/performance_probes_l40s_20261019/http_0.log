@@ -1,0 +1,15 @@
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 94.73it/s]
+{"request_id": "http_0_512_1_full_32_static_greedy_events_1_eager_chunk1", "ttft_ms": 62.556256, "last_event_ms": 842.661922}
+{"request_id": "http_0_8192_1_truncate_32_static_greedy_events_1_eager_chunk1", "ttft_ms": 208.471094, "last_event_ms": 980.704796}
+{"request_id": "http_0_512_4_full_32_static_greedy_events_1_eager_chunk1", "ttft_ms": 63.605745, "last_event_ms": 838.655926}
+{"request_id": "http_0_8192_1_truncate_32_static_greedy_events_1_eager_chunk8", "ttft_ms": 407.540219, "last_event_ms": 1053.366413}
+{"request_id": "http_0_512_1_full_32_static_greedy_events_0_eager_chunk1", "ttft_ms": 57.963274, "last_event_ms": 825.905273}
+{"request_id": "http_0_8192_4_full_32_static_greedy_events_1_eager_chunk1", "ttft_ms": 2211.372797, "last_event_ms": 3383.575225}
+{"request_id": "http_0_8192_1_full_32_static_greedy_events_0_eager_chunk8", "ttft_ms": 1019.004346, "last_event_ms": 1620.892836}
+{"request_id": "http_0_512_4_full_32_static_greedy_events_0_eager_chunk1", "ttft_ms": 62.3442, "last_event_ms": 855.889848}
+{"request_id": "http_0_8192_1_truncate_32_static_greedy_events_0_eager_chunk1", "ttft_ms": 211.106342, "last_event_ms": 972.671703}
+{"request_id": "http_0_8192_1_full_32_static_greedy_events_0_eager_chunk1", "ttft_ms": 933.054574, "last_event_ms": 1700.012603}
+{"request_id": "http_0_8192_1_full_32_static_greedy_events_1_eager_chunk8", "ttft_ms": 1046.980751, "last_event_ms": 1625.646239}
+{"request_id": "http_0_8192_1_full_32_static_greedy_events_1_eager_chunk1", "ttft_ms": 875.801061, "last_event_ms": 1676.397765}
+{"request_id": "http_0_8192_4_full_32_static_greedy_events_0_eager_chunk1", "ttft_ms": 2125.960167, "last_event_ms": 3301.036449}
+{"request_id": "http_0_8192_1_truncate_32_static_greedy_events_0_eager_chunk8", "ttft_ms": 428.258037, "last_event_ms": 1016.876747}

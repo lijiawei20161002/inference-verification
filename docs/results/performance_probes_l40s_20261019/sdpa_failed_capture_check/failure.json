@@ -1,0 +1,7 @@
+{
+  "stage": "initial FP32 reference check before any timing row",
+  "error": "AssertionError: 1628/2048 elements differ; max absolute error 0.12035065144300461",
+  "cause": "Captured graph output was checked before the first replay; capture records work without executing it.",
+  "correction": "Replay once after capture and before synchronization and reference validation. Tolerances unchanged.",
+  "measurement_rows": 0
+}

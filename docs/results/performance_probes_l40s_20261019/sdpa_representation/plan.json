@@ -1,0 +1,191 @@
+{
+  "plan": [
+    [
+      2,
+      1,
+      8192
+    ],
+    [
+      7,
+      4,
+      512
+    ],
+    [
+      1,
+      4,
+      8192
+    ],
+    [
+      1,
+      1,
+      8192
+    ],
+    [
+      3,
+      1,
+      512
+    ],
+    [
+      3,
+      1,
+      8192
+    ],
+    [
+      0,
+      1,
+      512
+    ],
+    [
+      5,
+      4,
+      512
+    ],
+    [
+      4,
+      4,
+      512
+    ],
+    [
+      2,
+      4,
+      8192
+    ],
+    [
+      3,
+      4,
+      512
+    ],
+    [
+      2,
+      1,
+      512
+    ],
+    [
+      4,
+      4,
+      8192
+    ],
+    [
+      4,
+      1,
+      8192
+    ],
+    [
+      0,
+      4,
+      8192
+    ],
+    [
+      5,
+      1,
+      8192
+    ],
+    [
+      7,
+      1,
+      512
+    ],
+    [
+      4,
+      1,
+      512
+    ],
+    [
+      6,
+      4,
+      8192
+    ],
+    [
+      6,
+      1,
+      512
+    ],
+    [
+      1,
+      1,
+      512
+    ],
+    [
+      0,
+      4,
+      512
+    ],
+    [
+      6,
+      1,
+      8192
+    ],
+    [
+      7,
+      4,
+      8192
+    ],
+    [
+      0,
+      1,
+      8192
+    ],
+    [
+      3,
+      4,
+      8192
+    ],
+    [
+      1,
+      4,
+      512
+    ],
+    [
+      2,
+      4,
+      512
+    ],
+    [
+      6,
+      4,
+      512
+    ],
+    [
+      5,
+      1,
+      512
+    ],
+    [
+      5,
+      4,
+      8192
+    ],
+    [
+      7,
+      1,
+      8192
+    ]
+  ],
+  "arms": [
+    "native_gqa",
+    "repeat_no_mask",
+    "repeat_all_true_mask"
+  ],
+  "metadata": {
+    "source_sha256": "d9dc074ec959879389bff8979a2913a578bb74bc30dbf524e70b9e5208a31a5f",
+    "torch": "2.8.0+cu128",
+    "gpu": "NVIDIA L40S",
+    "cuda": "12.8",
+    "shapes": {
+      "query_heads": 16,
+      "kv_heads": 8,
+      "head_dim": 128,
+      "queries": 1
+    },
+    "blocks": 8,
+    "replays_per_timing": 100,
+    "dtype": "bfloat16",
+    "scope": "single-layer SDPA mechanism control; randomized inputs; not an LLM detector",
+    "equivalence": "all keys visible; is_causal=False; None and all-True Boolean mask",
+    "planned_error_tolerance": {
+      "atol": 0.005,
+      "rtol": 0.02
+    },
+    "started_utc": "2026-10-19T01:33:09Z"
+  }
+}

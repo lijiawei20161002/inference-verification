@@ -1,0 +1,52 @@
+{
+  "model": "Qwen/Qwen3-1.7B",
+  "revision": "70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+  "torch": "2.8.0+cu128",
+  "transformers": "4.57.6",
+  "cuda": "12.8",
+  "gpu": "NVIDIA L40S",
+  "dtype": "bfloat16",
+  "attention": "sdpa",
+  "cache": "static preallocated outside local prefill timer; dynamic as control",
+  "weight_bytes": 3441149952,
+  "kv_bytes_per_token_per_sequence": 114688,
+  "fixture_sha256": "642ab0f71b99f50eefbde22552386e2c45b0dd51ec5564cce45a406f93cee708",
+  "sampler": "frozen text continuation or greedy argmax; no top-p sampling",
+  "eos_policy": "fixed output budget, continue after EOS",
+  "graph_capture": "outside local timers; repeated first decode position is overwritten before measurement",
+  "model_config_sha256": "1ddb5b89ebc90dcb417a45c213d818577e65976454d29385c8f6140771d95197",
+  "truncation": "remove early prompt before prefill; preserve absolute RoPE positions; no rolling eviction",
+  "cache_hit": "prefix primed outside request timer; priming time reported separately",
+  "timing": "event spans include host enqueue gaps; profiler runs are separate",
+  "args": {
+    "suite": "preflight",
+    "model_path": "/workspace/.cache/huggingface/hub/models--Qwen--Qwen3-1.7B/snapshots/70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+    "output": "runs/performance_l40s_20261019/pilot/preflight",
+    "session": 0,
+    "blocks": "0,1,2"
+  },
+  "source_commit": "0d9e5407148db43fa2bfef57d13fd0b3d8c14465",
+  "source_status": "",
+  "source_sha256": {
+    "experiments/exp_performance_probe_gpu.py": "94ab5267236ab6551f213e3bd5e1941751919f4fcb0872197efc35f75498db75",
+    "experiments/exp_performance_probe_http.py": "f69e31bd1ec970fc6eb82045ba0cba5a7dea63f226192c0e855e3b5890605aa4",
+    "experiments/analyze_performance_probes.py": "c194996741c146ecbf6906cedded554e447e710883243be2d53d57643aecf2c9",
+    "experiments/run_performance_pilot.py": "1e9270bc2604d6f8b6591dbb7bf612117a9b18186444f96f45803f35598a019f"
+  },
+  "gpu_before": {
+    "returncode": 0,
+    "csv": "timestamp, name, uuid, driver_version, memory.total [MiB], memory.used [MiB], utilization.gpu [%], temperature.gpu, power.draw [W], power.limit [W], clocks.current.sm [MHz], clocks.current.memory [MHz]\n2026/10/19 00:59:01.099, NVIDIA L40S, GPU-fb956e24-61ce-b6b8-287b-23ead346e87a, 595.91.07, 46068 MiB, 3727 MiB, 0 %, 41, 114.68 W, 350.00 W, 2520 MHz, 9001 MHz\n",
+    "stderr": ""
+  },
+  "started_utc": "2026-10-19T00:59:01Z",
+  "counter_status": "ERR_NVGPUCTRPERM",
+  "result_scope": "mechanism pilot; eight text blocks across three process sessions; no deployment FPR calibration",
+  "finished_utc": "2026-10-19T00:59:43Z",
+  "elapsed_seconds": 40.53408652899816,
+  "gpu_after": {
+    "returncode": 0,
+    "csv": "timestamp, name, uuid, driver_version, memory.total [MiB], memory.used [MiB], utilization.gpu [%], temperature.gpu, power.draw [W], power.limit [W], clocks.current.sm [MHz], clocks.current.memory [MHz]\n2026/10/19 00:59:43.782, NVIDIA L40S, GPU-fb956e24-61ce-b6b8-287b-23ead346e87a, 595.91.07, 46068 MiB, 3983 MiB, 12 %, 60, 300.08 W, 350.00 W, 2520 MHz, 9001 MHz\n",
+    "stderr": ""
+  },
+  "measurement_sha256": "e228391e051a21c2a8e14392e11d7c0bb19f45568385a1fd90fabaf613394604"
+}

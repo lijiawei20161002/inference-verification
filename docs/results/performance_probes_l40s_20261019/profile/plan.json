@@ -1,0 +1,80 @@
+[
+  {
+    "suite": "profile",
+    "block": 0,
+    "length": 512,
+    "batch": 4,
+    "condition": "full",
+    "outputs": 5,
+    "cache": "static",
+    "mode": "replay",
+    "instrument": "events",
+    "repetition": 0,
+    "execution": "graph"
+  },
+  {
+    "suite": "profile",
+    "block": 0,
+    "length": 512,
+    "batch": 1,
+    "condition": "full",
+    "outputs": 5,
+    "cache": "static",
+    "mode": "replay",
+    "instrument": "events",
+    "repetition": 0,
+    "execution": "graph"
+  },
+  {
+    "suite": "profile",
+    "block": 0,
+    "length": 8192,
+    "batch": 4,
+    "condition": "full",
+    "outputs": 5,
+    "cache": "static",
+    "mode": "replay",
+    "instrument": "events",
+    "repetition": 0,
+    "execution": "graph"
+  },
+  {
+    "suite": "profile",
+    "block": 0,
+    "length": 8192,
+    "batch": 1,
+    "condition": "full",
+    "outputs": 5,
+    "cache": "static",
+    "mode": "replay",
+    "instrument": "events",
+    "repetition": 0,
+    "execution": "eager"
+  },
+  {
+    "suite": "profile",
+    "block": 0,
+    "length": 8192,
+    "batch": 1,
+    "condition": "full",
+    "outputs": 5,
+    "cache": "dynamic",
+    "mode": "replay",
+    "instrument": "events",
+    "repetition": 0,
+    "execution": "eager"
+  },
+  {
+    "suite": "profile",
+    "block": 0,
+    "length": 8192,
+    "batch": 1,
+    "condition": "full",
+    "outputs": 5,
+    "cache": "static",
+    "mode": "replay",
+    "instrument": "events",
+    "repetition": 0,
+    "execution": "graph"
+  }
+]

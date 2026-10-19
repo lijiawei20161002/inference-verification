@@ -1,0 +1,11 @@
+{
+  "observed_at": "2026-10-19T01:26:20.064787+00:00",
+  "uid": 0,
+  "cap_eff_hex": "00000000a80425fb",
+  "cap_bnd_hex": "00000000a80425fb",
+  "cap_sys_admin": false,
+  "profiling_driver_settings": [
+    "RmProfilingAdminOnly: 1"
+  ],
+  "ncu_version": "NVIDIA (R) Nsight Compute Command Line Profiler\nCopyright (c) 2018-2025 NVIDIA Corporation\nVersion 2025.1.1.0 (build 35528883) (public-release)\n"
+}

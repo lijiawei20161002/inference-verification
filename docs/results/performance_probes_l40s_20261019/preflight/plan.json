@@ -1,0 +1,41 @@
+[
+  {
+    "suite": "preflight",
+    "block": 98,
+    "length": 16384,
+    "batch": 8,
+    "condition": "truncate",
+    "outputs": 128,
+    "cache": "static",
+    "mode": "replay",
+    "instrument": "events",
+    "repetition": 0,
+    "execution": "graph"
+  },
+  {
+    "suite": "preflight",
+    "block": 98,
+    "length": 16384,
+    "batch": 8,
+    "condition": "full",
+    "outputs": 128,
+    "cache": "static",
+    "mode": "replay",
+    "instrument": "events",
+    "repetition": 0,
+    "execution": "graph"
+  },
+  {
+    "suite": "preflight",
+    "block": 98,
+    "length": 8192,
+    "batch": 4,
+    "condition": "cache_hit",
+    "outputs": 128,
+    "cache": "static",
+    "mode": "replay",
+    "instrument": "events",
+    "repetition": 0,
+    "execution": "graph"
+  }
+]

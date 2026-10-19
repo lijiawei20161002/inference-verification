@@ -1,0 +1,4 @@
+Loading checkpoint shards:   0%|          | 0/2 [00:00<?, ?it/s]Loading checkpoint shards: 100%|██████████| 2/2 [00:00<00:00, 104.37it/s]
+{"completed": 1, "total": 3, "case": "preflight_98_16384_8_truncate_128_static_replay_events_0_graph", "status": "complete", "prefill_ms": 491.2821920006536, "decode_ms_per_step": 21.123741944894554, "elapsed_s": 3.8063555330008967}
+{"completed": 2, "total": 3, "case": "preflight_98_16384_8_full_128_static_replay_events_0_graph", "status": "complete", "prefill_ms": 13169.270431000768, "decode_ms_per_step": 118.75592889764377, "elapsed_s": 33.1221230150004}
+{"completed": 3, "total": 3, "case": "preflight_98_8192_4_cache_hit_128_static_replay_events_0_graph", "status": "complete", "prefill_ms": 46.63529100071173, "decode_ms_per_step": 34.89571670078884, "elapsed_s": 40.53400862199851}

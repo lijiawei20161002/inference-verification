@@ -1,0 +1,141 @@
+{
+  "source_commit": "0d9e5407148db43fa2bfef57d13fd0b3d8c14465",
+  "started_utc": "2026-10-19T00:58:52Z",
+  "jobs": [
+    {
+      "name": "preflight",
+      "command": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "-m",
+        "experiments.exp_performance_probe_gpu",
+        "--suite",
+        "preflight",
+        "--output",
+        "runs/performance_l40s_20261019/pilot/preflight"
+      ],
+      "status": "complete",
+      "returncode": 0,
+      "elapsed_s": 49.264386569000635
+    },
+    {
+      "name": "profile",
+      "command": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "-m",
+        "experiments.exp_performance_probe_gpu",
+        "--suite",
+        "profile",
+        "--output",
+        "runs/performance_l40s_20261019/pilot/profile"
+      ],
+      "status": "complete",
+      "returncode": 0,
+      "elapsed_s": 29.236043089000304
+    },
+    {
+      "name": "session_0",
+      "command": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "-m",
+        "experiments.exp_performance_probe_gpu",
+        "--suite",
+        "pilot",
+        "--session",
+        "0",
+        "--blocks",
+        "0,1,2",
+        "--output",
+        "runs/performance_l40s_20261019/pilot/session_0"
+      ],
+      "status": "complete",
+      "returncode": 0,
+      "elapsed_s": 676.325387861998
+    },
+    {
+      "name": "session_1",
+      "command": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "-m",
+        "experiments.exp_performance_probe_gpu",
+        "--suite",
+        "pilot",
+        "--session",
+        "1",
+        "--blocks",
+        "3,4,5",
+        "--output",
+        "runs/performance_l40s_20261019/pilot/session_1"
+      ],
+      "status": "complete",
+      "returncode": 0,
+      "elapsed_s": 678.0665025330018
+    },
+    {
+      "name": "session_2",
+      "command": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "-m",
+        "experiments.exp_performance_probe_gpu",
+        "--suite",
+        "pilot",
+        "--session",
+        "2",
+        "--blocks",
+        "6,7",
+        "--output",
+        "runs/performance_l40s_20261019/pilot/session_2"
+      ],
+      "status": "complete",
+      "returncode": 0,
+      "elapsed_s": 472.68353196599855
+    },
+    {
+      "name": "http_0",
+      "command": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "-m",
+        "experiments.exp_performance_probe_http",
+        "--session",
+        "0",
+        "--output",
+        "runs/performance_l40s_20261019/pilot/http_0"
+      ],
+      "status": "complete",
+      "returncode": 0,
+      "elapsed_s": 32.21874127100091
+    },
+    {
+      "name": "http_1",
+      "command": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "-m",
+        "experiments.exp_performance_probe_http",
+        "--session",
+        "1",
+        "--output",
+        "runs/performance_l40s_20261019/pilot/http_1"
+      ],
+      "status": "complete",
+      "returncode": 0,
+      "elapsed_s": 31.32784137499766
+    },
+    {
+      "name": "http_2",
+      "command": [
+        "/workspace/inference-verification/.venv/bin/python",
+        "-m",
+        "experiments.exp_performance_probe_http",
+        "--session",
+        "2",
+        "--output",
+        "runs/performance_l40s_20261019/pilot/http_2"
+      ],
+      "status": "complete",
+      "returncode": 0,
+      "elapsed_s": 31.5913489630002
+    }
+  ],
+  "counter_status": "ERR_NVGPUCTRPERM",
+  "finished_utc": "2026-10-19T01:32:16Z",
+  "status": "complete"
+}

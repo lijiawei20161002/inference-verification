@@ -60,6 +60,21 @@ all four detectors, confidence intervals, exact rerun controls, raw captures and
 offline reproduction commands. This is a same-GPU pilot; calibration transfer
 and deployment false-positive rates remain open.
 
+The [19 October L40S performance-probe pilot](../docs/results/performance_probes_l40s_20261019.md)
+records 524 local measurements, 42 loopback HTTP requests, six kernel traces, and
+96 equivalent-SDPA controls. It distinguishes local context truncation from
+prefix reuse, identifies legitimate kernel/representation differences, and
+shows an eager HTTP path masking the decode signal. These are mechanism results,
+not calibrated deployment detection rates. Recompute the saved summary without a GPU:
+
+```sh
+python -m experiments.analyze_performance_probes \
+  docs/results/performance_probes_l40s_20261019 --output /tmp/performance-recomputed.json
+```
+
+The report includes source snapshots, raw records, hashes, plotting commands,
+and separate instructions for reproducing the main and SDPA runs.
+
 ## Frozen capture and paired GPU replay
 
 `exp_frozen_replay_gpu.py` separates generation from verification. Generate one
@@ -130,6 +145,7 @@ For your own strategies, use [the extension guide](../docs/EXTENDING.md).
 | What can tokens reveal? | `exp_gpu.py`, `exp_robustness_gpu.py` | [Robustness report](../docs/results/robustness_report.md) |
 | When does a proxy catch model substitution? | `exp_spec_substitution_gpu.py`, `exp_detectability_vs_kl.py` | [Proxy study](../docs/SPEC_DECODING_AND_PROXY_DETECTION.md) |
 | Does timing expose context truncation? | `exp_slope_verifier_gpu.py`, `exp_clock_algos_gpu.py` | [Clock measurements](../docs/CLOCK_MEASURED.md) |
+| Which hardware mechanisms shape performance probes? | exp_performance_probe_gpu.py, exp_performance_probe_http.py, exp_sdpa_representation_gpu.py | [L40S performance probes](../docs/results/performance_probes_l40s_20261019.md) |
 | How much does a verdict cost? | `exp_prefix_cost_gpu.py`, `exp_cost_of_a_verdict_gpu.py` | [Audit-cost study](../docs/TRIAGE_AND_AUDIT_COST.md) |
 | Are detection scores inflated by a small pool? | `exp_baseline_headroom_gpu.py`, `exp_headline_ratio_gpu.py`, `exp_pool_scaling_gpu.py` | [Evaluation protocol](../docs/RESEARCH_GUIDE.md#the-evaluation-protocol) |
 | Can honest numerical differences trigger a detector? | `exp_specdec_shape_gpu.py`, `exp_benign_shape_dprime_gpu.py` | [Benign variation](../docs/RESEARCH_GUIDE.md#the-honest-null-is-not-one-thing-the-forward-pass-shape-moves-the-logits) |

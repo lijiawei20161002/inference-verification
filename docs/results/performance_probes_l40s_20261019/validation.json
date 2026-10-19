@@ -1,0 +1,13 @@
+{
+  "full_suite": {
+    "command": ".venv/bin/python -m pytest tests/ -q",
+    "passed": 222,
+    "warnings": 2,
+    "elapsed_seconds": 84.84
+  },
+  "summary_reproduction": "exact JSON equality",
+  "report_reproduction": "exact byte equality",
+  "figure_check": "plots regenerated from archive; label overlap corrected",
+  "measurement_source": "0d9e5407148db43fa2bfef57d13fd0b3d8c14465",
+  "note": "Hardware performance counters remain unavailable; CUDA activity profiling succeeded."
+}

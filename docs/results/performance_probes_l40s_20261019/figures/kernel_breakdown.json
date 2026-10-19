@@ -1,0 +1,86 @@
+[
+  {
+    "case": "profile_0_512_4_full_5_static_replay_events_0_graph",
+    "length": 512,
+    "batch": 4,
+    "cache": "static",
+    "execution": "graph",
+    "kernel_ms_per_step": {
+      "tensorcore_gemm": 6.063235000000024,
+      "copy": 1.003377499999984,
+      "attention": 0.6744692500000028,
+      "other": 1.8132895000000595,
+      "concat": 0.1343767500000056
+    }
+  },
+  {
+    "case": "profile_0_512_1_full_5_static_replay_events_0_graph",
+    "length": 512,
+    "batch": 1,
+    "cache": "static",
+    "execution": "graph",
+    "kernel_ms_per_step": {
+      "matrix_vector": 5.1807439999999785,
+      "attention": 0.6489077499999982,
+      "other": 1.67710625,
+      "copy": 0.41571475000000513,
+      "concat": 0.10724275000000648
+    }
+  },
+  {
+    "case": "profile_0_8192_4_full_5_static_replay_events_0_graph",
+    "length": 8192,
+    "batch": 4,
+    "cache": "static",
+    "execution": "graph",
+    "kernel_ms_per_step": {
+      "copy": 15.077605999999989,
+      "attention": 12.161714250000005,
+      "tensorcore_gemm": 5.590771499999981,
+      "other": 1.8408715000001228,
+      "concat": 0.13360925000000587
+    }
+  },
+  {
+    "case": "profile_0_8192_1_full_5_static_replay_events_0_eager",
+    "length": 8192,
+    "batch": 1,
+    "cache": "static",
+    "execution": "eager",
+    "kernel_ms_per_step": {
+      "attention": 8.340037750000011,
+      "matrix_vector": 5.205709999999952,
+      "copy": 3.0623822500000486,
+      "other": 1.9371112500001904,
+      "concat": 0.13133025000002976
+    }
+  },
+  {
+    "case": "profile_0_8192_1_full_5_dynamic_replay_events_0_eager",
+    "length": 8192,
+    "batch": 1,
+    "cache": "dynamic",
+    "execution": "eager",
+    "kernel_ms_per_step": {
+      "matrix_vector": 5.37860074999994,
+      "concat": 2.07155874999999,
+      "attention": 0.6432080000000442,
+      "other": 1.5938005000002269,
+      "copy": 0.23436100000007695
+    }
+  },
+  {
+    "case": "profile_0_8192_1_full_5_static_replay_events_0_graph",
+    "length": 8192,
+    "batch": 1,
+    "cache": "static",
+    "execution": "graph",
+    "kernel_ms_per_step": {
+      "attention": 8.254629000000005,
+      "matrix_vector": 5.1729802500000135,
+      "copy": 3.069712749999996,
+      "other": 1.7494632499999405,
+      "concat": 0.10759099999999625
+    }
+  }
+]
