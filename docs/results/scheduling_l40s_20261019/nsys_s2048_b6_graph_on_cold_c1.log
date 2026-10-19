@@ -1,0 +1,20 @@
+Server ready; warming outside the capture
+Capture stopped; shutting down the server and flushing reports
+{
+  "reports": [
+    {
+      "report": "traces/serving.1.nsys-rep",
+      "database": "traces/serving.1.sqlite",
+      "table_rows": {
+        "CUPTI_ACTIVITY_KIND_KERNEL": 46281,
+        "CUPTI_ACTIVITY_KIND_RUNTIME": 9335,
+        "NVTX_EVENTS": 134
+      },
+      "iteration_names": {
+        "execute_context_0(0)_generation_0(0)": 2,
+        "execute_context_0(0)_generation_1(1)": 127,
+        "execute_context_1(2048)_generation_0(0)": 4
+      }
+    }
+  ]
+}

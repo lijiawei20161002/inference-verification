@@ -1,0 +1,164 @@
+{
+  "status": "complete",
+  "started_utc": "2026-10-19T03:18:30Z",
+  "jobs": [
+    {
+      "name": "nsys_s8192_b7_graph_off_full_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    },
+    {
+      "name": "nsys_s2048_b6_eager_off_truncate_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    },
+    {
+      "name": "none_s2048_b6_graph_on_hit_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    },
+    {
+      "name": "nsys_s2048_b6_graph_on_cold_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    },
+    {
+      "name": "nsys_s2048_b6_graph_on_hit_c1",
+      "status": "verified",
+      "requests": 1,
+      "generated_tokens": 128
+    },
+    {
+      "name": "nsys_s2048_b6_graph_off_truncate_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    },
+    {
+      "name": "nsys_s2048_b7_graph_off_full_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    },
+    {
+      "name": "nsys_s2048_b6_graph_on_hit_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    },
+    {
+      "name": "nsys_s2048_b6_graph_on_cold_c1",
+      "status": "verified",
+      "requests": 1,
+      "generated_tokens": 128
+    },
+    {
+      "name": "nsys_s8192_b7_graph_on_cold_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    },
+    {
+      "name": "torch_s2048_b6_graph_on_hit_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    },
+    {
+      "name": "none_s8192_b6_graph_on_cold_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    },
+    {
+      "name": "nsys_s8192_b6_graph_off_full_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    },
+    {
+      "name": "nsys_s8192_b6_graph_on_cold_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    },
+    {
+      "name": "none_s8192_b6_graph_on_hit_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    },
+    {
+      "name": "none_s2048_b6_graph_on_cold_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    },
+    {
+      "name": "nsys_s8192_b6_graph_on_hit_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    },
+    {
+      "name": "nsys_s2048_b7_graph_on_cold_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    },
+    {
+      "name": "torch_s2048_b6_graph_on_cold_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    },
+    {
+      "name": "nsys_s2048_b6_graph_off_full_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    },
+    {
+      "name": "nsys_s8192_b7_graph_off_truncate_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    },
+    {
+      "name": "nsys_s2048_b7_graph_on_hit_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    },
+    {
+      "name": "nsys_s2048_b6_eager_off_full_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    },
+    {
+      "name": "nsys_s2048_b7_graph_off_truncate_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    },
+    {
+      "name": "nsys_s8192_b6_graph_off_truncate_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    },
+    {
+      "name": "nsys_s8192_b7_graph_on_hit_c4",
+      "status": "verified",
+      "requests": 4,
+      "generated_tokens": 512
+    }
+  ],
+  "current": "nsys_s8192_b7_graph_on_hit_c4",
+  "updated_utc": "2026-10-19T03:39:06Z"
+}

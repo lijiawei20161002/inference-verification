@@ -1,0 +1,220 @@
+{
+  "status": "complete",
+  "started_utc": "2026-10-19T03:34:18Z",
+  "profiler": "nsys",
+  "config": "graph_off",
+  "group": {
+    "block": 7,
+    "length": 8192,
+    "concurrency": 4,
+    "arm": "truncate",
+    "outputs": 128
+  },
+  "scope": "separate scheduling diagnostic; no deployment calibration",
+  "scheduler_budget": 8192,
+  "source_commit": "0b7bcf96b993808837b4b6566b7e82a273291a46",
+  "source_status": " M docs/README.md\n M experiments/README.md\n?? docs/PROFILING_SETUP.md\n?? docs/results/profiling_setup_l40s_20261019/\n?? experiments/analyze_scheduling_campaign.py\n?? experiments/archive_scheduling_campaign.py\n?? experiments/profile_vllm_serving.py\n?? experiments/report_scheduling_campaign.py\n?? experiments/run_scheduling_campaign.py\n?? scripts/install_nsight_systems.py\n?? scripts/profiling_env.sh\n?? tests/test_profiling_setup.py\n?? tests/test_scheduling_analysis.py\n",
+  "gpu_before": {
+    "returncode": 0,
+    "stdout": "name, uuid, driver_version, memory.used [MiB], utilization.gpu [%], temperature.gpu, power.draw [W], clocks.current.sm [MHz]\nNVIDIA L40S, GPU-fb956e24-61ce-b6b8-287b-23ead346e87a, 595.91.07, 0 MiB, 0 %, 43, 40.15 W, 210 MHz\n",
+    "stderr": ""
+  },
+  "source_sha256": {
+    "experiments/profile_vllm_serving.py": "2c25eb63bf9a3667495f46b4ec840c8c6daa6c8633ef4eb8518246b5d95f1291",
+    "experiments/exp_vllm_serving.py": "3d11c4a6083dd0e8ba7d04d3b811a699019c92802376400629180496021b24aa",
+    "scripts/run_research_job.py": "f8293af8552e86b4590927ad9882a9f3e2b8916a1381e7e0870a8d0b9e14cee7",
+    "scripts/install_nsight_systems.py": "93ee10e220dc779933c30cef268b2a0513d7cb5c3c619892a8e3fc41f0177500"
+  },
+  "nsys_version": {
+    "returncode": 0,
+    "stdout": "NVIDIA Nsight Systems version 2026.5.1.161-265138896106v0\n",
+    "stderr": ""
+  },
+  "nsys_environment": {
+    "returncode": 0,
+    "stdout": "NVIDIA Nsight Systems version 2026.5.1.161-265138896106v0\n\nGeneral Check\n- Platform: Linux\n- Timestamp counter supported: Yes\n\nCPU Profiling Environment Check\n- Root privilege: enabled\n- Linux Kernel Paranoid Level: 4 (some features maybe not available)\n- Linux Distribution: Ubuntu\n- Linux Kernel Version (6.8.0-147-generic): OK\n- Linux perf_event_open syscall available: Fail\n- Sampling trigger event available: Fail\n- Intel(c) Last Branch Record support: Not Available\n- CPU Profiling Environment (process-tree): Fail\n- CPU Profiling Environment (system-wide): Fail\n\nSee the product documentation at https://docs.nvidia.com/nsight-systems for more information,\nincluding information on how to set the Linux Kernel Paranoid Level.\n",
+    "stderr": ""
+  },
+  "command": [
+    "/workspace/.tools/bin/nsys",
+    "profile",
+    "--trace=cuda,nvtx,osrt",
+    "--sample=none",
+    "--cpuctxsw=none",
+    "--trace-fork-before-exec=true",
+    "--cuda-graph-trace=node",
+    "--capture-range=cudaProfilerApi",
+    "--capture-range-end=repeat",
+    "--wait=all",
+    "--force-overwrite=false",
+    "--output=/workspace/inference-verification/runs/scheduling_l40s_20261019/nsys_s8192_b7_graph_off_truncate_c4/traces/serving",
+    "/workspace/.venvs/ivgym-vllm-0.22.0/bin/python",
+    "-m",
+    "experiments.profile_vllm_serving",
+    "_exec_server",
+    "/workspace/inference-verification/runs/scheduling_l40s_20261019/nsys_s8192_b7_graph_off_truncate_c4/server.pid",
+    "/workspace/.venvs/ivgym-vllm-0.22.0/bin/python",
+    "-m",
+    "vllm.entrypoints.openai.api_server",
+    "--model",
+    "/workspace/.cache/huggingface/hub/models--Qwen--Qwen3-1.7B/snapshots/70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+    "--served-model-name",
+    "ivgym-qwen3-1.7b",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "48727",
+    "--dtype",
+    "bfloat16",
+    "--max-model-len",
+    "16512",
+    "--max-num-seqs",
+    "8",
+    "--max-num-batched-tokens",
+    "8192",
+    "--kv-cache-memory-bytes",
+    "12884901888",
+    "--gpu-memory-utilization",
+    "0.8",
+    "--block-size",
+    "16",
+    "--attention-backend",
+    "FLASH_ATTN",
+    "--enable-chunked-prefill",
+    "--enable-prompt-tokens-details",
+    "--no-enable-log-requests",
+    "--seed",
+    "20261021",
+    "--no-enable-prefix-caching",
+    "--profiler-config",
+    "{\"profiler\": \"cuda\"}"
+  ],
+  "server_command": [
+    "/workspace/.venvs/ivgym-vllm-0.22.0/bin/python",
+    "-m",
+    "vllm.entrypoints.openai.api_server",
+    "--model",
+    "/workspace/.cache/huggingface/hub/models--Qwen--Qwen3-1.7B/snapshots/70d244cc86ccca08cf5af4e1e306ecf908b1ad5e",
+    "--served-model-name",
+    "ivgym-qwen3-1.7b",
+    "--host",
+    "127.0.0.1",
+    "--port",
+    "48727",
+    "--dtype",
+    "bfloat16",
+    "--max-model-len",
+    "16512",
+    "--max-num-seqs",
+    "8",
+    "--max-num-batched-tokens",
+    "8192",
+    "--kv-cache-memory-bytes",
+    "12884901888",
+    "--gpu-memory-utilization",
+    "0.8",
+    "--block-size",
+    "16",
+    "--attention-backend",
+    "FLASH_ATTN",
+    "--enable-chunked-prefill",
+    "--enable-prompt-tokens-details",
+    "--no-enable-log-requests",
+    "--seed",
+    "20261021",
+    "--no-enable-prefix-caching",
+    "--profiler-config",
+    "{\"profiler\": \"cuda\"}"
+  ],
+  "environment": {
+    "CUDA_VISIBLE_DEVICES": "0",
+    "OMP_NUM_THREADS": "1",
+    "OPENBLAS_NUM_THREADS": "1",
+    "HF_HUB_OFFLINE": "1",
+    "TRANSFORMERS_OFFLINE": "1",
+    "VLLM_NO_USAGE_STATS": "1",
+    "DO_NOT_TRACK": "1",
+    "HF_HOME": "/workspace/.cache/huggingface",
+    "VLLM_CACHE_ROOT": "/workspace/.cache/vllm-round2",
+    "TORCHINDUCTOR_CACHE_DIR": "/workspace/.cache/vllm-round2/inductor",
+    "TRITON_CACHE_DIR": "/workspace/.cache/vllm-round2/triton",
+    "MAX_JOBS": "8",
+    "VLLM_SERVER_DEV_MODE": "1",
+    "VLLM_WORKER_MULTIPROC_METHOD": "spawn"
+  },
+  "profiler_config": {
+    "profiler": "cuda"
+  },
+  "launcher_pid": 28587,
+  "capture_started_utc": "2026-10-19T03:34:54Z",
+  "capture_finished_utc": "2026-10-19T03:34:58Z",
+  "shutdown": {
+    "returncode": 0,
+    "forced_shutdown": false
+  },
+  "validation": {
+    "reports": [
+      {
+        "report": "traces/serving.1.nsys-rep",
+        "database": "traces/serving.1.sqlite",
+        "table_rows": {
+          "CUPTI_ACTIVITY_KIND_KERNEL": 52691,
+          "CUPTI_ACTIVITY_KIND_RUNTIME": 8331,
+          "NVTX_EVENTS": 132
+        },
+        "iteration_names": {
+          "execute_context_0(0)_generation_0(0)": 2,
+          "execute_context_0(0)_generation_1(1)": 1,
+          "execute_context_0(0)_generation_4(4)": 126,
+          "execute_context_1(2048)_generation_3(3)": 1,
+          "execute_context_3(6144)_generation_0(0)": 1
+        }
+      }
+    ]
+  },
+  "measured_requests": 4,
+  "generated_tokens": 512,
+  "finished_utc": "2026-10-19T03:35:05Z",
+  "gpu_after": {
+    "returncode": 0,
+    "stdout": "name, uuid, driver_version, memory.used [MiB], utilization.gpu [%], temperature.gpu, power.draw [W], clocks.current.sm [MHz]\nNVIDIA L40S, GPU-fb956e24-61ce-b6b8-287b-23ead346e87a, 595.91.07, 0 MiB, 0 %, 42, 39.77 W, 210 MHz\n",
+    "stderr": ""
+  },
+  "hashes": {
+    "corpus_token_ids.json": "b5de2791249395caaf063bb4d1d52071bc00ac583fac272cc3c9d8ee69b9324e",
+    "server.log": "5eef95aedcd6af529f4f4e2da28afa5d7e129abab35ee9f56d3865a45886b019",
+    "server.pid": "75bff4f072a5e8be0e1c60f1834f025518b318408b409fbe3b69cc7b86121684",
+    "warmup.jsonl.gz": "cbf9a8d1a83aacb0a763769ed78be5b0f97768eb4bbee65bb5bf43483dd07f0e",
+    "metrics_before.txt": "ac95df5ebf268ef38ad93243fcca85c9866cc1b4eb1ca3cae2e71ee9a0482e35",
+    "requests.jsonl.gz": "f6b5b3e614ce1a11dbec7d1efe98ac19fe34f15519dcb55b0127830e2cd5f24c",
+    "metrics_after.txt": "b94d8c5a39ff2487f024b91c603bd7cf059b182a8b208b8fc1b8b19b30c53296",
+    "traces/serving.1.export.log": "d337bc29714b61e583f2247e20519453f9d38b57df9601802fc78ae3d0a2edaf",
+    "traces/serving.1.sqlite": "7172fa184898e5fc65789078153d109dc3aa1bc1396d3dbfaf9a005a34ad07d7",
+    "traces/serving.1.stats.txt": "6f2dfdea1663a1dd440ddcde23a24ffd87082c0de6fa8756d25aa09004ca58e5",
+    "source/experiments/profile_vllm_serving.py": "2c25eb63bf9a3667495f46b4ec840c8c6daa6c8633ef4eb8518246b5d95f1291",
+    "source/experiments/exp_vllm_serving.py": "3d11c4a6083dd0e8ba7d04d3b811a699019c92802376400629180496021b24aa",
+    "source/scripts/run_research_job.py": "f8293af8552e86b4590927ad9882a9f3e2b8916a1381e7e0870a8d0b9e14cee7",
+    "source/scripts/install_nsight_systems.py": "93ee10e220dc779933c30cef268b2a0513d7cb5c3c619892a8e3fc41f0177500"
+  },
+  "publication_sanitization": {
+    "databases": {
+      "traces/serving.1.sqlite": {
+        "original_sha256": "2c9ad59b8f717ca8597c31725206f3c3b1644d0ce71dd8bb23333bd059f7e954",
+        "published_sha256": "7172fa184898e5fc65789078153d109dc3aa1bc1396d3dbfaf9a005a34ad07d7",
+        "environment_variable_names_removed": 182,
+        "string_rows_redacted": 16,
+        "preserved_measurement_table_sha256": {
+          "CUPTI_ACTIVITY_KIND_KERNEL": "6f5fc570f0b74eafce659960d633659a67be2206da76c8d60abbb5034f24a55e",
+          "CUPTI_ACTIVITY_KIND_RUNTIME": "ba2f9dbd28406d0aa619b28904ccc7e97bed6698ed4c964c8eebcc84bd43880b",
+          "NVTX_EVENTS": "93b43e6005464ccd8f886d17a4b48f6a72ff7db24f284b6e4f3f69a21519d678"
+        }
+      }
+    },
+    "omitted_reports": {
+      "traces/serving.1.nsys-rep": {
+        "original_sha256": "d1adb3187bc4de10c5b3b08b5a8521a4e7c7dcaaca0498750d879155aad73e5e",
+        "reason": "Original proprietary capture retained locally; use the sanitized SQLite export."
+      }
+    }
+  }
+}

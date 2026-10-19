@@ -1,0 +1,50 @@
+Server ready; warming outside the capture
+Capture stopped; shutting down the server and flushing reports
+{
+  "traces": [
+    {
+      "path": "traces/14f05df45af6_23370.async_llm.1792378496768205529.pt.trace.json.gz",
+      "categories": {
+        "": 54,
+        "Trace": 1
+      },
+      "kernel_events": 0,
+      "iteration_ranges": 0,
+      "iteration_names": {},
+      "kernel_duration_us_sum": 0
+    },
+    {
+      "path": "traces/rank0.1792378497043725825.pt.trace.json.gz",
+      "categories": {
+        "user_annotation": 50,
+        "cpu_op": 25914,
+        "overhead": 4,
+        "cuda_runtime": 7081,
+        "ac2g": 29389,
+        "gpu_memcpy": 226,
+        "kernel": 18278,
+        "cuda_driver": 3804,
+        "gpu_user_annotation": 48,
+        "": 62,
+        "Trace": 1
+      },
+      "kernel_events": 18278,
+      "iteration_ranges": 98,
+      "iteration_names": {
+        "execute_context_1(2048)_generation_0(0)": 8,
+        "execute_context_1(2047)_generation_1(1)": 8,
+        "execute_context_2(2047)_generation_1(1)": 2,
+        "execute_context_1(2046)_generation_2(2)": 6,
+        "execute_context_2(2046)_generation_2(2)": 2,
+        "execute_context_1(2045)_generation_3(3)": 6,
+        "execute_context_1(22)_generation_3(3)": 2,
+        "execute_context_0(0)_generation_4(4)": 36,
+        "execute_context_0(0)_generation_3(3)": 10,
+        "execute_context_0(0)_generation_2(2)": 8,
+        "execute_context_0(0)_generation_1(1)": 8,
+        "execute_context_0(0)_generation_0(0)": 2
+      },
+      "kernel_duration_us_sum": 1058655.033
+    }
+  ]
+}

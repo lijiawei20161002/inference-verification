@@ -27,6 +27,7 @@ The signed-artifact protocol is a separate, optional experiment.
 | What timing can detect | [Clock measurements](CLOCK_MEASURED.md) · [clock algorithms](CLOCK_ALGORITHMS.md) |
 | Design hardware-based performance probes | [Performance probe experiments](PERFORMANCE_PROBE_EXPERIMENTS.md) (中文) — proposed mechanisms, controls, hardware, and falsification criteria |
 | Continue performance probes through a production serving engine | [vLLM serving experiment](VLLM_SERVING_EXPERIMENT.md) — pinned configuration, cache controls, and measurement contract |
+| Profile the pinned vLLM server | [Profiler setup](PROFILING_SETUP.md) — tested PyTorch and Nsight Systems capture, inspection, and host permission limits |
 | Selective recomputation and evaluation pitfalls | [Triage and audit cost](TRIAGE_AND_AUDIT_COST.md) |
 | Proxy detection and speculative decoding | [Acceptance-rate fingerprint](ACCEPTANCE_RATE_FINGERPRINT.md) · [speculative decoding study](SPEC_DECODING_AND_PROXY_DETECTION.md) |
 | Optional signed receipts | [Protocol RFC](AUDIT_PROTOCOL_RFC.md) · [implementation](AUDIT_IMPLEMENTATION.md) |
@@ -34,6 +35,7 @@ The signed-artifact protocol is a separate, optional experiment.
 ## Follow a claim to its evidence
 
 - [Claim → experiment → artifact index](RESEARCH_GUIDE.md#which-experiment-backs-which-claim)
+- [19 October L40S scheduling diagnostics: token budgets, iteration traces, and arrival windows](results/scheduling_l40s_20261019.md)
 - [19 October L40S vLLM serving: optimized/eager controls, prefix caching, and delayed replication](results/vllm_serving_l40s_20261019.md)
 - [19 October L40S performance probes: context, prefix reuse, kernel selection, and HTTP limits](results/performance_probes_l40s_20261019.md)
 - [18 October L40S real NF4/INT8 pilot: independent calibration and held-out detection](results/real_quantization_l40s_20261018.md)

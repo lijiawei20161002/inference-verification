@@ -1,0 +1,27 @@
+{
+  "policy": "Environment metadata removed; original .nsys-rep files retained privately.",
+  "capture_changes": {
+    "nsys_smoke_01": {
+      "databases": {
+        "traces/serving.1.sqlite": {
+          "original_sha256": "91830eecdd5f152466e30e6c2a9c8fd654cf510e1012c040ea1764d6b08d4da9",
+          "published_sha256": "d06f4801c7a2d10a23b66c035d99c201040fdecf67c334c88cf54c53db04d854",
+          "environment_variable_names_removed": 182,
+          "string_rows_redacted": 16,
+          "preserved_measurement_table_sha256": {
+            "CUPTI_ACTIVITY_KIND_KERNEL": "5206f7368075446b0b875aa48ef447479878dd75fd6620cef937dd1a6ae0ed81",
+            "CUPTI_ACTIVITY_KIND_RUNTIME": "633f9d912030bf4465d954484e75f7fc8c26c8036db9eca2aff9a60faa186ed1",
+            "NVTX_EVENTS": "f9537448363b1bf8cdcbb35aaca0fb7a6eeab54f3cf8b91314a553665df3ce34"
+          }
+        }
+      },
+      "omitted_reports": {
+        "traces/serving.1.nsys-rep": {
+          "original_sha256": "478ef701650e7f6100ee7cb2c54e2b87d60165a1321332319d324cf9767be0d6",
+          "reason": "Original proprietary capture retained locally; use the sanitized SQLite export."
+        }
+      }
+    }
+  },
+  "measurement_records_preserved": true
+}

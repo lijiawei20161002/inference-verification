@@ -90,6 +90,28 @@ python -m experiments.analyze_vllm_serving_campaign \
   docs/results/vllm_serving_l40s_20261019 --output /tmp/vllm-serving-summary.json
 ```
 
+For a separate diagnostic capture, use `profile_vllm_serving.py` with PyTorch
+Profiler or Nsight Systems. The [setup guide](../docs/PROFILING_SETUP.md) records
+the verified installation, small GPU captures, offline checks, and permissions.
+Profiled request times are not additional samples for the unprofiled campaign.
+
+The [scheduler-budget study](../docs/results/scheduling_l40s_20261019.md) compares
+2,048 versus 8,192 scheduled tokens using separate Nsight, PyTorch, and
+unprofiled captures. It preserves context/generation iteration labels and
+associates kernels through CUDA launch correlation. Recompute its archived
+diagnostics without a GPU:
+
+```sh
+python -m experiments.analyze_scheduling_campaign \
+  docs/results/scheduling_l40s_20261019 --output /tmp/scheduling-summary.json
+```
+
+To collect a new campaign on the pinned idle L40S, use
+`python -m experiments.run_scheduling_campaign --output runs/scheduling-new`.
+The plan is frozen before launch; completed captures can be verified and skipped
+with `--resume`. An incomplete/failed capture is retained and causes resume to
+stop for inspection rather than overwriting its output.
+
 ## Frozen capture and paired GPU replay
 
 `exp_frozen_replay_gpu.py` separates generation from verification. Generate one

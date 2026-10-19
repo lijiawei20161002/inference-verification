@@ -1,0 +1,7 @@
+{
+  "url": "https://developer.download.nvidia.com/devtools/repos/ubuntu2404/amd64/NsightSystems-linux-cli-public-2026.5.1.161-3889610.deb",
+  "package_sha256": "61829db6392e5c293ada1319df86a97c3356bc810335a1975cb551fcfe3eca08",
+  "version": "NVIDIA Nsight Systems version 2026.5.1.161-265138896106v0",
+  "executable": "/workspace/.tools/nsight-systems/2026.5.1/opt/nvidia/nsight-systems-cli/2026.5.1/target-linux-x64/nsys",
+  "launcher": "/workspace/.tools/bin/nsys"
+}

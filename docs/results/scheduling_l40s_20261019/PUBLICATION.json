@@ -1,0 +1,426 @@
+{
+  "policy": "Environment metadata removed; original .nsys-rep files retained privately.",
+  "capture_changes": {
+    "nsys_s2048_b6_eager_off_full_c4": {
+      "databases": {
+        "traces/serving.1.sqlite": {
+          "original_sha256": "27768a7ed570e0babdb2bbc5fe0587648612dc7d7c3f03f4759be7b64b688d53",
+          "published_sha256": "41dbdca2ea9b0d3d3cb3e3cdc7abd08c57f7d866363f8b69d59d0432017e3d21",
+          "environment_variable_names_removed": 182,
+          "string_rows_redacted": 16,
+          "preserved_measurement_table_sha256": {
+            "CUPTI_ACTIVITY_KIND_KERNEL": "01c5717539fe938d8a9aeef84a149dcf166af7617fd52c98cef6ff8ae9e689d4",
+            "CUPTI_ACTIVITY_KIND_RUNTIME": "f4cd82806599cc085cdbc4e224cf382f12c6612ecb899f1fbda06b9d5eb8ed21",
+            "NVTX_EVENTS": "deb4ea555f335ba0fa73a50ad85f504b785ec8d9463b001ff232d05b443cea80"
+          }
+        }
+      },
+      "omitted_reports": {
+        "traces/serving.1.nsys-rep": {
+          "original_sha256": "343f7221e3538d58a5a8c9618f24a004b3ba0064c233d81a24b42dad430d3331",
+          "reason": "Original proprietary capture retained locally; use the sanitized SQLite export."
+        }
+      }
+    },
+    "nsys_s2048_b6_eager_off_truncate_c4": {
+      "databases": {
+        "traces/serving.1.sqlite": {
+          "original_sha256": "0f52a103507dbd95010b0a2eb50060efd0f1e3e0d25ef5fa6e35b4a499e43603",
+          "published_sha256": "e94a92846d968ad1d9d65b74fa32552df55da5e5f1ea5f57234dc2e8f31ba580",
+          "environment_variable_names_removed": 182,
+          "string_rows_redacted": 16,
+          "preserved_measurement_table_sha256": {
+            "CUPTI_ACTIVITY_KIND_KERNEL": "f8f0b1af9c0478bb54af6c640daef9ba9dc1ee5367f7bdcdfa0e0a673ae719bd",
+            "CUPTI_ACTIVITY_KIND_RUNTIME": "a7365a83bcd8124cd601852300989c56fcf968621bd88bdd2a22c1b6eacd0de3",
+            "NVTX_EVENTS": "8cb2b24fabbd17b65697017b83a788a1a1f0a6e68bea7b419882d17672de0e96"
+          }
+        }
+      },
+      "omitted_reports": {
+        "traces/serving.1.nsys-rep": {
+          "original_sha256": "0e697a9096fbc962c1a8ed878601f93dfa8d742e435d544e7a7590284354db58",
+          "reason": "Original proprietary capture retained locally; use the sanitized SQLite export."
+        }
+      }
+    },
+    "nsys_s2048_b6_graph_off_full_c4": {
+      "databases": {
+        "traces/serving.1.sqlite": {
+          "original_sha256": "8a80065857e95ec9aef129d8927a7c3f425022d99ecd2a02a18ae4a2390cf035",
+          "published_sha256": "28f4dd2a8e969ed93aadc80a57f561d4100435e69730a6d2bcd7c5b2e329cc48",
+          "environment_variable_names_removed": 182,
+          "string_rows_redacted": 16,
+          "preserved_measurement_table_sha256": {
+            "CUPTI_ACTIVITY_KIND_KERNEL": "907c1baf4417d8cc3eaf43d61f6ec879d3f5ac578456458c7997a3df6c922160",
+            "CUPTI_ACTIVITY_KIND_RUNTIME": "9cea71846f926fb200b6f650fe753bd9bf7b554c1e0446532b5185d3d9d76ace",
+            "NVTX_EVENTS": "d4822b1c5d03530aff16095504c4b23b42bda86ddd2fcfee833ab61314373655"
+          }
+        }
+      },
+      "omitted_reports": {
+        "traces/serving.1.nsys-rep": {
+          "original_sha256": "6c1e9d752aab864053382b49748588ff7d1be8a29ab02d82a06325e61bc0adab",
+          "reason": "Original proprietary capture retained locally; use the sanitized SQLite export."
+        }
+      }
+    },
+    "nsys_s2048_b6_graph_off_truncate_c4": {
+      "databases": {
+        "traces/serving.1.sqlite": {
+          "original_sha256": "a69bdfd9ecc92214271c90f88f63e8326cd7e8e4b9a80ced2324c14743cf910b",
+          "published_sha256": "ee7723ee0439cc681e5bdf822e8d4128ec6ea9853cb43100fda8e6819fd0b5ec",
+          "environment_variable_names_removed": 182,
+          "string_rows_redacted": 16,
+          "preserved_measurement_table_sha256": {
+            "CUPTI_ACTIVITY_KIND_KERNEL": "e7335e7c62928702750ed0dd89e4e45bcc7ff7a42cb81580714f9bb94ce0fc6f",
+            "CUPTI_ACTIVITY_KIND_RUNTIME": "60f98107f9c36caab87557b1ab62be7136ffe664bb5c31292c9c8b4c294704e1",
+            "NVTX_EVENTS": "a15470e2f2556fb26faaae8d462d92b01ea74f332b187eca29cfa0681ecfe2f9"
+          }
+        }
+      },
+      "omitted_reports": {
+        "traces/serving.1.nsys-rep": {
+          "original_sha256": "44e88513e55d8fa40e6ce074e84fc6276e7a54921cfd72085b111e6905dc2e86",
+          "reason": "Original proprietary capture retained locally; use the sanitized SQLite export."
+        }
+      }
+    },
+    "nsys_s2048_b6_graph_on_cold_c1": {
+      "databases": {
+        "traces/serving.1.sqlite": {
+          "original_sha256": "620a2f4657b908f517f9eed44b9a809c057c261fc46c3a31f6f9706209148a60",
+          "published_sha256": "7214f958b66882b7153b818cad206967a54b7ebc711dce976cc5833aecccd83e",
+          "environment_variable_names_removed": 182,
+          "string_rows_redacted": 18,
+          "preserved_measurement_table_sha256": {
+            "CUPTI_ACTIVITY_KIND_KERNEL": "27f41672a9b596527f43d4296001d6f94bb87fa9fc5fc8aedccdf2eeb19c8dcc",
+            "CUPTI_ACTIVITY_KIND_RUNTIME": "b7476d2597aa8d39a0a4bb31ac8dfe0d35fa18e09270a905afdce720a74afbe5",
+            "NVTX_EVENTS": "12e32835a8d0ce90c44e82685999371bec07e55b3ba3d111380ddb96f8435bfd"
+          }
+        }
+      },
+      "omitted_reports": {
+        "traces/serving.1.nsys-rep": {
+          "original_sha256": "9d20a5fbed243a84cb607c630e560d7b0ca930a35257745cd9e0c18ebed9b90f",
+          "reason": "Original proprietary capture retained locally; use the sanitized SQLite export."
+        }
+      }
+    },
+    "nsys_s2048_b6_graph_on_cold_c4": {
+      "databases": {
+        "traces/serving.1.sqlite": {
+          "original_sha256": "06b6b3158a036386b53336be4b44e50a0ea5fe8f11663cd111102562891f579a",
+          "published_sha256": "e17946e6487798857c1e62d0787fe87835b50d969f7b272770670f550fe9dc64",
+          "environment_variable_names_removed": 182,
+          "string_rows_redacted": 16,
+          "preserved_measurement_table_sha256": {
+            "CUPTI_ACTIVITY_KIND_KERNEL": "f7a71b9d6bbed7b49bbddc2c4a3b34565f24f753769b68a8c147c6386b632f74",
+            "CUPTI_ACTIVITY_KIND_RUNTIME": "8485d181a97a90a6088f7103c4bb00c6d032edd6f5f3ef9233dd5f544998b455",
+            "NVTX_EVENTS": "f237317cc016c88b1afabee02e1649f9ee224188e3a8596f980385daed6e5a77"
+          }
+        }
+      },
+      "omitted_reports": {
+        "traces/serving.1.nsys-rep": {
+          "original_sha256": "df9bfc6aeab2b9d8baaf9c9ea3d246f83d9d78f57455a48546c56363ebbc23af",
+          "reason": "Original proprietary capture retained locally; use the sanitized SQLite export."
+        }
+      }
+    },
+    "nsys_s2048_b6_graph_on_hit_c1": {
+      "databases": {
+        "traces/serving.1.sqlite": {
+          "original_sha256": "f39b539dbecdbbff55a844152d052f4d7a1c29e0d250165742e32011a7e1fe1d",
+          "published_sha256": "bd11b11caadc04f6dde9139f506b9573793857c8d7be39612aaaa49e701184e7",
+          "environment_variable_names_removed": 182,
+          "string_rows_redacted": 18,
+          "preserved_measurement_table_sha256": {
+            "CUPTI_ACTIVITY_KIND_KERNEL": "a6c67c5f2676775921ba311a637a238d4029b28cd9ee56503de1c7f7896fc482",
+            "CUPTI_ACTIVITY_KIND_RUNTIME": "9de470d0b49083849ed4bb6339d26c1c9d7f9a7937061f6786f254c0307cdde3",
+            "NVTX_EVENTS": "18b61309993bf1d297db5b1b0678090fbee29c2c234a0f844fe623eef513ec5d"
+          }
+        }
+      },
+      "omitted_reports": {
+        "traces/serving.1.nsys-rep": {
+          "original_sha256": "5d0ef9b5a0fc0c83e33f4c2c85d08ff3071787e7ad213f320830651832a04ee7",
+          "reason": "Original proprietary capture retained locally; use the sanitized SQLite export."
+        }
+      }
+    },
+    "nsys_s2048_b6_graph_on_hit_c4": {
+      "databases": {
+        "traces/serving.1.sqlite": {
+          "original_sha256": "ee3e296a369fd1e2e896f0e5e3719f6c1823e38a8e32ffc61ad6437093de5f63",
+          "published_sha256": "7313528799c29e8e9161580a7faabec4bad76c6d387b1d8fdcf9af915cebe1cd",
+          "environment_variable_names_removed": 182,
+          "string_rows_redacted": 16,
+          "preserved_measurement_table_sha256": {
+            "CUPTI_ACTIVITY_KIND_KERNEL": "a738fedd3f62597b72378e989d0ff67175ccd5e3e412be837b47c775ba8a5931",
+            "CUPTI_ACTIVITY_KIND_RUNTIME": "d5bcd2aa0c3799174ff54b0091745c44b437d625b6e1197863876ecb7b06d0a5",
+            "NVTX_EVENTS": "2e3edc9d62fda8031f948b9b9912b83d8877f24b48054d24fa2dfec07c8fcd87"
+          }
+        }
+      },
+      "omitted_reports": {
+        "traces/serving.1.nsys-rep": {
+          "original_sha256": "4d735f5369252c5e7312858a8d87eb1e1d6593355bdebe62f5826122d0f289ad",
+          "reason": "Original proprietary capture retained locally; use the sanitized SQLite export."
+        }
+      }
+    },
+    "nsys_s2048_b7_graph_off_full_c4": {
+      "databases": {
+        "traces/serving.1.sqlite": {
+          "original_sha256": "a860a7d58b378cad054632820d77abe9b263bf44079f360f5c2f897d145db5a9",
+          "published_sha256": "9e98c109d3aa2e05f3d9b196fca3d21c6755b563b3e01f161d8221eedee36b80",
+          "environment_variable_names_removed": 182,
+          "string_rows_redacted": 16,
+          "preserved_measurement_table_sha256": {
+            "CUPTI_ACTIVITY_KIND_KERNEL": "530e54bb5f40eebc9786623077b73612869cfa4023bcdb4102e571be75c14c68",
+            "CUPTI_ACTIVITY_KIND_RUNTIME": "069a116fd5bf132c6d2eec7584975717b7927c617bd9d1fd2a95a018127ef7f3",
+            "NVTX_EVENTS": "8f1afa3166caf2f5cec1cd6ace9cd67026d7ac1df6310ce94781042544a1cf11"
+          }
+        }
+      },
+      "omitted_reports": {
+        "traces/serving.1.nsys-rep": {
+          "original_sha256": "f0a5746660e6e7c0bab0ac7c7a014d3e1c0b299ba076b6cb1ea92b985b882f1c",
+          "reason": "Original proprietary capture retained locally; use the sanitized SQLite export."
+        }
+      }
+    },
+    "nsys_s2048_b7_graph_off_truncate_c4": {
+      "databases": {
+        "traces/serving.1.sqlite": {
+          "original_sha256": "fcee32a188975b3bc2fcca0feeaa1e2cb6b8a1ff0438a4ddf810d2bb3c4cc867",
+          "published_sha256": "92dade6199192a3bbf235188b4b8e68597355fc1e55be23bb0bd5c417993332f",
+          "environment_variable_names_removed": 182,
+          "string_rows_redacted": 16,
+          "preserved_measurement_table_sha256": {
+            "CUPTI_ACTIVITY_KIND_KERNEL": "dd18253143addad476b30b2b9a03e9e3e9600d4c035a1bce6864b1679b48934f",
+            "CUPTI_ACTIVITY_KIND_RUNTIME": "aee287880b8dff6b3db08751dd54891479dae230a968271d6088e311f3b4759f",
+            "NVTX_EVENTS": "11da62ab471fbab1423b70bfbfb8a9de82a26627c8dd0485ce61441586ac5a80"
+          }
+        }
+      },
+      "omitted_reports": {
+        "traces/serving.1.nsys-rep": {
+          "original_sha256": "b72e92ecf01508e620ad0120959c7abad106c93b15a083ea28659d5c4bbcaf12",
+          "reason": "Original proprietary capture retained locally; use the sanitized SQLite export."
+        }
+      }
+    },
+    "nsys_s2048_b7_graph_on_cold_c4": {
+      "databases": {
+        "traces/serving.1.sqlite": {
+          "original_sha256": "458b5cc99b013735853ae1b0f6706b03675f866caba38380957d5ec39e2a5c1a",
+          "published_sha256": "f95e66d92428a7eab07e91d5cc5810f513a251ea68a02aa59e7d1f3acf531a1d",
+          "environment_variable_names_removed": 182,
+          "string_rows_redacted": 16,
+          "preserved_measurement_table_sha256": {
+            "CUPTI_ACTIVITY_KIND_KERNEL": "9d62478a0c49c2ffe29921b8ee9da4016d9e7777b17ef3b3f6b33c547f193b66",
+            "CUPTI_ACTIVITY_KIND_RUNTIME": "db7e1b3768d75d7e47fc80e37f3b49582281d4b67e6a1efacef7a07cc722c2ec",
+            "NVTX_EVENTS": "b9ea47d35c64b97049f217e0589a31ffc2c688019798dd1d9167a18a8ce8dbc3"
+          }
+        }
+      },
+      "omitted_reports": {
+        "traces/serving.1.nsys-rep": {
+          "original_sha256": "1087e0d4d3ca19ba56a5edaab6b98e1a79bd1c11ee86c538c664da96a1e86315",
+          "reason": "Original proprietary capture retained locally; use the sanitized SQLite export."
+        }
+      }
+    },
+    "nsys_s2048_b7_graph_on_hit_c4": {
+      "databases": {
+        "traces/serving.1.sqlite": {
+          "original_sha256": "ad7e1d55d6e1e8ad9c7800ac4471546dd0dac43c496a42650588c6227b7107b6",
+          "published_sha256": "96376cf31f10701b6e2556f4ac6fc66c91b46f77f7217d13ecec817d22d92b3b",
+          "environment_variable_names_removed": 182,
+          "string_rows_redacted": 18,
+          "preserved_measurement_table_sha256": {
+            "CUPTI_ACTIVITY_KIND_KERNEL": "9bb1bd09b9763f85d6e5266eeb47d411f73ea7de8959dc0eb9b7ff3800df979a",
+            "CUPTI_ACTIVITY_KIND_RUNTIME": "efab74a369d58d37e19d8ea8f357b996ee76cddd04fdc45eab2f2bd92e460d08",
+            "NVTX_EVENTS": "ce2cea4ede758b93494b18834827e00464a9fd9da35628cf8e642af2848a9cf7"
+          }
+        }
+      },
+      "omitted_reports": {
+        "traces/serving.1.nsys-rep": {
+          "original_sha256": "e6114a50380609bc012746e286a7212d857f50b9cd197977fbc946c0e5c697a3",
+          "reason": "Original proprietary capture retained locally; use the sanitized SQLite export."
+        }
+      }
+    },
+    "nsys_s8192_b6_graph_off_full_c4": {
+      "databases": {
+        "traces/serving.1.sqlite": {
+          "original_sha256": "ba819b17402e6c889ff1bd131d0d23964c82e4c5ba91ef4adb5bd2e664534de1",
+          "published_sha256": "ff133b6e0162add1a09280fb90ace95aa68558efbba0b002aaa4116e1bdbdf29",
+          "environment_variable_names_removed": 182,
+          "string_rows_redacted": 16,
+          "preserved_measurement_table_sha256": {
+            "CUPTI_ACTIVITY_KIND_KERNEL": "68018c47b4a57622804898ff293653c09b19bfa958d02bad57f5bd0122b66089",
+            "CUPTI_ACTIVITY_KIND_RUNTIME": "230632b778f7a1bdeb9d9074e26431d2a9906397727f353e834f71ec8faf1218",
+            "NVTX_EVENTS": "2a222c9ac885b4c055f8e55216428feaffd7158a064631ac6f2bbaf068843e49"
+          }
+        }
+      },
+      "omitted_reports": {
+        "traces/serving.1.nsys-rep": {
+          "original_sha256": "d9dbb59a3dcb7d45ca6dcbdc15735ce13a292f01dd1408591b40dc5a5b03e7d0",
+          "reason": "Original proprietary capture retained locally; use the sanitized SQLite export."
+        }
+      }
+    },
+    "nsys_s8192_b6_graph_off_truncate_c4": {
+      "databases": {
+        "traces/serving.1.sqlite": {
+          "original_sha256": "0e92f9b3ba42a47e666f3b590f8b29a0beec3a1fa0b2b8c784c6dd2be39c68e5",
+          "published_sha256": "2927d57ebb65843ee072af38acc0d8092f1cb82d3cf71bbc1993294f96c48e16",
+          "environment_variable_names_removed": 182,
+          "string_rows_redacted": 16,
+          "preserved_measurement_table_sha256": {
+            "CUPTI_ACTIVITY_KIND_KERNEL": "91ca16e267cd789c69ea5f776fef1f5bf75e00e763f2568a3dfd425f7a20a746",
+            "CUPTI_ACTIVITY_KIND_RUNTIME": "64dcf8807d22800fb41a9a5f13a9131f4031752634f0724d2eeff2510abc58f1",
+            "NVTX_EVENTS": "54fa8f513cae97e54a02a76ebebca77286b4c00a72c4ef38fcf07bee97f7c4ff"
+          }
+        }
+      },
+      "omitted_reports": {
+        "traces/serving.1.nsys-rep": {
+          "original_sha256": "7211d5cf1399a542c873e52d02c5e338397fed467d9135e1de54e7b74082346e",
+          "reason": "Original proprietary capture retained locally; use the sanitized SQLite export."
+        }
+      }
+    },
+    "nsys_s8192_b6_graph_on_cold_c4": {
+      "databases": {
+        "traces/serving.1.sqlite": {
+          "original_sha256": "8060faacd10f9cafec1d9aab74835d47e2b8441e72c69fafadaadab407395e82",
+          "published_sha256": "53802c841cf1594b2a58943045558b8b1cb6462bb90546ab1342dc9350d72862",
+          "environment_variable_names_removed": 182,
+          "string_rows_redacted": 18,
+          "preserved_measurement_table_sha256": {
+            "CUPTI_ACTIVITY_KIND_KERNEL": "1bd11e37ebd3b6ce456e5af079f4ca210f8734042c7e88ecafaf15c59898eb95",
+            "CUPTI_ACTIVITY_KIND_RUNTIME": "a8f92b0f3dedb52fd72857beb28b8e10242e72a89e881223feccf333d643b73f",
+            "NVTX_EVENTS": "8d18a55c3a65d14185553aa781b45e1b1018afb6433690bab619576b79fd0954"
+          }
+        }
+      },
+      "omitted_reports": {
+        "traces/serving.1.nsys-rep": {
+          "original_sha256": "5f094927913c2e5649d4655ce665fc1da2aa57d08fec9eef90c25db2c4675342",
+          "reason": "Original proprietary capture retained locally; use the sanitized SQLite export."
+        }
+      }
+    },
+    "nsys_s8192_b6_graph_on_hit_c4": {
+      "databases": {
+        "traces/serving.1.sqlite": {
+          "original_sha256": "fe4e6133ff946ccbf6e075eaaf7f37b240caefb2a25e1d37e6b4539ab282fce4",
+          "published_sha256": "d7b815237d2721017355feecca1237fe8c5595f270f76a86a171df4d685a4ab9",
+          "environment_variable_names_removed": 182,
+          "string_rows_redacted": 16,
+          "preserved_measurement_table_sha256": {
+            "CUPTI_ACTIVITY_KIND_KERNEL": "d3bf25e2e9d9f1364dca64eac039e5777494b61c8e7d2f4b47feda9f25f23362",
+            "CUPTI_ACTIVITY_KIND_RUNTIME": "f97cded76b0ad3fd21db483bd7b7abb1fb548da29b82c8d047dff58598ca8891",
+            "NVTX_EVENTS": "623087d146f9af393d875fdcd2066c1b1617d8505e2bf5f749f924bfbf0a4a90"
+          }
+        }
+      },
+      "omitted_reports": {
+        "traces/serving.1.nsys-rep": {
+          "original_sha256": "da37da9594900a1c28c844859a48cb5b9ca8861cd515d50b2a4ec967fe7fec92",
+          "reason": "Original proprietary capture retained locally; use the sanitized SQLite export."
+        }
+      }
+    },
+    "nsys_s8192_b7_graph_off_full_c4": {
+      "databases": {
+        "traces/serving.1.sqlite": {
+          "original_sha256": "31121f2879ff54bf4b6dba9f3735c379bbd0d71dfcf979e3871089d667c23252",
+          "published_sha256": "4c87e21a80088516dd6b31b286c8527234db833423fcdd6c3eadcd688fcc1097",
+          "environment_variable_names_removed": 182,
+          "string_rows_redacted": 16,
+          "preserved_measurement_table_sha256": {
+            "CUPTI_ACTIVITY_KIND_KERNEL": "3e299eedfb6d6ee2225e458743c7dd4cc9a16083965adfbd7154584d12a677c8",
+            "CUPTI_ACTIVITY_KIND_RUNTIME": "edb7294892c93b19cee6471774cc38200ee8db303fc04b07d7f0b979a71a6845",
+            "NVTX_EVENTS": "3308ceeece3dc97bf7f80890725c97bdc35618a7e6d02cbc15242e627dd9dbe7"
+          }
+        }
+      },
+      "omitted_reports": {
+        "traces/serving.1.nsys-rep": {
+          "original_sha256": "182b0cba808e4034e614f023a13e94d36d7b968b9bc1a420277fe80fbc60d199",
+          "reason": "Original proprietary capture retained locally; use the sanitized SQLite export."
+        }
+      }
+    },
+    "nsys_s8192_b7_graph_off_truncate_c4": {
+      "databases": {
+        "traces/serving.1.sqlite": {
+          "original_sha256": "2c9ad59b8f717ca8597c31725206f3c3b1644d0ce71dd8bb23333bd059f7e954",
+          "published_sha256": "7172fa184898e5fc65789078153d109dc3aa1bc1396d3dbfaf9a005a34ad07d7",
+          "environment_variable_names_removed": 182,
+          "string_rows_redacted": 16,
+          "preserved_measurement_table_sha256": {
+            "CUPTI_ACTIVITY_KIND_KERNEL": "6f5fc570f0b74eafce659960d633659a67be2206da76c8d60abbb5034f24a55e",
+            "CUPTI_ACTIVITY_KIND_RUNTIME": "ba2f9dbd28406d0aa619b28904ccc7e97bed6698ed4c964c8eebcc84bd43880b",
+            "NVTX_EVENTS": "93b43e6005464ccd8f886d17a4b48f6a72ff7db24f284b6e4f3f69a21519d678"
+          }
+        }
+      },
+      "omitted_reports": {
+        "traces/serving.1.nsys-rep": {
+          "original_sha256": "d1adb3187bc4de10c5b3b08b5a8521a4e7c7dcaaca0498750d879155aad73e5e",
+          "reason": "Original proprietary capture retained locally; use the sanitized SQLite export."
+        }
+      }
+    },
+    "nsys_s8192_b7_graph_on_cold_c4": {
+      "databases": {
+        "traces/serving.1.sqlite": {
+          "original_sha256": "840f21352d630b824f39a9f7f89559223c595f2eb6f3a7136c30fe06dc2df12b",
+          "published_sha256": "4408c371ae565eb600e88fe1f1d8d164b337bb7eec9b8dd2dfe1337d37ca5f18",
+          "environment_variable_names_removed": 182,
+          "string_rows_redacted": 16,
+          "preserved_measurement_table_sha256": {
+            "CUPTI_ACTIVITY_KIND_KERNEL": "0fdbfaff897df71f0dc4ca15ca417d28dc2804a0c296f695fe9d67166385a07a",
+            "CUPTI_ACTIVITY_KIND_RUNTIME": "d6071dfefeb826e22038ef92e035bdf481e5fb9f7380588624d3c583ad7d023f",
+            "NVTX_EVENTS": "584414c69d952110ae3c610a4ee15028b83b02d5622cb5bcfa41f7e51c1a591e"
+          }
+        }
+      },
+      "omitted_reports": {
+        "traces/serving.1.nsys-rep": {
+          "original_sha256": "5ceda9b83e44fd6d79eacdc6008d6ae6d917153013aa42e6d87c6dca5739f17c",
+          "reason": "Original proprietary capture retained locally; use the sanitized SQLite export."
+        }
+      }
+    },
+    "nsys_s8192_b7_graph_on_hit_c4": {
+      "databases": {
+        "traces/serving.1.sqlite": {
+          "original_sha256": "6b735874c2a37bfa5251ec72df3796ef166934832f0a184cb06d9a00d5b8976e",
+          "published_sha256": "882025acf8e0bfb150e2893fefd069f82a95a8a46f93bf39d06daf070f3cb28d",
+          "environment_variable_names_removed": 182,
+          "string_rows_redacted": 16,
+          "preserved_measurement_table_sha256": {
+            "CUPTI_ACTIVITY_KIND_KERNEL": "89603529628cc57a817d289dd81a5e50565370f75105e4ba93c7c642b6c9c2e9",
+            "CUPTI_ACTIVITY_KIND_RUNTIME": "d5f29a36790a530096603cf8c3dc12a251a221d37184a27aa48b5afb3e7c0bbe",
+            "NVTX_EVENTS": "7ec0f04a8d4457eca8c37254fcc6b089f7d5ee87a1d2b2cb9ea914587f2e6d99"
+          }
+        }
+      },
+      "omitted_reports": {
+        "traces/serving.1.nsys-rep": {
+          "original_sha256": "6dbe2dfec7e7b3e0584345135898660a7db51f19d4c3dda74f2f52f7ff176e1e",
+          "reason": "Original proprietary capture retained locally; use the sanitized SQLite export."
+        }
+      }
+    }
+  },
+  "measurement_records_preserved": true
+}

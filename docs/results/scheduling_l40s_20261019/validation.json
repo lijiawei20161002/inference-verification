@@ -1,0 +1,22 @@
+{
+  "status": "complete",
+  "verified_runs": 26,
+  "requests": 98,
+  "generated_tokens": 12544,
+  "verified_utc": "2026-10-19T03:39:35Z",
+  "report_sha256": "820320f360635362f0623dec3b1f534668b4924e801a26daca6d8af6244341d1",
+  "checks": [
+    "measurement and campaign source hashes",
+    "every capture file hash",
+    "plan/configuration/output coverage",
+    "effective execution and attention logs",
+    "raw measured, warm-up, and priming SSE responses",
+    "exact request payloads",
+    "cache hit counts",
+    "CPU annotations plus CUDA kernel evidence",
+    "iteration token accounting and scheduler limits",
+    "clean process shutdown",
+    "CUDA launch correlation attribution"
+  ],
+  "publication_sanitization": "Environment metadata removed; original binary captures remain in ignored local storage; analyzed findings unchanged."
+}
