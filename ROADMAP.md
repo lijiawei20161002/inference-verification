@@ -14,6 +14,8 @@ main requirement for interpreting deployment results.
 - CUDA research harness with custom attack and verifier registration.
 - CPU numerical diagnostics with a validated, evaluation-only capped-event
   ledger and legacy sampler regression checks.
+- Paired BF16 capture, detached E0 execution, and CPU frozen-logit replay, with
+  a [reviewed discovery report](docs/results/numerical_e0_l40s_20261020.md).
 - Signed-artifact audit, offline verification, and GPU score replay as a
   separate experiment.
 
@@ -34,12 +36,12 @@ main requirement for interpreting deployment results.
 
 ## Research priorities
 
-- **Numerical causal diagnosis (current focus):** implement paired BF16
-  capture and sampler conformance, then state-consistent interventions and
+- **Numerical causal diagnosis (current focus):** finish event-shape kernel
+  dispatch validation, then implement state-consistent interventions and
   reproducible witnesses. The [E0–E5 design](docs/NUMERICAL_CAUSAL_DIAGNOSIS_EXPERIMENTS.md)
   prioritizes explanatory correctness and execution conformance. The
-  [offline preparation tools](experiments/numerical/README.md) are available;
-  GPU capture, the localizer, and independent witness replay remain planned.
+  [capture and replay tools](experiments/numerical/README.md) are available;
+  the localizer and independent causal-witness replay remain planned.
 - **Cross-hardware honest controls:** extend the
   [first paired H100-to-A100 replay](docs/results/cross_gpu_replay_20261018.md)
   to fresh prompt/seed blocks and more hardware, then compare against matched

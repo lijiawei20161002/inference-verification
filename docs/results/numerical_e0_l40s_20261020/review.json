@@ -1,0 +1,404 @@
+{
+  "schema": "ivgym-e0-review-v1",
+  "reviewed_utc": "2026-10-20T23:27:50.493609+00:00",
+  "run_directory": "runs/numerical-e0-20261020",
+  "verified_workers": 8,
+  "verified_worker_artifacts": 742,
+  "verified_comparisons": 7,
+  "recomputed_events": 113,
+  "recomputed_replay_cells": 3390,
+  "raw_evidence_in_git": false,
+  "raw_evidence_bytes": 4764868231,
+  "runtime_source_sha256": {
+    "experiments/numerical/capture_bf16.py": "99a86f19960a495aa1875a665146f36f9aa85a778b04704f3d9881c2b2965864",
+    "experiments/numerical/frozen_logits.py": "781d7b2d9842eecc7bc92f5269e8f3e98ec2d2cddaaf4658bd5e5cb8ab26fe01",
+    "experiments/numerical/run_e0_campaign.py": "65f4c08d1f4a0a69c667ae4e220fe9e73562c612e5309ce1e4093dcef96212d1",
+    "tests/test_frozen_logits.py": "bac3527538babf147218a6bd9dcab01f8ca8ffa32d0ba39eb4265dc7931ed321",
+    "tests/test_e0_campaign.py": "901ab9ce7c31b2bba8e97862fd0cde3ccfa486cadf1692c1b3535a83a9a13b9d"
+  },
+  "groups": {
+    "capped_events": {
+      "events": 49,
+      "labels": {
+        "residual_under_matched_protocol": 49
+      },
+      "cells": [
+        {
+          "arithmetic": "original",
+          "convention": "legacy",
+          "mode": "greedy",
+          "token_disagreements": 8
+        },
+        {
+          "arithmetic": "original",
+          "convention": "legacy",
+          "mode": "gumbel",
+          "token_disagreements": 4
+        },
+        {
+          "arithmetic": "original",
+          "convention": "legacy",
+          "mode": "top_k",
+          "token_disagreements": 4
+        },
+        {
+          "arithmetic": "original",
+          "convention": "legacy",
+          "mode": "top_p",
+          "token_disagreements": 21
+        },
+        {
+          "arithmetic": "original",
+          "convention": "legacy",
+          "mode": "top_k_top_p",
+          "token_disagreements": 49
+        },
+        {
+          "arithmetic": "original",
+          "convention": "crossing_inclusive_v1",
+          "mode": "greedy",
+          "token_disagreements": 8
+        },
+        {
+          "arithmetic": "original",
+          "convention": "crossing_inclusive_v1",
+          "mode": "gumbel",
+          "token_disagreements": 4
+        },
+        {
+          "arithmetic": "original",
+          "convention": "crossing_inclusive_v1",
+          "mode": "top_k",
+          "token_disagreements": 4
+        },
+        {
+          "arithmetic": "original",
+          "convention": "crossing_inclusive_v1",
+          "mode": "top_p",
+          "token_disagreements": 4
+        },
+        {
+          "arithmetic": "original",
+          "convention": "crossing_inclusive_v1",
+          "mode": "top_k_top_p",
+          "token_disagreements": 6
+        },
+        {
+          "arithmetic": "float32",
+          "convention": "legacy",
+          "mode": "greedy",
+          "token_disagreements": 8
+        },
+        {
+          "arithmetic": "float32",
+          "convention": "legacy",
+          "mode": "gumbel",
+          "token_disagreements": 4
+        },
+        {
+          "arithmetic": "float32",
+          "convention": "legacy",
+          "mode": "top_k",
+          "token_disagreements": 4
+        },
+        {
+          "arithmetic": "float32",
+          "convention": "legacy",
+          "mode": "top_p",
+          "token_disagreements": 21
+        },
+        {
+          "arithmetic": "float32",
+          "convention": "legacy",
+          "mode": "top_k_top_p",
+          "token_disagreements": 49
+        },
+        {
+          "arithmetic": "float32",
+          "convention": "crossing_inclusive_v1",
+          "mode": "greedy",
+          "token_disagreements": 8
+        },
+        {
+          "arithmetic": "float32",
+          "convention": "crossing_inclusive_v1",
+          "mode": "gumbel",
+          "token_disagreements": 4
+        },
+        {
+          "arithmetic": "float32",
+          "convention": "crossing_inclusive_v1",
+          "mode": "top_k",
+          "token_disagreements": 4
+        },
+        {
+          "arithmetic": "float32",
+          "convention": "crossing_inclusive_v1",
+          "mode": "top_p",
+          "token_disagreements": 4
+        },
+        {
+          "arithmetic": "float32",
+          "convention": "crossing_inclusive_v1",
+          "mode": "top_k_top_p",
+          "token_disagreements": 6
+        },
+        {
+          "arithmetic": "float64",
+          "convention": "legacy",
+          "mode": "greedy",
+          "token_disagreements": 8
+        },
+        {
+          "arithmetic": "float64",
+          "convention": "legacy",
+          "mode": "gumbel",
+          "token_disagreements": 4
+        },
+        {
+          "arithmetic": "float64",
+          "convention": "legacy",
+          "mode": "top_k",
+          "token_disagreements": 4
+        },
+        {
+          "arithmetic": "float64",
+          "convention": "legacy",
+          "mode": "top_p",
+          "token_disagreements": 21
+        },
+        {
+          "arithmetic": "float64",
+          "convention": "legacy",
+          "mode": "top_k_top_p",
+          "token_disagreements": 49
+        },
+        {
+          "arithmetic": "float64",
+          "convention": "crossing_inclusive_v1",
+          "mode": "greedy",
+          "token_disagreements": 8
+        },
+        {
+          "arithmetic": "float64",
+          "convention": "crossing_inclusive_v1",
+          "mode": "gumbel",
+          "token_disagreements": 4
+        },
+        {
+          "arithmetic": "float64",
+          "convention": "crossing_inclusive_v1",
+          "mode": "top_k",
+          "token_disagreements": 4
+        },
+        {
+          "arithmetic": "float64",
+          "convention": "crossing_inclusive_v1",
+          "mode": "top_p",
+          "token_disagreements": 4
+        },
+        {
+          "arithmetic": "float64",
+          "convention": "crossing_inclusive_v1",
+          "mode": "top_k_top_p",
+          "token_disagreements": 6
+        }
+      ]
+    },
+    "controls": {
+      "events": 64,
+      "labels": {
+        "residual_under_matched_protocol": 1,
+        "no_default_disagreement": 63
+      },
+      "cells": [
+        {
+          "arithmetic": "original",
+          "convention": "legacy",
+          "mode": "greedy",
+          "token_disagreements": 0
+        },
+        {
+          "arithmetic": "original",
+          "convention": "legacy",
+          "mode": "gumbel",
+          "token_disagreements": 0
+        },
+        {
+          "arithmetic": "original",
+          "convention": "legacy",
+          "mode": "top_k",
+          "token_disagreements": 1
+        },
+        {
+          "arithmetic": "original",
+          "convention": "legacy",
+          "mode": "top_p",
+          "token_disagreements": 2
+        },
+        {
+          "arithmetic": "original",
+          "convention": "legacy",
+          "mode": "top_k_top_p",
+          "token_disagreements": 1
+        },
+        {
+          "arithmetic": "original",
+          "convention": "crossing_inclusive_v1",
+          "mode": "greedy",
+          "token_disagreements": 0
+        },
+        {
+          "arithmetic": "original",
+          "convention": "crossing_inclusive_v1",
+          "mode": "gumbel",
+          "token_disagreements": 0
+        },
+        {
+          "arithmetic": "original",
+          "convention": "crossing_inclusive_v1",
+          "mode": "top_k",
+          "token_disagreements": 1
+        },
+        {
+          "arithmetic": "original",
+          "convention": "crossing_inclusive_v1",
+          "mode": "top_p",
+          "token_disagreements": 2
+        },
+        {
+          "arithmetic": "original",
+          "convention": "crossing_inclusive_v1",
+          "mode": "top_k_top_p",
+          "token_disagreements": 1
+        },
+        {
+          "arithmetic": "float32",
+          "convention": "legacy",
+          "mode": "greedy",
+          "token_disagreements": 0
+        },
+        {
+          "arithmetic": "float32",
+          "convention": "legacy",
+          "mode": "gumbel",
+          "token_disagreements": 0
+        },
+        {
+          "arithmetic": "float32",
+          "convention": "legacy",
+          "mode": "top_k",
+          "token_disagreements": 1
+        },
+        {
+          "arithmetic": "float32",
+          "convention": "legacy",
+          "mode": "top_p",
+          "token_disagreements": 2
+        },
+        {
+          "arithmetic": "float32",
+          "convention": "legacy",
+          "mode": "top_k_top_p",
+          "token_disagreements": 1
+        },
+        {
+          "arithmetic": "float32",
+          "convention": "crossing_inclusive_v1",
+          "mode": "greedy",
+          "token_disagreements": 0
+        },
+        {
+          "arithmetic": "float32",
+          "convention": "crossing_inclusive_v1",
+          "mode": "gumbel",
+          "token_disagreements": 0
+        },
+        {
+          "arithmetic": "float32",
+          "convention": "crossing_inclusive_v1",
+          "mode": "top_k",
+          "token_disagreements": 1
+        },
+        {
+          "arithmetic": "float32",
+          "convention": "crossing_inclusive_v1",
+          "mode": "top_p",
+          "token_disagreements": 2
+        },
+        {
+          "arithmetic": "float32",
+          "convention": "crossing_inclusive_v1",
+          "mode": "top_k_top_p",
+          "token_disagreements": 1
+        },
+        {
+          "arithmetic": "float64",
+          "convention": "legacy",
+          "mode": "greedy",
+          "token_disagreements": 0
+        },
+        {
+          "arithmetic": "float64",
+          "convention": "legacy",
+          "mode": "gumbel",
+          "token_disagreements": 0
+        },
+        {
+          "arithmetic": "float64",
+          "convention": "legacy",
+          "mode": "top_k",
+          "token_disagreements": 1
+        },
+        {
+          "arithmetic": "float64",
+          "convention": "legacy",
+          "mode": "top_p",
+          "token_disagreements": 2
+        },
+        {
+          "arithmetic": "float64",
+          "convention": "legacy",
+          "mode": "top_k_top_p",
+          "token_disagreements": 1
+        },
+        {
+          "arithmetic": "float64",
+          "convention": "crossing_inclusive_v1",
+          "mode": "greedy",
+          "token_disagreements": 0
+        },
+        {
+          "arithmetic": "float64",
+          "convention": "crossing_inclusive_v1",
+          "mode": "gumbel",
+          "token_disagreements": 0
+        },
+        {
+          "arithmetic": "float64",
+          "convention": "crossing_inclusive_v1",
+          "mode": "top_k",
+          "token_disagreements": 1
+        },
+        {
+          "arithmetic": "float64",
+          "convention": "crossing_inclusive_v1",
+          "mode": "top_p",
+          "token_disagreements": 2
+        },
+        {
+          "arithmetic": "float64",
+          "convention": "crossing_inclusive_v1",
+          "mode": "top_k_top_p",
+          "token_disagreements": 1
+        }
+      ]
+    }
+  },
+  "limits": [
+    "Kernel dispatch checked only on the four-token smoke sequence.",
+    "Full-pool equivalence covers output hashes; actual RNG/support arrays cover 113 selected events.",
+    "No causal mechanism or contract violation established.",
+    "Historical corpus is discovery data; these are not deployment rates."
+  ]
+}

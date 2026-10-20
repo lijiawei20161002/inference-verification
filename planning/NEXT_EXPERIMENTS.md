@@ -25,8 +25,8 @@ The proposed algorithm and its novelty remain to be validated against prior work
 | Real BF16/NF4/INT8 generation and reference replay | Existing, archived pilot | [Quantization runner](../experiments/exp_real_quantization_gpu.py) and [validated loader](../experiments/analyze_real_quantization.py) |
 | Evaluation-only score-tail analysis and capped-event ledger | Implemented, CPU only | [Numerical tools](../experiments/numerical/README.md) |
 | Legacy sampler boundary illustrations and regression checks | Implemented, synthetic examples only | [Sampler checks](../experiments/numerical/sampler_contract.py); not a GPU conformance result |
-| Paired full-logit, support, RNG, and state capture | Pending | Milestone M1 |
-| Dtype / filtering factorial replay | Pending | Milestone M2 |
+| Paired full-logit, support, RNG, and state capture | Implemented; full-pool output equivalence passed, event-shape dispatch validation pending | Milestone M1 |
+| Dtype / filtering factorial replay | Discovery matrix complete; 49 residuals under the matched legacy protocol | Milestone M2 |
 | State-consistent operator interventions | Pending | Milestone M3 |
 | Automatic localizer, witness reduction, independent witness checker | Pending | Milestone M4 |
 | Locked comparison, benign controls, transfer, natural-case evaluation | Pending | Milestone M5 |
@@ -72,11 +72,16 @@ Acceptance criteria:
 This finishes preparation only. It does not establish provider/reference
 equivalence, reproduce a GPU discrepancy, or explain a BF16 event.
 
-## M1 — E0 capture and instrumentation equivalence (next coding task)
+## M1 — E0 capture and instrumentation equivalence (dispatch gate pending)
 
-Implement a new capture adapter under `experiments/numerical/`, reusing the
-generation/reference split of the real-quantization runner. The first run uses
-the archived BF16 corpus and sampling seeds as a discovery set.
+The capture adapter is implemented under `experiments/numerical/`, reusing the
+generation/reference split of the real-quantization runner. The 20 October run
+used the archived BF16 corpus and sampling seeds as a discovery set: 49/49
+historical events reproduced across 64 sequences and 8,192 positions. Two
+baseline and two capture processes agreed on the recorded output hashes.
+Kernel-name/grid/block equality has only been checked on a four-token smoke
+sequence; validation at the actual event shapes is still required to pass M1.
+See the [reviewed E0 report](../docs/results/numerical_e0_l40s_20261020.md).
 
 Capture, for each selected event and its controls:
 
@@ -105,7 +110,8 @@ paired evidence for every successfully reacquired event. No causal claim yet.
 
 ## M2 — separate protocol effects from numerical effects
 
-On the frozen logits from M1, implement a CPU replay matrix:
+The CPU replay matrix is implemented and complete on the 20 October discovery
+captures (113 events, 30 cells each). It evaluates these factors:
 
 | Factor | Conditions |
 |---|---|
@@ -233,13 +239,23 @@ a reduction mechanism.
 
 Launch the E0 GPU job only after the capture runner exists, the CPU checks pass,
 the model cache and environment are verified, source/plan hashes are frozen,
-and exclusive GPU use is confirmed. This plan does not imply that a host was
-reserved or that a GPU campaign has started.
+and exclusive GPU use is confirmed. The 20 October E0 campaign completed; a new
+run must repeat these checks and use a fresh output directory.
 
 ## Immediate handoff
 
-The next implementation task is **M1: paired BF16 capture with instrumentation
-equivalence**, followed by **M2: frozen-logit protocol replay** on its output.
-The next review should inspect those two artifacts and decide whether enough
-residual numerical events remain to justify M3. A new detector, automatic
-localizer, or MLSys contribution should not be claimed before those gates pass.
+The next implementation task is **M1: extend kernel-dispatch equivalence checks
+to the actual event shapes**. The 20 October campaign completed the M2 discovery
+matrix (113 captured events, 30 cells each); all 49 historical capped events
+remain residuals under matched filtering arithmetic with the legacy nucleus
+convention. The crossing-inclusive variant leaves 6/49 disagreements on the
+same frozen logits. These observations justify further investigation, but are
+not hardware faults or causal witnesses.
+
+The [reviewed E0 report](../docs/results/numerical_e0_l40s_20261020.md) records the
+results and evidence hashes. The full local evidence is in
+`runs/numerical-e0-20261020/`, including raw captures and source snapshots. This
+directory is intentionally ignored by Git; preserve it before releasing the
+host. M3 remains gated on event-shape dispatch validation. A new detector,
+automatic localizer, or MLSys contribution should not be claimed before those
+gates pass.

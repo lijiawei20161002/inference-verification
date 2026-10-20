@@ -1,7 +1,8 @@
 # Numerical diagnostics
 
-These tools prepare the numerical causal diagnosis study. They run on saved
-evidence with Python and NumPy; they do not load a model or require a GPU.
+These tools support the numerical causal diagnosis study. Archive inspection
+and frozen-logit replay use Python and NumPy without a GPU. BF16 capture and the
+detached E0 campaign require the pinned CUDA/model environment.
 
 [Current implementation plan](../../planning/NEXT_EXPERIMENTS.md) ·
 [Full E0–E5 experimental design](../../docs/NUMERICAL_CAUSAL_DIAGNOSIS_EXPERIMENTS.md) ·
@@ -15,7 +16,10 @@ evidence with Python and NumPy; they do not load a model or require a GPU.
 | [sampler_contract.py](sampler_contract.py) | Illustrate the preserved NumPy sampling conventions on synthetic inputs | Implemented |
 | [Archive loader](../analyze_real_quantization.py) | Check source hashes, captures, dimensions, corpus splits, and reference reruns | Existing, reused |
 | [Regression checks](../../tests/test_numerical_diagnostics.py) | Protect event identity, split boundaries, score interpretation, and legacy sampling behavior | Implemented |
-| GPU capture, interventions, localizer, witness checker | Collect and explain new numerical evidence | Planned; no runnable entry points yet |
+| [BF16 capture](capture_bf16.py) | Observe exact logits, actual RNG/support, masks/positions and KV states; preserve the archived runner | Implemented; full event-shape dispatch gate pending |
+| [Frozen-logit replay](frozen_logits.py) | CPU dtype/nucleus/sampling matrix on captured evidence | Implemented; production sampling unchanged |
+| [Detached campaign](run_e0_campaign.py) | Frozen source, independent processes, equivalence gates and persistent status/logs | Implemented |
+| Interventions, localizer, witness checker | Explain residual numerical events with validated witnesses | Planned |
 
 Imports perform no archive I/O. The slides script
 [`analyze_score_tails.py`](../../slides/mlsys-paper-plan/analyze_score_tails.py)
@@ -77,8 +81,70 @@ behavior is preserved; only the historical misleading code comment was corrected
 These examples do not explain any particular archived GPU event or prove
 cross-engine RNG compatibility.
 
-Full paired logits, actual support masks, random tensors, and valid intermediate
-state must be reacquired by the planned capture adapter before causal diagnosis.
+The [20 October E0 report](../../docs/results/numerical_e0_l40s_20261020.md)
+records reacquired paired evidence for 49 historical capped events and 64
+controls. All 49 remain disagreements with matching arithmetic under the legacy
+sampler; the crossing-inclusive variant leaves 6/49 disagreements. These are
+frozen-logit discovery results, not causal attribution or fresh evaluation.
+
+## Detached E0 campaign
+
+Use the pinned HF environment and model revision in the implementation plan.
+After the model is cached, launch from the repository root with a **new** output
+directory:
+
+```sh
+.venv/bin/python -m experiments.numerical.run_e0_campaign \
+  --detach --output runs/numerical-e0-new \
+  --hf-home /workspace/.cache/huggingface
+```
+
+The launcher freezes source files and the discovery archive, then starts a new
+OS session with stdin disconnected and stdout/stderr written to
+`supervisor.log`. SSH/chat disconnection does not terminate it; the host/container
+must remain running. `supervisor.pid`, `launch.json`, and the atomically updated
+`status.json` identify the job. Stage-specific logs preserve failures.
+
+The sequence is CPU checks, four-token baseline/capture/profiler controls,
+two independent full baseline workers, two independent full capture workers,
+then CPU factorial replay. A failed equivalence or evidence-integrity check
+stops the campaign. Each full worker uses the 64 archived evaluation prompts
+and 128 generated tokens. Historical prefix/token nonmatches remain explicitly
+non-reproduced. All current capped positions plus the historical positions and
+one preselected control per prompt are captured.
+
+Each event retains native BF16 logit bits, actual provider/reference Gumbel
+vectors and support masks, sorted nucleus boundaries, and exact prefix tokens.
+State files retain actual attention masks, position/cache IDs and post-forward
+KV tensors, with module shapes/strides and lineage metadata. Baseline workers
+have no observation hooks. Full returned logits, hidden states, fingerprints,
+scores and tokens are hashed for comparison.
+
+The matrix's `original` arithmetic is the **archived sampler** arithmetic:
+float32 provider and float64 reference. It does not mean direct BF16 filtering.
+The other settings use matching float32 or float64 on both sides. The two nucleus
+variants and five sampling modes share identical saved logits and actual noise.
+`crossing_inclusive_v1` retains through the first strictly crossing token and
+does not change library sampling or recalibrate any detector.
+
+On success, `summary.json`, `replay.jsonl` and `report.md` summarize the discovery
+results. The CUDA kernel-name/grid/block control covers only the short smoke
+sequence; full event-shape dispatch validation remains required before declaring
+M1 fully complete or beginning M3 mechanism attribution. A matched-protocol
+residual is not a hardware fault or a causal witness.
+
+Actual RNG/support arrays are retained for selected events and controls; full
+output hashes cover all 8,192 evaluation positions. The committed report and
+small summaries do not include the raw tensors. Keep the original `runs/`
+directory and its source snapshots for independent replay.
+
+The E0 focused suite passed 51 tests, including the new evidence and campaign
+checks:
+
+```sh
+python3 -m pytest tests/test_frozen_logits.py tests/test_numerical_diagnostics.py \
+  tests/test_real_quantization.py tests/test_e0_campaign.py -q
+```
 
 ## Cleanup validation — 20 October 2026
 

@@ -9,15 +9,19 @@ model weights. Saved artifacts can be inspected on a laptop.
 ## Current work: numerical causal diagnosis
 
 The [English implementation plan](../planning/NEXT_EXPERIMENTS.md) orders the
-next work: paired BF16 capture and sampler conformance on one L40S, followed by
+next work: finish BF16 capture-equivalence checks on one L40S, followed by
 state-consistent interventions and independently replayable witnesses. The
 [full experimental design](../docs/NUMERICAL_CAUSAL_DIAGNOSIS_EXPERIMENTS.md)
 defines the proposed scientific claims and evaluation gates.
 
 The [numerical diagnostic tools](numerical/README.md) already validate the
 real-quantization archive, export evaluation-only capped-event identities, and
-check synthetic examples of the preserved sampler conventions. GPU capture and
-causal localization are not yet implemented.
+check synthetic examples of the preserved sampler conventions. Paired GPU
+capture and frozen-logit replay are now implemented. The
+[20 October E0 report](../docs/results/numerical_e0_l40s_20261020.md) reproduces
+49/49 historical capped events and records 3,390 replay cells. Full event-shape
+kernel-dispatch validation is still pending; causal localization is not yet
+implemented.
 
 ## Existing campaigns and reusable runners
 

@@ -1,0 +1,930 @@
+{
+  "schema": "ivgym-e0-campaign-summary-v1",
+  "finished_utc": "2026-10-20T10:40:33.056145+00:00",
+  "discovery_only": true,
+  "baseline": {
+    "sequences": 64,
+    "positions": 8192,
+    "capped_positions": 49,
+    "historical_events": 49,
+    "historical_reproduced": 49,
+    "captured_events": 0
+  },
+  "capture": {
+    "sequences": 64,
+    "positions": 8192,
+    "capped_positions": 49,
+    "historical_events": 49,
+    "historical_reproduced": 49,
+    "captured_events": 113
+  },
+  "comparisons": [
+    {
+      "left": "smoke_baseline",
+      "right": "smoke_capture",
+      "sequences": 1,
+      "exact": true,
+      "failed_prompt_ids": []
+    },
+    {
+      "left": "smoke_baseline",
+      "right": "profile_baseline",
+      "sequences": 1,
+      "exact": true,
+      "failed_prompt_ids": []
+    },
+    {
+      "left": "smoke_baseline",
+      "right": "profile_capture",
+      "sequences": 1,
+      "exact": true,
+      "failed_prompt_ids": []
+    },
+    {
+      "left": "baseline_1",
+      "right": "baseline_2",
+      "sequences": 64,
+      "exact": true,
+      "failed_prompt_ids": []
+    },
+    {
+      "left": "baseline_1",
+      "right": "capture_1",
+      "sequences": 64,
+      "exact": true,
+      "failed_prompt_ids": []
+    },
+    {
+      "left": "baseline_1",
+      "right": "capture_2",
+      "sequences": 64,
+      "exact": true,
+      "failed_prompt_ids": []
+    },
+    {
+      "left": "capture_1",
+      "right": "capture_2",
+      "sequences": 64,
+      "exact": true,
+      "failed_prompt_ids": []
+    }
+  ],
+  "dispatch_control": {
+    "scope": "first evaluation prompt, four generated tokens and reference prefill",
+    "baseline_kernels": 9441,
+    "capture_kernels": 9441,
+    "exact": true,
+    "baseline_sha256": "22921a6aba7293d556c392ee920e0589b9a5414d8a8257950697e47d374692a6",
+    "capture_sha256": "22921a6aba7293d556c392ee920e0589b9a5414d8a8257950697e47d374692a6"
+  },
+  "historical_labels": {
+    "residual_under_matched_protocol": 49
+  },
+  "historical_events": [
+    {
+      "event_id": "bf16:32:112",
+      "position": 112,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 32,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:32:112",
+      "evidence": "prompt_32/event_112.npz"
+    },
+    {
+      "event_id": "bf16:35:83",
+      "position": 83,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 35,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:35:83",
+      "evidence": "prompt_35/event_83.npz"
+    },
+    {
+      "event_id": "bf16:39:98",
+      "position": 98,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 39,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:39:98",
+      "evidence": "prompt_39/event_98.npz"
+    },
+    {
+      "event_id": "bf16:39:119",
+      "position": 119,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 39,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:39:119",
+      "evidence": "prompt_39/event_119.npz"
+    },
+    {
+      "event_id": "bf16:40:10",
+      "position": 10,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 40,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:40:10",
+      "evidence": "prompt_40/event_10.npz"
+    },
+    {
+      "event_id": "bf16:40:39",
+      "position": 39,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 40,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:40:39",
+      "evidence": "prompt_40/event_39.npz"
+    },
+    {
+      "event_id": "bf16:40:109",
+      "position": 109,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 40,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:40:109",
+      "evidence": "prompt_40/event_109.npz"
+    },
+    {
+      "event_id": "bf16:42:107",
+      "position": 107,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 42,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:42:107",
+      "evidence": "prompt_42/event_107.npz"
+    },
+    {
+      "event_id": "bf16:43:71",
+      "position": 71,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 43,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:43:71",
+      "evidence": "prompt_43/event_71.npz"
+    },
+    {
+      "event_id": "bf16:49:117",
+      "position": 117,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 49,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:49:117",
+      "evidence": "prompt_49/event_117.npz"
+    },
+    {
+      "event_id": "bf16:50:97",
+      "position": 97,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 50,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:50:97",
+      "evidence": "prompt_50/event_97.npz"
+    },
+    {
+      "event_id": "bf16:50:99",
+      "position": 99,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 50,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:50:99",
+      "evidence": "prompt_50/event_99.npz"
+    },
+    {
+      "event_id": "bf16:50:120",
+      "position": 120,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 50,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:50:120",
+      "evidence": "prompt_50/event_120.npz"
+    },
+    {
+      "event_id": "bf16:51:90",
+      "position": 90,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 51,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:51:90",
+      "evidence": "prompt_51/event_90.npz"
+    },
+    {
+      "event_id": "bf16:51:107",
+      "position": 107,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 51,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:51:107",
+      "evidence": "prompt_51/event_107.npz"
+    },
+    {
+      "event_id": "bf16:53:83",
+      "position": 83,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 53,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:53:83",
+      "evidence": "prompt_53/event_83.npz"
+    },
+    {
+      "event_id": "bf16:59:29",
+      "position": 29,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 59,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:59:29",
+      "evidence": "prompt_59/event_29.npz"
+    },
+    {
+      "event_id": "bf16:60:38",
+      "position": 38,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 60,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:60:38",
+      "evidence": "prompt_60/event_38.npz"
+    },
+    {
+      "event_id": "bf16:60:60",
+      "position": 60,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 60,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:60:60",
+      "evidence": "prompt_60/event_60.npz"
+    },
+    {
+      "event_id": "bf16:60:102",
+      "position": 102,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 60,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:60:102",
+      "evidence": "prompt_60/event_102.npz"
+    },
+    {
+      "event_id": "bf16:60:115",
+      "position": 115,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 60,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:60:115",
+      "evidence": "prompt_60/event_115.npz"
+    },
+    {
+      "event_id": "bf16:62:18",
+      "position": 18,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 62,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:62:18",
+      "evidence": "prompt_62/event_18.npz"
+    },
+    {
+      "event_id": "bf16:62:83",
+      "position": 83,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 62,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:62:83",
+      "evidence": "prompt_62/event_83.npz"
+    },
+    {
+      "event_id": "bf16:63:88",
+      "position": 88,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 63,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:63:88",
+      "evidence": "prompt_63/event_88.npz"
+    },
+    {
+      "event_id": "bf16:63:91",
+      "position": 91,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 63,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:63:91",
+      "evidence": "prompt_63/event_91.npz"
+    },
+    {
+      "event_id": "bf16:64:83",
+      "position": 83,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 64,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:64:83",
+      "evidence": "prompt_64/event_83.npz"
+    },
+    {
+      "event_id": "bf16:64:121",
+      "position": 121,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 64,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:64:121",
+      "evidence": "prompt_64/event_121.npz"
+    },
+    {
+      "event_id": "bf16:65:58",
+      "position": 58,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 65,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:65:58",
+      "evidence": "prompt_65/event_58.npz"
+    },
+    {
+      "event_id": "bf16:69:5",
+      "position": 5,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 69,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:69:5",
+      "evidence": "prompt_69/event_5.npz"
+    },
+    {
+      "event_id": "bf16:69:96",
+      "position": 96,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 69,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:69:96",
+      "evidence": "prompt_69/event_96.npz"
+    },
+    {
+      "event_id": "bf16:70:54",
+      "position": 54,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 70,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:70:54",
+      "evidence": "prompt_70/event_54.npz"
+    },
+    {
+      "event_id": "bf16:70:122",
+      "position": 122,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 70,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:70:122",
+      "evidence": "prompt_70/event_122.npz"
+    },
+    {
+      "event_id": "bf16:74:13",
+      "position": 13,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 74,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:74:13",
+      "evidence": "prompt_74/event_13.npz"
+    },
+    {
+      "event_id": "bf16:74:85",
+      "position": 85,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 74,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:74:85",
+      "evidence": "prompt_74/event_85.npz"
+    },
+    {
+      "event_id": "bf16:76:49",
+      "position": 49,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 76,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:76:49",
+      "evidence": "prompt_76/event_49.npz"
+    },
+    {
+      "event_id": "bf16:77:94",
+      "position": 94,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 77,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:77:94",
+      "evidence": "prompt_77/event_94.npz"
+    },
+    {
+      "event_id": "bf16:80:84",
+      "position": 84,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 80,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:80:84",
+      "evidence": "prompt_80/event_84.npz"
+    },
+    {
+      "event_id": "bf16:80:112",
+      "position": 112,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 80,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:80:112",
+      "evidence": "prompt_80/event_112.npz"
+    },
+    {
+      "event_id": "bf16:82:76",
+      "position": 76,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 82,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:82:76",
+      "evidence": "prompt_82/event_76.npz"
+    },
+    {
+      "event_id": "bf16:83:48",
+      "position": 48,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 83,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:83:48",
+      "evidence": "prompt_83/event_48.npz"
+    },
+    {
+      "event_id": "bf16:84:72",
+      "position": 72,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 84,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:84:72",
+      "evidence": "prompt_84/event_72.npz"
+    },
+    {
+      "event_id": "bf16:85:10",
+      "position": 10,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 85,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:85:10",
+      "evidence": "prompt_85/event_10.npz"
+    },
+    {
+      "event_id": "bf16:86:9",
+      "position": 9,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 86,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:86:9",
+      "evidence": "prompt_86/event_9.npz"
+    },
+    {
+      "event_id": "bf16:87:77",
+      "position": 77,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 87,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:87:77",
+      "evidence": "prompt_87/event_77.npz"
+    },
+    {
+      "event_id": "bf16:88:93",
+      "position": 93,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 88,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:88:93",
+      "evidence": "prompt_88/event_93.npz"
+    },
+    {
+      "event_id": "bf16:89:72",
+      "position": 72,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 89,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:89:72",
+      "evidence": "prompt_89/event_72.npz"
+    },
+    {
+      "event_id": "bf16:89:73",
+      "position": 73,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 89,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:89:73",
+      "evidence": "prompt_89/event_73.npz"
+    },
+    {
+      "event_id": "bf16:90:121",
+      "position": 121,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 90,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:90:121",
+      "evidence": "prompt_90/event_121.npz"
+    },
+    {
+      "event_id": "bf16:95:120",
+      "position": 120,
+      "prefix_and_token_match": true,
+      "capped": true,
+      "reproduced": true,
+      "prompt_id": 95,
+      "label": "residual_under_matched_protocol",
+      "current_event_id": "capture_1:95:120",
+      "evidence": "prompt_95/event_120.npz"
+    }
+  ],
+  "current_capped_labels": {
+    "residual_under_matched_protocol": 49
+  },
+  "current_capped_prompt_count": 32,
+  "current_cap_events": [
+    {
+      "event_id": "capture_1:32:112",
+      "prompt_id": 32,
+      "position": 112,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:35:83",
+      "prompt_id": 35,
+      "position": 83,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:39:98",
+      "prompt_id": 39,
+      "position": 98,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:39:119",
+      "prompt_id": 39,
+      "position": 119,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:40:10",
+      "prompt_id": 40,
+      "position": 10,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:40:39",
+      "prompt_id": 40,
+      "position": 39,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:40:109",
+      "prompt_id": 40,
+      "position": 109,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:42:107",
+      "prompt_id": 42,
+      "position": 107,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:43:71",
+      "prompt_id": 43,
+      "position": 71,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:49:117",
+      "prompt_id": 49,
+      "position": 117,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:50:97",
+      "prompt_id": 50,
+      "position": 97,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:50:99",
+      "prompt_id": 50,
+      "position": 99,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:50:120",
+      "prompt_id": 50,
+      "position": 120,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:51:90",
+      "prompt_id": 51,
+      "position": 90,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:51:107",
+      "prompt_id": 51,
+      "position": 107,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:53:83",
+      "prompt_id": 53,
+      "position": 83,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:59:29",
+      "prompt_id": 59,
+      "position": 29,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:60:38",
+      "prompt_id": 60,
+      "position": 38,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:60:60",
+      "prompt_id": 60,
+      "position": 60,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:60:102",
+      "prompt_id": 60,
+      "position": 102,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:60:115",
+      "prompt_id": 60,
+      "position": 115,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:62:18",
+      "prompt_id": 62,
+      "position": 18,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:62:83",
+      "prompt_id": 62,
+      "position": 83,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:63:88",
+      "prompt_id": 63,
+      "position": 88,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:63:91",
+      "prompt_id": 63,
+      "position": 91,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:64:83",
+      "prompt_id": 64,
+      "position": 83,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:64:121",
+      "prompt_id": 64,
+      "position": 121,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:65:58",
+      "prompt_id": 65,
+      "position": 58,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:69:5",
+      "prompt_id": 69,
+      "position": 5,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:69:96",
+      "prompt_id": 69,
+      "position": 96,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:70:54",
+      "prompt_id": 70,
+      "position": 54,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:70:122",
+      "prompt_id": 70,
+      "position": 122,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:74:13",
+      "prompt_id": 74,
+      "position": 13,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:74:85",
+      "prompt_id": 74,
+      "position": 85,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:76:49",
+      "prompt_id": 76,
+      "position": 49,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:77:94",
+      "prompt_id": 77,
+      "position": 94,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:80:84",
+      "prompt_id": 80,
+      "position": 84,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:80:112",
+      "prompt_id": 80,
+      "position": 112,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:82:76",
+      "prompt_id": 82,
+      "position": 76,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:83:48",
+      "prompt_id": 83,
+      "position": 48,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:84:72",
+      "prompt_id": 84,
+      "position": 72,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:85:10",
+      "prompt_id": 85,
+      "position": 10,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:86:9",
+      "prompt_id": 86,
+      "position": 9,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:87:77",
+      "prompt_id": 87,
+      "position": 77,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:88:93",
+      "prompt_id": 88,
+      "position": 93,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:89:72",
+      "prompt_id": 89,
+      "position": 72,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:89:73",
+      "prompt_id": 89,
+      "position": 73,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:90:121",
+      "prompt_id": 90,
+      "position": 121,
+      "label": "residual_under_matched_protocol"
+    },
+    {
+      "event_id": "capture_1:95:120",
+      "prompt_id": 95,
+      "position": 120,
+      "label": "residual_under_matched_protocol"
+    }
+  ],
+  "captured_controls": 64,
+  "matrix_cells_per_event": 30,
+  "m1_status": "full-pool output/RNG/support equivalence checked; kernel dispatch checked only in smoke subset",
+  "m2_status": "frozen-logit discovery matrix complete",
+  "m3_gate": "not passed: extend dispatch validation to event shapes before mechanism attribution",
+  "interpretation": "Residual is not a hardware fault or a causal witness. Historical nonmatches remain non-reproduced."
+}
