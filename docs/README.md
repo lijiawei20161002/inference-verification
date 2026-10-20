@@ -15,6 +15,7 @@ The signed-artifact protocol is a separate, optional experiment.
 | Check tokens or probe a live endpoint | [Reference setup](VERIFICATION_SERVICE.md#configure-a-reference-model-for-token-and-live-checks) | CUDA reference, model checkpoint, allowed provider URL; calibration for a verdict |
 | Add an attack or verifier | [Extending IVGym](EXTENDING.md) | NumPy to inspect strategies; CUDA to run the research sweep |
 | Reproduce research | [Experiment map](../experiments/README.md) | Saved artifacts for inspection; CUDA for fresh model measurements |
+| Prepare the next BF16 diagnosis experiment | [Numerical tools](../experiments/numerical/README.md) · [English next-step plan](../planning/NEXT_EXPERIMENTS.md) | NumPy for archive diagnostics; planned capture runs need a dedicated L40S |
 | Run experiments on multiple GPU hosts | [Multi-machine experiment guide](MULTI_MACHINE_EXPERIMENTS.md) | Token and timing baselines, isolated jobs, hardware controls, and result collection |
 | Verify signed artifacts | [Audit implementation](AUDIT_IMPLEMENTATION.md) | Audit extras for offline checks; CUDA for score replay |
 
@@ -24,6 +25,7 @@ The signed-artifact protocol is a separate, optional experiment.
 |---|---|
 | Results, methodology, costs, and limitations | [Research guide](RESEARCH_GUIDE.md) · [paper](../paper/paper.pdf) · [poster](../paper/mats_poster.pdf) |
 | Attacker/verifier game and evaluation pipeline | [Game specification](GAME.md) |
+| Design numerical causal diagnosis experiments | [English experiment plan](NUMERICAL_CAUSAL_DIAGNOSIS_EXPERIMENTS.md) — BF16 mechanisms, controlled interventions, reproducible witnesses, baselines, and decision gates; proposed, not measured |
 | What timing can detect | [Clock measurements](CLOCK_MEASURED.md) · [clock algorithms](CLOCK_ALGORITHMS.md) |
 | Design hardware-based performance probes | [Performance probe experiments](PERFORMANCE_PROBE_EXPERIMENTS.md) (中文) — proposed mechanisms, controls, hardware, and falsification criteria |
 | Continue performance probes through a production serving engine | [vLLM serving experiment](VLLM_SERVING_EXPERIMENT.md) — pinned configuration, cache controls, and measurement contract |
@@ -48,5 +50,7 @@ The signed-artifact protocol is a separate, optional experiment.
 - [Raw results](results/) and [figures](figures/)
 
 The [roadmap](../ROADMAP.md) identifies contribution opportunities. The
-[research plan](../planning/NEXT_EXPERIMENTS.md) gives the hypotheses and controls
-needed for the next measurements.
+[current implementation plan](../planning/NEXT_EXPERIMENTS.md) specifies the
+next coding tasks, machine, execution order, and acceptance gates. The
+[historical verification agenda](../planning/LEGACY_VERIFICATION_EXPERIMENTS.md)
+retains earlier hypotheses and dated progress.

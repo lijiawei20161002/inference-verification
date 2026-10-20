@@ -1,8 +1,9 @@
 """Seed-synchronized Gumbel-Max sampling (Algorithm 1 in DiFR).
 
-The whole point of Token-DiFR is that provider and verifier draw the *same*
-Gumbel noise from a shared per-position seed, so any disagreement in the
-sampled token comes purely from differences in the logits.
+Token-DiFR assumes provider and verifier use the same Gumbel tensor and sampling
+arithmetic. A shared seed alone does not guarantee this across RNGs, dtypes, or
+filter conventions. The functions below preserve the legacy NumPy protocol;
+changing its conventions requires a new experiment version and calibration.
 """
 from __future__ import annotations
 
@@ -40,6 +41,7 @@ def gumbel_noise(vocab: int, seed: int) -> np.ndarray:
 
 
 def apply_top_k(logits: np.ndarray, k: int | None) -> np.ndarray:
+    """Retain all logits at or above the kth value, including boundary ties."""
     if not k or k >= logits.size:
         return logits
     out = logits.copy()
@@ -49,15 +51,16 @@ def apply_top_k(logits: np.ndarray, k: int | None) -> np.ndarray:
 
 
 def apply_top_p(logits: np.ndarray, p: float | None) -> np.ndarray:
+    """Apply the legacy nucleus boundary while preserving the input dtype.
+
+    Retain cumulative mass <= p and always the first token. The token crossing p
+    is otherwise excluded. Keep this convention for archived-run reproducibility.
+    """
     if p is None or p >= 1.0:
         return logits
-    # Sort only the CANDIDATES. When top-k ran first, at most k entries are finite
-    # and the rest are NEG_INF; they contribute exactly 0 to the softmax and can
-    # never be kept, so restricting the sort to the finite entries is output-
-    # identical while turning an O(V log V) argsort over the whole vocabulary into
-    # one over k. (With top_k=None every entry is a candidate and this is the
-    # original code path.) `filtered_logits` is the hot loop of every Tier-1
-    # verifier, so this is the difference between a 6ms and a 1ms score_token.
+    # Sort only candidates retained by top-k, including any boundary ties.
+    # Other entries are the NEG_INF sentinel and cannot be retained. With no
+    # top-k restriction, this is the original full-vocabulary sort.
     cand = np.nonzero(logits > NEG_INF / 2)[0]
     if cand.size == 0:
         return logits
@@ -65,7 +68,7 @@ def apply_top_p(logits: np.ndarray, p: float | None) -> np.ndarray:
     order = np.argsort(sub)[::-1]
     probs = _softmax(sub[order])
     cum = np.cumsum(probs)
-    # Keep tokens up to and including the one that crosses p.
+    # Legacy convention: exclude the crossing token, except always keep the first.
     keep_sorted = cum <= p
     keep_sorted[0] = True  # always keep the top token
     out = np.full_like(logits, NEG_INF)

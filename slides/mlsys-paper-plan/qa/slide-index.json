@@ -1,0 +1,94 @@
+[
+  {
+    "page": 1,
+    "section": "RESEARCH UPDATE / MLSYS",
+    "title": "实验已走到 serving 机制层。\n论文应回答：推理验证何时可信？",
+    "status": "进展 + 写作建议",
+    "sources": [
+      "real_quantization_l40s_20261018",
+      "vllm_serving_l40s_20261019",
+      "scheduling_l40s_20261019"
+    ],
+    "notes": "开场：截至10月20日本地提交57ceb5e，最新归档测量为10月19日。已有真实权重量化、生产 serving 引擎及调度追踪证据，足以开始围绕系统问题写作。这里的成熟度评价是写作建议，不是投稿录用判断。1,200是两轮同机同输入loopback请求，26是另一个诊断campaign，不能合并为独立部署样本。尚无经独立校准和测试验证的联合token/clock检测器。"
+  },
+  {
+    "page": 2,
+    "section": "01 / EXPERIMENT STATUS",
+    "title": "最新进展：六条证据链已归档，联合验证仍待完成",
+    "status": "已测量",
+    "sources": [
+      "docs/README.md",
+      "experiments/README.md",
+      "docs/results/*_20261016..19.md"
+    ],
+    "notes": "H100八项基线和A100四项基线独立运行；跨GPU配对比较直到10月18日才真正完成。真实量化的0/64 BF16误报不是部署保证。vLLM两轮复用了同样的prompt和配置顺序。调度主格只有两个重叠文本offset，辅助格一个。以上不能拼成同请求的token+clock评估。8月paper.tex与README部分叙述落后于归档，本deck优先使用最新实验报告。"
+  },
+  {
+    "page": 3,
+    "section": "02 / REAL-WEIGHT QUANTIZATION",
+    "title": "真实 NF4 已有检测信号；INT8 仍是难点",
+    "status": "已测量",
+    "sources": [
+      "real_quantization_l40s_20261018/pilot/summary.json",
+      "report: real_quantization_l40s_20261018.md"
+    ],
+    "notes": "图中所有比例和Wilson95%区间直接读取归档summary。阈值为32个诚实校准序列均值的最大值，严格大于阈值才拒绝。32/64等分母是序列，不是tokens。区间仅描述实现阈值下的测试计数，不包括重新校准的波动；不是三个测试联合的5%误报控制。token-DiFR需要原始共享RNG协议；token-TOPLOC是仓库内的rank-based评分，不能等同原始TOPLOC承诺协议。activation-DiFR需要内部激活。新实验不能直接声称推翻此前另一个模型/预算/协议下的NF4 0/10。"
+  },
+  {
+    "page": 4,
+    "section": "03 / PRODUCTION SERVING",
+    "title": "计时信号能穿过 vLLM，但依赖执行模式与流位置",
+    "status": "已测量",
+    "sources": [
+      "vllm_serving_l40s_20261019/summary.json",
+      "vllm_serving_l40s_20261019.md"
+    ],
+    "notes": "左图：16K请求对截为末尾2K的post-first时间比，先在六个配对文本block内取比再汇总。optimized包括compile及CUDA Graphs；eager同时关闭二者。C为客户端并发，不是内部batch size。右图：8K、C4的合法缓存cold/hit比，早期32个间隔，后期95个间隔。窗口是在pilot之后探索选择，复测沿用；不是预先独立验证的稳态窗口。误差线为六个block的min-max，不是CI。这是机制结果，没有拟合检测阈值，也没有部署FPR或TPR。"
+  },
+  {
+    "page": 5,
+    "section": "04 / HONEST VARIABILITY",
+    "title": "合法系统变化会移动两类观测量",
+    "status": "已测量",
+    "sources": [
+      "cross_gpu_replay_20261018/summary.json",
+      "scheduling_l40s_20261019/summary.json"
+    ],
+    "notes": "左：同一H100-origin capture在A100回放，80序列×256tokens；GPU和driver同时变化。token-DiFR跨GPU每个schedule分别计算d-prime，误差线为90%paired sequence bootstrap，400 draws。这些效应不能与另一量化实验的d-prime直接相减。右：Nsight cache-cold、8K输入、C4，两个offset组的中位数；2K改8K预算后混合迭代13变4，早期间隔下降，晚期间隔近似不变。无profiler对照方向一致（16.88至13.68 ms），但每格只有一组。预算同时改变编译范围和执行shape，不是scheduler-only因果微基准；客户端时钟与trace时钟未对齐。该证据支持调度贡献，不能确定每个请求的kernel延迟。"
+  },
+  {
+    "page": 6,
+    "section": "05 / PAPER THESIS",
+    "title": "已有测量框架；核心技术贡献尚未建立。",
+    "status": "写作建议 / 设计待验证",
+    "sources": [
+      "docs/VERIFICATION_SERVICE.md",
+      "planning/NEXT_EXPERIMENTS.md",
+      "MLSys 2027 CFP"
+    ],
+    "notes": "这是论文组织与后续设计建议，不声称新联合系统已完成。现有API已有各自的token/clock检查，没有匹配校准时返回inconclusive。拟新增的serving-condition envelope、冻结的晚期窗口和joint calibration必须独立实验。合法条件集合应由可信基准实验定义，不能只信被审计provider的元数据自报。黑盒token/arrival通道、共享RNG协作通道和内部activation通道必须分别比较。相关工作应分别讨论重算检验、activation/proof方案和timing fingerprinting；仓库token_toploc只是rank scorer，不能代表原TOPLOC协议。本文的新颖性需要通过文献对照与消融证明。2026-10-20技术复审：DiFR已覆盖混合校准与vLLM集成，LLM-42和Bit-Exact进一步覆盖确定性与精确回放；本页只是实验框架，不能当作已有独立创新。详见planning/BF16_TECHNICAL_NOVELTY.md及技术补充deck。"
+  },
+  {
+    "page": 7,
+    "section": "06 / MANUSCRIPT STRUCTURE",
+    "title": "10 页正文：每一节只承担一个可验证的论点",
+    "status": "写作建议",
+    "sources": [
+      "paper/paper.tex (August draft)",
+      "mlsys.org/Conferences/2027/CallForResearchPapers"
+    ],
+    "notes": "官网CFP于2026-10-20查询：10页双栏正文，不含参考文献；附录单独提交；必须有参考文献后的AI Usage Disclosure。页数分配为建议，总计10页。现稿是August 2026单H100实验汇总，不能直接作为新论文摘要。必须修改的旧叙述包括：所有攻击都可检出、普遍零成本、co-tenancy普遍单边安全以及泛化的模型身份证明。应使用最新NF4/INT8真实权重结果；历史模拟扰动和小池偏差作为方法学控制；实验室profiler仅作为解释oracle，不是黑盒验证器的输入。旧稿16x成本节省若保留需重测端到端路径，不把局部prefix scheduling速度当本设计已有收益。"
+  },
+  {
+    "page": 8,
+    "section": "07 / NEXT DECISIVE EXPERIMENTS",
+    "title": "先补最能改变论文结论的实验",
+    "status": "待运行 / 优先级建议",
+    "sources": [
+      "ROADMAP.md",
+      "planning/NEXT_EXPERIMENTS.md",
+      "MLSys 2027 research CFP"
+    ],
+    "notes": "P0是第一优先级：探索数据不能既选窗口又报告独立测试精度，需冻结统计量、独立corpus/session和threshold。5%是建议operating point，并非宣称已达成；验收采用各合法条件的误报95%上界。样本数需根据区间精度和session相关性设计，不将token或并发请求当独立单位。P1同一请求同时采tokens与client time，在匹配可见性假设下比较单通道与joint方案；128/512/2048为新建议预算，不是已测量的效果。需计入探测请求、参考GPU秒、p50/p95 latency和校准成本。P2先一个额外GPU及独立corpus，再扩第二模型/较大模型。P3测试延迟填充、probe识别等适应性provider。若P0或P1失败，应收窄为实证边界/设计原则论文并诚实报告失败；不能补写部署可靠性。CFP写Oct30 20:00UTC即北京时间Oct31 04:00。主页显示PDT noon换算会差一小时，本deck明确使用CFP的UTC文本，实际提交前需再次核对OpenReview。AI协助范围包括本次归档检查、写作框架、图表脚本与slides。"
+  }
+]

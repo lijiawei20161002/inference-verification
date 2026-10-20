@@ -1,0 +1,37 @@
+{
+  "quantization": {
+    "path": "docs/results/real_quantization_l40s_20261018/pilot/summary.json",
+    "sha256": "4fc218c8170530d9e04888941960611dba6fa5db58782457a7db45cd2c1b426a"
+  },
+  "serving": {
+    "path": "docs/results/vllm_serving_l40s_20261019/summary.json",
+    "sha256": "07b5c1b6641bf93a03a91e467de91bcd3ead5478249340f4b78c8ca765a97623"
+  },
+  "cross_gpu": {
+    "path": "docs/results/cross_gpu_replay_20261018/summary.json",
+    "sha256": "0c0a5f0635699ca4295d18d9b5ff320b51e1dbb469b56f288e82aa283d8c8877"
+  },
+  "scheduling": {
+    "path": "docs/results/scheduling_l40s_20261019/summary.json",
+    "sha256": "b7137e449ca7f6e3d46d728d6694021b8c8bb17e9f2a18aeaa5f4baefe6a3d07"
+  },
+  "derived_scheduler_cold_medians": {
+    "2048": {
+      "mixed": 13.0,
+      "early": 16.9342985625,
+      "late": 11.017582618421054
+    },
+    "8192": {
+      "mixed": 4.0,
+      "early": 13.704361179687501,
+      "late": 11.100312455263156
+    }
+  },
+  "conference": {
+    "url": "https://mlsys.org/Conferences/2027/CallForResearchPapers",
+    "checked": "2026-10-20",
+    "body_page_limit": 10,
+    "deadline_utc_per_cfp": "2026-10-30T20:00:00Z",
+    "note": "Conference homepage displays noon PDT, one hour earlier than CFP's UTC deadline; recheck submission portal."
+  }
+}

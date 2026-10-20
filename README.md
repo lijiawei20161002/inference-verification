@@ -124,6 +124,7 @@ rates remain open. See the [full limitations](docs/RESEARCH_GUIDE.md#limitations
 | Add an attack or detector | [Extension guide](docs/EXTENDING.md) |
 | Reproduce a result | [Experiment map](experiments/README.md) and [claim-to-artifact index](docs/RESEARCH_GUIDE.md#which-experiment-backs-which-claim) |
 | Read the research | [Paper](paper/paper.pdf), [one-page poster](paper/mats_poster.pdf), [detailed guide](docs/RESEARCH_GUIDE.md) |
+| Continue the numerical diagnosis study | [English next-step plan](planning/NEXT_EXPERIMENTS.md), [CPU diagnostic tools](experiments/numerical/README.md) |
 | Help with an open problem | [Roadmap](ROADMAP.md) and [contributing guide](CONTRIBUTING.md) |
 
 ```text

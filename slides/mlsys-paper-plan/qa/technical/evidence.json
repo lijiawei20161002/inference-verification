@@ -1,0 +1,41 @@
+{
+  "quantization": {
+    "path": "docs/results/real_quantization_l40s_20261018/pilot/summary.json",
+    "sha256": "4fc218c8170530d9e04888941960611dba6fa5db58782457a7db45cd2c1b426a"
+  },
+  "serving": {
+    "path": "docs/results/vllm_serving_l40s_20261019/summary.json",
+    "sha256": "07b5c1b6641bf93a03a91e467de91bcd3ead5478249340f4b78c8ca765a97623"
+  },
+  "cross_gpu": {
+    "path": "docs/results/cross_gpu_replay_20261018/summary.json",
+    "sha256": "0c0a5f0635699ca4295d18d9b5ff320b51e1dbb469b56f288e82aa283d8c8877"
+  },
+  "scheduling": {
+    "path": "docs/results/scheduling_l40s_20261019/summary.json",
+    "sha256": "b7137e449ca7f6e3d46d728d6694021b8c8bb17e9f2a18aeaa5f4baefe6a3d07"
+  },
+  "score_tails": {
+    "path": "slides/mlsys-paper-plan/qa/technical/score-tail-diagnostic.json",
+    "sha256": "33b603803f9760feb02c1d8828e5a58b3b70674a0ca727aeb55ee60632593edc"
+  },
+  "literature": {
+    "checked": "2026-10-20",
+    "sources": {
+      "DiFR": "https://arxiv.org/abs/2511.20621",
+      "RUT": "https://arxiv.org/abs/2506.06975",
+      "TOPLOC": "https://arxiv.org/abs/2501.16007",
+      "Batch invariance": "https://thinkingmachines.ai/blog/defeating-nondeterminism-in-llm-inference/",
+      "LLM-42": "https://arxiv.org/abs/2601.17768",
+      "Hawkeye": "https://proceedings.mlsys.org/paper_files/paper/2026/hash/e217c271a57c365a246b0ad39e668ba8-Abstract-Conference.html",
+      "Bit-Exact": "https://arxiv.org/abs/2606.00279",
+      "Taming Bitwise": "https://arxiv.org/abs/2609.11356",
+      "Tensor Core Models": "https://arxiv.org/abs/2512.07004",
+      "INT8 Conformance": "https://arxiv.org/abs/2609.00363",
+      "FlashInfer": "https://docs.flashinfer.ai/api/attention.html",
+      "vLLM": "https://docs.vllm.ai/en/latest/features/batch_invariance/",
+      "Sarathi-Serve": "https://www.usenix.org/conference/osdi24/presentation/agrawal",
+      "FlashAttention-4": "https://arxiv.org/abs/2603.05451"
+    }
+  }
+}

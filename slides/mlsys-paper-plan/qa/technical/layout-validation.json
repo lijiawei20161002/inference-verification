@@ -1,0 +1,6 @@
+{
+  "slides": 10,
+  "overflow_issues": [],
+  "renderer": "editable PPTX + ReportLab PDF, shared geometry",
+  "pptx_rendering_limit": "PowerPoint/Keynote native rendering not checked"
+}

@@ -1,0 +1,112 @@
+[
+  {
+    "page": 1,
+    "section": "TECHNICAL POSITION",
+    "title": "BF16 还未解决。\n核心创新需要重新收敛。",
+    "status": "研究判断 / 尚无新算法结果",
+    "sources": [
+      "local archives + primary literature through 2026-10-20"
+    ],
+    "notes": "这是对上一版创新性判断的修正。现有工作没有完成新验证算法；本 deck 提出可证伪方向。必须区分重复性、跨执行合法性、检测能力和证明物理精度。\n\nDiFR: https://arxiv.org/abs/2511.20621\nLLM-42: https://arxiv.org/abs/2601.17768\nBit-Exact: https://arxiv.org/abs/2606.00279"
+  },
+  {
+    "page": 2,
+    "section": "NEW OFFLINE DIAGNOSTIC",
+    "title": "49 个封顶位置，贡献了\n诚实 BF16 总分的 98.4%。",
+    "status": "新离线分析 / 归因待验证",
+    "sources": [
+      "real_quantization_l40s_20261018/pilot/scores.npz",
+      "qa/technical/score-tail-diagnostic.json"
+    ],
+    "notes": "每组8192个token。封顶值30也可能来自有限大margin，尚不能从分数证明候选集不一致。所有这些位置同时触发本地rank cap50。图为总分质量占比，不是FPR或TPR；BF16含封顶序列32/64也不是误报32/64。不能直接删除封顶事件宣称新检测性能。"
+  },
+  {
+    "page": 3,
+    "section": "MECHANISM",
+    "title": "先把协议差异与硬件误差分开。",
+    "status": "代码核对 + 机制假设",
+    "sources": [
+      "ivgym/sampling.py",
+      "ivgym/verifiers.py",
+      "experiments/exp_real_quantization_gpu.py"
+    ],
+    "notes": "本地provider float32/verifier float64过滤。NumPy RNG不复现vLLM随机流。top-p注释包括crossing token，代码cum<=p；[.6,.3,.1],p=.7当前只保留第一项。这些是需要对齐的控制变量，不足以认定是历史pilot封顶的主因。合成top-k例子来自分析脚本，非真实模型事件。本次不改采样器。"
+  },
+  {
+    "page": 4,
+    "section": "RELATED WORK / VERIFICATION",
+    "title": "对比必须包括最接近的方法，\n并匹配可获得的信息。",
+    "status": "文献对比 / 必做基线",
+    "sources": [
+      "DiFR (2025)",
+      "TOPLOC (2025)",
+      "RUT (2025 / ICLR 2026)"
+    ],
+    "notes": "DiFR已包含合法配置混合校准、likelihood与Gaussian Monte Carlo变体。RUT需要本地参考样本，应计入成本。TOPLOC/Activation-DiFR需要provider提供激活信息。不同信息条件单列结果，不混淆为一个公平排行榜。\n\nDiFR: https://arxiv.org/abs/2511.20621\nTOPLOC: https://arxiv.org/abs/2501.16007\nRUT: https://arxiv.org/abs/2506.06975"
+  },
+  {
+    "page": 5,
+    "section": "RELATED WORK / HARDWARE",
+    "title": "2026 年工作已深入到\n归约树、指令语义与精确回放。",
+    "status": "最新技术定位",
+    "sources": [
+      "primary papers; June / September works below are preprints"
+    ],
+    "notes": "这些工作提供不同层级的数值控制。LLM-42的确定性服务与外部恶意provider审计不同。Hawkeye针对Tensor Core矩阵运算；Bit-Exact在测试配置上精确回放模型块，不代表所有模型和未知引擎。Taming已涉及kernel等价类，不能把等价类概念当作新贡献。\n\nLLM-42: https://arxiv.org/abs/2601.17768\nHawkeye: https://proceedings.mlsys.org/paper_files/paper/2026/hash/e217c271a57c365a246b0ad39e668ba8-Abstract-Conference.html\nBit-Exact: https://arxiv.org/abs/2606.00279\nTaming Bitwise: https://arxiv.org/abs/2609.11356\nTensor Core Models: https://arxiv.org/abs/2512.07004"
+  },
+  {
+    "page": 6,
+    "section": "PROPOSED ALGORITHM",
+    "title": "从一个参考分数，走向\n“合法数值变化能否产生这个 token？”",
+    "status": "算法设计 / 待验证",
+    "sources": [
+      "proposal",
+      "planning/BF16_TECHNICAL_NOVELTY.md"
+    ],
+    "notes": "固定prefix、共享随机数与一个合法类别；无过滤或已证明支持集固定时，z_j=l_j+T*g_j。有效区间[L_j,U_j]下，若始终可用的竞争token满足L_j>U_y则claimed y不可能胜出。top-k/p支持集变化必须联合考虑；区间重叠并不证明可达。经验包络只能提供经验校准，不等于形式化certificate。未知执行类别须全部覆盖。"
+  },
+  {
+    "page": 7,
+    "section": "PROPOSED SYSTEM",
+    "title": "用硬件机制缩小不确定性，\n把复算花在能消除歧义的位置。",
+    "status": "系统设计 / 成本待测",
+    "sources": [
+      "proposal",
+      "Hawkeye / LLM-42 / Bit-Exact / Taming Bitwise"
+    ],
+    "notes": "合法执行目录必须独立定义；provider自报元信息不是可信证据。同类别p值有效且真实类别被覆盖时max_c p_c对有限并集保守，构造本身不是创新。动态执行须按合法轨迹建模，不能逐token任意选择最有利类别。选择性回放可能仍需整段prefix/KV重建，所有成本必须计入。\n\nHawkeye: https://proceedings.mlsys.org/paper_files/paper/2026/hash/e217c271a57c365a246b0ad39e668ba8-Abstract-Conference.html\nLLM-42: https://arxiv.org/abs/2601.17768\nBit-Exact: https://arxiv.org/abs/2606.00279\nTaming Bitwise: https://arxiv.org/abs/2609.11356"
+  },
+  {
+    "page": 8,
+    "section": "SYSTEMS CONTROLS",
+    "title": "把系统知识变成干预实验；\nclock 暂作辅助证据。",
+    "status": "机制对照 / 待补因果证据",
+    "sources": [
+      "vLLM / FlashInfer docs",
+      "Sarathi-Serve (2024)",
+      "FlashAttention-4 (2026)"
+    ],
+    "notes": "vLLM batch invariance的文档范围不等于跨硬件保证。FlashInfer固定split需要对应backend。FA4面向Blackwell，不能将吞吐结论搬到L40S。现有调度干预同时可能改变编译shape；没有DRAM/L2/occupancy计数器。API并发不等于实际batch。量化本地pilot更慢，不能假设半字节数必然更快；恶意延迟填充限制clock可辨识性。\n\nvLLM: https://docs.vllm.ai/en/latest/features/batch_invariance/\nFlashInfer: https://docs.flashinfer.ai/api/attention.html\nSarathi-Serve: https://www.usenix.org/conference/osdi24/presentation/agrawal\nFlashAttention-4: https://arxiv.org/abs/2603.05451"
+  },
+  {
+    "page": 9,
+    "section": "GO / NO-GO EXPERIMENTS",
+    "title": "先做三组能决定方向的实验。",
+    "status": "下一轮实验计划",
+    "sources": [
+      "proposed experiments; no new GPU jobs run"
+    ],
+    "notes": "先协议归因，再机制干预，最后冻结方法并进行独立评价。FPR按合法条件和独立序列/session报告，多个条件应处理同时覆盖。不能用token数代替独立样本数。拒判率必须报告，避免把不确定样本全部移除得到虚假收益。检测对照包含DiFR margin/likelihood/MC、混合校准和多配置完整回放；RUT与激活方法单列信息条件。"
+  },
+  {
+    "page": 10,
+    "section": "REVISED PAPER THESIS",
+    "title": "论文围绕一个问题写：\n能否既容忍合法 BF16，又保留量化信号？",
+    "status": "论文主线 / 待证命题",
+    "sources": [
+      "planning/BF16_TECHNICAL_NOVELTY.md",
+      "technical supplement, 2026-10-20"
+    ],
+    "notes": "标题为建议，尚无完成的方法和正结果。写作结构：Problem与契约1页，机制1.5页，方法2.5页，系统1页，评估3页，局限/相关工作1页，仅为十页正文的分配建议。若关键命题失败，应收窄为经过充分验证的机制/边界研究，不补写成功结论。"
+  }
+]

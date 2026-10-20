@@ -1,0 +1,83 @@
+{
+  "date": "2026-10-20",
+  "source": "docs/results/real_quantization_l40s_20261018/pilot/scores.npz",
+  "sha256": "423776dac131938176feb9762a1cae8029c76ae2efab023be857b40bc1fe62cd",
+  "split": {
+    "calibration": 32,
+    "evaluation": 64
+  },
+  "interpretation": "Score concentration only, not a false-positive rate or proof of support mismatch. Cap=30 may represent filtered-out tokens or a finite clipped margin. Raw support masks and unfiltered logits are needed to attribute individual events.",
+  "arms": {
+    "bf16": {
+      "tokens": 8192,
+      "nonzero_scores": 144,
+      "capped_scores": 49,
+      "capped_token_fraction": 0.0059814453125,
+      "capped_score_mass_fraction": 0.9839743833242611,
+      "capped_also_rank_cap_50": 49,
+      "sequences_with_capped_score": 32,
+      "mean_score": 0.18236588514506666
+    },
+    "nf4": {
+      "tokens": 8192,
+      "nonzero_scores": 903,
+      "capped_scores": 252,
+      "capped_token_fraction": 0.03076171875,
+      "capped_score_mass_fraction": 0.9424777694795387,
+      "capped_also_rank_cap_50": 252,
+      "sequences_with_capped_score": 59,
+      "mean_score": 0.9791759470460754
+    },
+    "int8": {
+      "tokens": 8192,
+      "nonzero_scores": 345,
+      "capped_scores": 94,
+      "capped_token_fraction": 0.011474609375,
+      "capped_score_mass_fraction": 0.9648682168158059,
+      "capped_also_rank_cap_50": 94,
+      "sequences_with_capped_score": 47,
+      "mean_score": 0.356772329371603
+    }
+  },
+  "synthetic_top_k_example": {
+    "label": "Illustration, not an observed model event",
+    "provider_probabilities": [
+      0.4,
+      0.3001,
+      0.2999
+    ],
+    "reference_probabilities": [
+      0.4,
+      0.2999,
+      0.3001
+    ],
+    "shared_gumbel": [
+      0.0,
+      1.0,
+      0.0
+    ],
+    "top_k": 2,
+    "claimed_token": 1,
+    "reference_token": 0,
+    "claimed_filtered_by_reference": true,
+    "without_top_k_provider_token": 1,
+    "without_top_k_reference_token": 1
+  },
+  "top_p_conformance_example": {
+    "probabilities": [
+      0.6,
+      0.3,
+      0.1
+    ],
+    "top_p": 0.7,
+    "local_kept_indices": [
+      0
+    ],
+    "comment_says_include_crossing_token": true,
+    "including_crossing_token_would_keep": [
+      0,
+      1
+    ],
+    "interpretation": "Code/comment convention mismatch; isolate from GPU arithmetic and version new runs."
+  }
+}

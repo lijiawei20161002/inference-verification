@@ -6,6 +6,21 @@
 Run commands from the repository root. Fresh model experiments require CUDA and
 model weights. Saved artifacts can be inspected on a laptop.
 
+## Current work: numerical causal diagnosis
+
+The [English implementation plan](../planning/NEXT_EXPERIMENTS.md) orders the
+next work: paired BF16 capture and sampler conformance on one L40S, followed by
+state-consistent interventions and independently replayable witnesses. The
+[full experimental design](../docs/NUMERICAL_CAUSAL_DIAGNOSIS_EXPERIMENTS.md)
+defines the proposed scientific claims and evaluation gates.
+
+The [numerical diagnostic tools](numerical/README.md) already validate the
+real-quantization archive, export evaluation-only capped-event identities, and
+check synthetic examples of the preserved sampler conventions. GPU capture and
+causal localization are not yet implemented.
+
+## Existing campaigns and reusable runners
+
 For parallel runs on H100, A100, and L40S hosts, follow the
 [multi-machine experiment guide](../docs/MULTI_MACHINE_EXPERIMENTS.md). It includes
 an isolated launcher for existing token and timing baselines and distinguishes
@@ -178,6 +193,7 @@ For your own strategies, use [the extension guide](../docs/EXTENDING.md).
 
 | Question | Entry points | Saved evidence |
 |---|---|---|
+| Which archived numerical events need diagnosis? | `numerical/score_tails.py`, `numerical/sampler_contract.py` | [CPU preparation and limits](numerical/README.md); causal attribution remains pending |
 | Does the independent API work end to end? | `exp_verification_service_gpu.py` | [Service integration report](../docs/results/verification_service_h100.md) |
 | What can tokens reveal? | `exp_gpu.py`, `exp_robustness_gpu.py` | [Robustness report](../docs/results/robustness_report.md) |
 | When does a proxy catch model substitution? | `exp_spec_substitution_gpu.py`, `exp_detectability_vs_kl.py` | [Proxy study](../docs/SPEC_DECODING_AND_PROXY_DETECTION.md) |
