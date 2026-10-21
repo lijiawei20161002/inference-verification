@@ -1,0 +1,100 @@
+{
+  "schema": "ivgym-m1-dispatch-summary-v1",
+  "finished_utc": "2026-10-21T00:11:42.368238+00:00",
+  "parent_comparison": {
+    "exact": true,
+    "sequences": 64,
+    "scope": "same GPU/environment/production sources; diagnostic sources updated"
+  },
+  "sequences": 64,
+  "positions": 8192,
+  "selected_provider_calls": 113,
+  "reference_calls": 64,
+  "calls_per_profiled_worker": 177,
+  "profiled_workers": 4,
+  "historical_events": 49,
+  "historical_reproduced": 49,
+  "output_comparisons": [
+    {
+      "left": "baseline",
+      "right": "capture",
+      "sequences": 64,
+      "exact": true
+    },
+    {
+      "left": "baseline",
+      "right": "profile_baseline_1",
+      "sequences": 64,
+      "exact": true
+    },
+    {
+      "left": "baseline",
+      "right": "profile_capture_1",
+      "sequences": 64,
+      "exact": true
+    },
+    {
+      "left": "baseline",
+      "right": "profile_baseline_2",
+      "sequences": 64,
+      "exact": true
+    },
+    {
+      "left": "baseline",
+      "right": "profile_capture_2",
+      "sequences": 64,
+      "exact": true
+    }
+  ],
+  "capture_comparisons": [
+    {
+      "worker": "profile_capture_1",
+      "exact": true,
+      "event_and_state_artifacts": 290
+    },
+    {
+      "worker": "profile_capture_2",
+      "exact": true,
+      "event_and_state_artifacts": 290
+    }
+  ],
+  "dispatch_comparisons": [
+    {
+      "left": "profile_baseline_1",
+      "right": "profile_capture_1",
+      "exact": true,
+      "calls": 177,
+      "kernels": 336299,
+      "failed_calls": []
+    },
+    {
+      "left": "profile_baseline_1",
+      "right": "profile_baseline_2",
+      "exact": true,
+      "calls": 177,
+      "kernels": 336299,
+      "failed_calls": []
+    },
+    {
+      "left": "profile_baseline_2",
+      "right": "profile_capture_2",
+      "exact": true,
+      "calls": 177,
+      "kernels": 336299,
+      "failed_calls": []
+    },
+    {
+      "left": "profile_capture_1",
+      "right": "profile_capture_2",
+      "exact": true,
+      "calls": 177,
+      "kernels": 336299,
+      "failed_calls": []
+    }
+  ],
+  "m1_gate": "passed_for_historical_evaluation_corpus",
+  "m3_status": "not_started",
+  "elapsed_seconds": 1714.9635129420058,
+  "scope": "Kernel names/grid/block at selected complete forwards; no mechanism attribution.",
+  "discovery_only": true
+}

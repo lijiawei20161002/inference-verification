@@ -16,9 +16,10 @@ detached E0 campaign require the pinned CUDA/model environment.
 | [sampler_contract.py](sampler_contract.py) | Illustrate the preserved NumPy sampling conventions on synthetic inputs | Implemented |
 | [Archive loader](../analyze_real_quantization.py) | Check source hashes, captures, dimensions, corpus splits, and reference reruns | Existing, reused |
 | [Regression checks](../../tests/test_numerical_diagnostics.py) | Protect event identity, split boundaries, score interpretation, and legacy sampling behavior | Implemented |
-| [BF16 capture](capture_bf16.py) | Observe exact logits, actual RNG/support, masks/positions and KV states; preserve the archived runner | Implemented; full event-shape dispatch gate pending |
+| [BF16 capture](capture_bf16.py) | Observe exact logits, actual RNG/support, masks/positions and KV states; preserve the archived runner | M1 passed on the historical evaluation corpus and selected forwards |
 | [Frozen-logit replay](frozen_logits.py) | CPU dtype/nucleus/sampling matrix on captured evidence | Implemented; production sampling unchanged |
 | [Detached campaign](run_e0_campaign.py) | Frozen source, independent processes, equivalence gates and persistent status/logs | Implemented |
+| [Event-shape dispatch follow-up](run_dispatch_campaign.py) | Complete selected-forward traces, independent repeats and unprofiled controls | Validated on L40S; [reviewed report](../../docs/results/numerical_m1_dispatch_l40s_20261021.md) |
 | Interventions, localizer, witness checker | Explain residual numerical events with validated witnesses | Planned |
 
 Imports perform no archive I/O. The slides script
@@ -129,9 +130,9 @@ does not change library sampling or recalibrate any detector.
 
 On success, `summary.json`, `replay.jsonl` and `report.md` summarize the discovery
 results. The CUDA kernel-name/grid/block control covers only the short smoke
-sequence; full event-shape dispatch validation remains required before declaring
-M1 fully complete or beginning M3 mechanism attribution. A matched-protocol
-residual is not a hardware fault or a causal witness.
+sequence. The separate [21 October dispatch follow-up](../../docs/results/numerical_m1_dispatch_l40s_20261021.md)
+passed the event-shape gate for this historical corpus and selected forwards.
+A matched-protocol residual is not a hardware fault or a causal witness.
 
 Actual RNG/support arrays are retained for selected events and controls; full
 output hashes cover all 8,192 evaluation positions. The committed report and
@@ -144,6 +145,52 @@ checks:
 ```sh
 python3 -m pytest tests/test_frozen_logits.py tests/test_numerical_diagnostics.py \
   tests/test_real_quantization.py tests/test_e0_campaign.py -q
+```
+
+## Detached M1 dispatch follow-up
+
+This campaign regenerates all 64 complete 128-token trajectories in six
+fresh processes: unprofiled baseline/capture, followed by two profiled
+baseline/capture pairs. It traces each selected provider forward and each full
+reference forward, with a fresh profiler per call. The prefix and KV state are
+reconstructed naturally before a selected call; the sequence is not shortened
+to the event position.
+
+```sh
+.venv/bin/python -m experiments.numerical.run_dispatch_campaign \
+  --detach --parent-e0 runs/numerical-e0-20261020 \
+  --output runs/numerical-m1-dispatch-new \
+  --hf-home /workspace/.cache/huggingface
+```
+
+Use `--limit 1` with a separate output directory for preflight. A subset cannot
+pass the full M1 gate. Full-pool output equality, the recorded parent E0
+environment and production source hashes, complete trace coverage and input
+shapes, kernel names/grid/block, and captured event/KV artifact equality are
+checked. Missing traces, output drift, state drift or dispatch differences stop
+the campaign. Raw traces and failures are retained for diagnosis.
+
+`status.json`, `supervisor.pid`, `supervisor.log` and per-worker logs persist
+independently of SSH/chat. The host/container must stay running. A successful
+full run writes `summary.json`, `report.md`, per-call dispatch signatures and
+artifact hashes. Its gate is scoped to the historical evaluation corpus and
+selected complete forwards on this HF path; it is not a causal witness or a
+guarantee about all kernels, contexts or backends. M3 is not automatically run.
+
+The [reviewed 21 October run](../../docs/results/numerical_m1_dispatch_l40s_20261021.md)
+completed in 1,714.96 seconds. All 49 historical events reproduced; each of the
+four profiled workers covered 113 provider forwards and 64 reference forwards
+(177 traces, 336,299 kernel launches). Both baseline/capture pairs and their
+independent repeats matched. Full trajectories matched the unprofiled controls
+and parent E0; each profiled capture matched all 290 event/state artifacts from
+the unprofiled capture. This passes M1 for the tested scope; M3 has not started.
+
+Run the focused CPU checks, including dispatch coverage and state-drift checks:
+
+```sh
+python3 -m pytest tests/test_dispatch_validation.py tests/test_e0_campaign.py \
+  tests/test_frozen_logits.py tests/test_numerical_diagnostics.py \
+  tests/test_real_quantization.py -q
 ```
 
 ## Cleanup validation — 20 October 2026

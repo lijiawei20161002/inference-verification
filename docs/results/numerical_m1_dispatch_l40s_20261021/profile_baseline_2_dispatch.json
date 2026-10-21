@@ -1,0 +1,4073 @@
+[
+  {
+    "prompt_id": 32,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          26
+        ],
+        "stride": [
+          26,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "a1edd095bdc61e5159098ee1997b6d9b9049a5fe9bd70cc12080bd0b33aa55c9",
+    "trace": "prompt_32/dispatch_provider_0.json",
+    "trace_sha256": "9cf31302b0828feab3c103c30d4099eec5b9cfb64057b24e001c7595bb3e1b2d"
+  },
+  {
+    "prompt_id": 32,
+    "role": "provider",
+    "step": 112,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "87d60d945c86b153e5477a7ee7766f95fb890020ba1297e029a888edb70af0d7",
+    "trace": "prompt_32/dispatch_provider_112.json",
+    "trace_sha256": "4f1557108f1d148e1b11c8d9a8dea4a14b7ed4eebf86f35f125c7fd7823be421"
+  },
+  {
+    "prompt_id": 32,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          154
+        ],
+        "stride": [
+          154,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "f10bb779d56b86fcf8edcc9e5b82fe0ff55f7521fe1533811b5c3750cfb0d280",
+    "trace": "prompt_32/dispatch_reference_0.json",
+    "trace_sha256": "01b3bad5c5acc89f9d3880164fcae12335a67bac715e91a6d1d2bdfedf10adfd"
+  },
+  {
+    "prompt_id": 33,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          25
+        ],
+        "stride": [
+          25,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "d82a239bd07a9aff79370f716340db29d50b1cf5219fb07459733b120ea3d9d4",
+    "trace": "prompt_33/dispatch_provider_0.json",
+    "trace_sha256": "ceb257334311fe18005f30792d91c76cd2612d501dbffce94b948e0cd4958afd"
+  },
+  {
+    "prompt_id": 33,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          153
+        ],
+        "stride": [
+          153,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "0db72012e312ab64c686af271948fe1f6b3a60879797b815d06021a3cc8a2afe",
+    "trace": "prompt_33/dispatch_reference_0.json",
+    "trace_sha256": "fda29e26e9c190682b7b849f77df8e6d56b3356d929cae3a59f3e76762953048"
+  },
+  {
+    "prompt_id": 34,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          23
+        ],
+        "stride": [
+          23,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "fb120a53722f2bf7596755406b8072f96895060810bb2532ca8948e9c129c23a",
+    "trace": "prompt_34/dispatch_provider_0.json",
+    "trace_sha256": "71e35b4835598d2184c1413bb972e4736371699dcbbc555dd76b57b6d5786358"
+  },
+  {
+    "prompt_id": 34,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          151
+        ],
+        "stride": [
+          151,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "9abb5748f445275d6437f5efbe91d5275f22792a56aca401104c083c61592224",
+    "trace": "prompt_34/dispatch_reference_0.json",
+    "trace_sha256": "987fadb254a912c1d0cc5760a68e822f4f363e1b4600ac632406fe9679dc644f"
+  },
+  {
+    "prompt_id": 35,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          32
+        ],
+        "stride": [
+          32,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "ab4d7630366331c24747cc261a1a130b0891b7d67656a22e1f1cbf73aa04a726",
+    "trace": "prompt_35/dispatch_provider_0.json",
+    "trace_sha256": "0c354d3153ad03a6f7fbc2fdc8055dbb5c6bf56348f110bbe7359d8afccc71ac"
+  },
+  {
+    "prompt_id": 35,
+    "role": "provider",
+    "step": 83,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "0f7cce8c40977a60d10a1cade5730f350c2d9edf703746e3604e2b5aaf9a11f8",
+    "trace": "prompt_35/dispatch_provider_83.json",
+    "trace_sha256": "8397c7fcbfe1b9a0134f651a770568e7a2e1a60758fa8541e005a3719ab64c18"
+  },
+  {
+    "prompt_id": 35,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          160
+        ],
+        "stride": [
+          160,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "2a407d10995441c7565fe51bd7930373805b372d13380bdbcf3f4203e2c62c1a",
+    "trace": "prompt_35/dispatch_reference_0.json",
+    "trace_sha256": "ea09328a3ab4c81120911505855a1267dfcd0cc54d48d0d02178bc3b6ed9927d"
+  },
+  {
+    "prompt_id": 36,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          25
+        ],
+        "stride": [
+          25,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "d82a239bd07a9aff79370f716340db29d50b1cf5219fb07459733b120ea3d9d4",
+    "trace": "prompt_36/dispatch_provider_0.json",
+    "trace_sha256": "bcdde1a1189761d2ca45958fc77078970402b6a36b7b868066802b219cd2e88b"
+  },
+  {
+    "prompt_id": 36,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          153
+        ],
+        "stride": [
+          153,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "0db72012e312ab64c686af271948fe1f6b3a60879797b815d06021a3cc8a2afe",
+    "trace": "prompt_36/dispatch_reference_0.json",
+    "trace_sha256": "3039e1680176ccbe3b7fed78da6bfe9f7044514abb7039f7f8dac4e9d4ed93f2"
+  },
+  {
+    "prompt_id": 37,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          23
+        ],
+        "stride": [
+          23,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "fb120a53722f2bf7596755406b8072f96895060810bb2532ca8948e9c129c23a",
+    "trace": "prompt_37/dispatch_provider_0.json",
+    "trace_sha256": "3c7d98805396b77c9c40afec129de1cbef475c06b979937545c2bc8eb2a842a6"
+  },
+  {
+    "prompt_id": 37,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          151
+        ],
+        "stride": [
+          151,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "9abb5748f445275d6437f5efbe91d5275f22792a56aca401104c083c61592224",
+    "trace": "prompt_37/dispatch_reference_0.json",
+    "trace_sha256": "46c4803b351c4b92c90926f561fd7fb1d7cc81597b82e76ce06f0ed64b510fcd"
+  },
+  {
+    "prompt_id": 38,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          25
+        ],
+        "stride": [
+          25,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "d82a239bd07a9aff79370f716340db29d50b1cf5219fb07459733b120ea3d9d4",
+    "trace": "prompt_38/dispatch_provider_0.json",
+    "trace_sha256": "b25d276c08369cab81593f8cc81d50b0f2deab1055e22c9365896800121e6b22"
+  },
+  {
+    "prompt_id": 38,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          153
+        ],
+        "stride": [
+          153,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "0db72012e312ab64c686af271948fe1f6b3a60879797b815d06021a3cc8a2afe",
+    "trace": "prompt_38/dispatch_reference_0.json",
+    "trace_sha256": "099b6aa9709f6c65b8ef641cbf0f5bc391bfc40e2e16d3c0687f1e6921623ecd"
+  },
+  {
+    "prompt_id": 39,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          31
+        ],
+        "stride": [
+          31,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "e4d88a02be952adbd1f1d02982f000fa01014a5d2180a71df33b7ebf801ff281",
+    "trace": "prompt_39/dispatch_provider_0.json",
+    "trace_sha256": "8e0341461903cd6d78e86a1ff1a9db6733bdefa395f03021a89df458fc3e5f77"
+  },
+  {
+    "prompt_id": 39,
+    "role": "provider",
+    "step": 98,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "7eb8b2abf6ad0183a27d3498cedd16e31df1e0e8e987a3b8227dac0763699f32",
+    "trace": "prompt_39/dispatch_provider_98.json",
+    "trace_sha256": "19ec253ec1e594f741b687258d9546d12d09df694bc35b6fe21facaed865ac76"
+  },
+  {
+    "prompt_id": 39,
+    "role": "provider",
+    "step": 119,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "116c2ce7aeacb3d06c355668147c94eae53542dde404995493a539aea7d02df4",
+    "trace": "prompt_39/dispatch_provider_119.json",
+    "trace_sha256": "329060ca2c6eaa54f84f2af4faf44a9371e8b626abbb3dc92c1b72c01af52797"
+  },
+  {
+    "prompt_id": 39,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          159
+        ],
+        "stride": [
+          159,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "3c4c2a6a02e6c817f11adcdb001d239b79a9254109e989c4e9bfbc3ace9ab722",
+    "trace": "prompt_39/dispatch_reference_0.json",
+    "trace_sha256": "7ce908b627d66c80819d2a667383ea6e1849925145db662bb3f40584aab471b1"
+  },
+  {
+    "prompt_id": 40,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          21
+        ],
+        "stride": [
+          21,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "c8e9b203472a9c6dbe18272f28ebdf8302e135ab66c0b7d8eba4f0fe2a1d9a4c",
+    "trace": "prompt_40/dispatch_provider_0.json",
+    "trace_sha256": "8202222cd63a020cfa25d8ad777d74bf9f66e076019ed293f83792ebc95433ee"
+  },
+  {
+    "prompt_id": 40,
+    "role": "provider",
+    "step": 10,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "edb29028d57ba1389ea42c0a2be5c0bd2d9790c377c9909722f3715624018640",
+    "trace": "prompt_40/dispatch_provider_10.json",
+    "trace_sha256": "c7e7c7ca8c8c0101e32ae272e643007cc55eb7d609ed67aa5bedbe21f5cc53d2"
+  },
+  {
+    "prompt_id": 40,
+    "role": "provider",
+    "step": 39,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "56735100f8b269060cc1567130f2e8f8b859a2129101fce1023eea1de42bc61c",
+    "trace": "prompt_40/dispatch_provider_39.json",
+    "trace_sha256": "3e633c52b594dd70763618d4cb85359e7a63d58aba53cfbbc20b769bb292a4b4"
+  },
+  {
+    "prompt_id": 40,
+    "role": "provider",
+    "step": 109,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "cbc5d5d1d83a19811edbc2bdf1dbb4bac7595be1e431dac808e5e5729cf4781c",
+    "trace": "prompt_40/dispatch_provider_109.json",
+    "trace_sha256": "8d0e1ac28d925d24a787008e6f1d4d74e06c99d6ca46814027f3940a90079ba2"
+  },
+  {
+    "prompt_id": 40,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          149
+        ],
+        "stride": [
+          149,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "d795b1930d5b820aab909a635bbeb5f2964e2e1ec05ec40e3a06f3b5f0b196fa",
+    "trace": "prompt_40/dispatch_reference_0.json",
+    "trace_sha256": "b4ed19a44eb1c408cb9033f9e6afa0ea7900e8720c4ef0f942dabdf1a83f1de5"
+  },
+  {
+    "prompt_id": 41,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          32
+        ],
+        "stride": [
+          32,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "ab4d7630366331c24747cc261a1a130b0891b7d67656a22e1f1cbf73aa04a726",
+    "trace": "prompt_41/dispatch_provider_0.json",
+    "trace_sha256": "10a2d7d4ffc92feda9de4514307ec4f1e7132861de97363b5d868bdbd2194a2c"
+  },
+  {
+    "prompt_id": 41,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          160
+        ],
+        "stride": [
+          160,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "2a407d10995441c7565fe51bd7930373805b372d13380bdbcf3f4203e2c62c1a",
+    "trace": "prompt_41/dispatch_reference_0.json",
+    "trace_sha256": "d07b49c701bad7b8ad81c00c27f1502383cb2be22dd8face6ed085a871fca8cf"
+  },
+  {
+    "prompt_id": 42,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          26
+        ],
+        "stride": [
+          26,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "a1edd095bdc61e5159098ee1997b6d9b9049a5fe9bd70cc12080bd0b33aa55c9",
+    "trace": "prompt_42/dispatch_provider_0.json",
+    "trace_sha256": "229b2847a1f1dc5e6c82547384adafc720770457665211a3f98e5762df6795d2"
+  },
+  {
+    "prompt_id": 42,
+    "role": "provider",
+    "step": 107,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "0f59b2baf7c85540ab4e8779e65df94c09a013d358d7924043bfcd9291cbb95c",
+    "trace": "prompt_42/dispatch_provider_107.json",
+    "trace_sha256": "e053f872a1e069a8ba8526a9a9088df3acf228fccbf9d6e81a32920fa1bab6cb"
+  },
+  {
+    "prompt_id": 42,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          154
+        ],
+        "stride": [
+          154,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "f10bb779d56b86fcf8edcc9e5b82fe0ff55f7521fe1533811b5c3750cfb0d280",
+    "trace": "prompt_42/dispatch_reference_0.json",
+    "trace_sha256": "5ad28cd2d7a5304a867f26064951a7c4ad962ed3ced244396e3bd7aaae781863"
+  },
+  {
+    "prompt_id": 43,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          23
+        ],
+        "stride": [
+          23,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "fb120a53722f2bf7596755406b8072f96895060810bb2532ca8948e9c129c23a",
+    "trace": "prompt_43/dispatch_provider_0.json",
+    "trace_sha256": "1cfc695a4a9248ed2f984d73baa9aa0353ecf2a3640d0ea5b730f34929c746f0"
+  },
+  {
+    "prompt_id": 43,
+    "role": "provider",
+    "step": 71,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "293accce45478c93a5d16c136a3222fd9b50327f85a29fdef7accf780822d238",
+    "trace": "prompt_43/dispatch_provider_71.json",
+    "trace_sha256": "c048c5f80ab65ae91284470a4a4da4a660e1ab5eada73aec8c3dfbe8ac574890"
+  },
+  {
+    "prompt_id": 43,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          151
+        ],
+        "stride": [
+          151,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "9abb5748f445275d6437f5efbe91d5275f22792a56aca401104c083c61592224",
+    "trace": "prompt_43/dispatch_reference_0.json",
+    "trace_sha256": "8954b7a5d3f6ecf6c423aea568ec8db9bfbbca5fa0ef7735f6ed498bc25ea36b"
+  },
+  {
+    "prompt_id": 44,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          21
+        ],
+        "stride": [
+          21,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "c8e9b203472a9c6dbe18272f28ebdf8302e135ab66c0b7d8eba4f0fe2a1d9a4c",
+    "trace": "prompt_44/dispatch_provider_0.json",
+    "trace_sha256": "9a2add826c0fe63b846b50270661695a5ca30b03834f296b6bb8999d97a2f685"
+  },
+  {
+    "prompt_id": 44,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          149
+        ],
+        "stride": [
+          149,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "d795b1930d5b820aab909a635bbeb5f2964e2e1ec05ec40e3a06f3b5f0b196fa",
+    "trace": "prompt_44/dispatch_reference_0.json",
+    "trace_sha256": "e5cec8b61137d210feb4e10c76746e187534c98efd4776671d3a365b865f137e"
+  },
+  {
+    "prompt_id": 45,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          23
+        ],
+        "stride": [
+          23,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "fb120a53722f2bf7596755406b8072f96895060810bb2532ca8948e9c129c23a",
+    "trace": "prompt_45/dispatch_provider_0.json",
+    "trace_sha256": "90a4c3b4ee4fbfaab68a15ffa546142190c296b0edde300b37e85330fd166c44"
+  },
+  {
+    "prompt_id": 45,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          151
+        ],
+        "stride": [
+          151,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "9abb5748f445275d6437f5efbe91d5275f22792a56aca401104c083c61592224",
+    "trace": "prompt_45/dispatch_reference_0.json",
+    "trace_sha256": "d2c64c5782ed0b3e25469415945664d027e8fb5afee643c6d88cd56864e09405"
+  },
+  {
+    "prompt_id": 46,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          32
+        ],
+        "stride": [
+          32,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "ab4d7630366331c24747cc261a1a130b0891b7d67656a22e1f1cbf73aa04a726",
+    "trace": "prompt_46/dispatch_provider_0.json",
+    "trace_sha256": "6d84feff1ba036d4fb00f549bebe9ea51c617dcdf917f68857c16e233e126c4b"
+  },
+  {
+    "prompt_id": 46,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          160
+        ],
+        "stride": [
+          160,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "2a407d10995441c7565fe51bd7930373805b372d13380bdbcf3f4203e2c62c1a",
+    "trace": "prompt_46/dispatch_reference_0.json",
+    "trace_sha256": "9fe1d7ce0c05a44c09feaf148c6632711ccffbc3c23ddc9672ff018467b5b444"
+  },
+  {
+    "prompt_id": 47,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          21
+        ],
+        "stride": [
+          21,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "c8e9b203472a9c6dbe18272f28ebdf8302e135ab66c0b7d8eba4f0fe2a1d9a4c",
+    "trace": "prompt_47/dispatch_provider_0.json",
+    "trace_sha256": "38026fef81ab54a260e326b4c22d2bf58f5c9271ff7495936556191dc1f90e81"
+  },
+  {
+    "prompt_id": 47,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          149
+        ],
+        "stride": [
+          149,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "d795b1930d5b820aab909a635bbeb5f2964e2e1ec05ec40e3a06f3b5f0b196fa",
+    "trace": "prompt_47/dispatch_reference_0.json",
+    "trace_sha256": "687dcba8bf978475fb8c7304070405574f8c6059e7a14832ddd6591ab86fadfb"
+  },
+  {
+    "prompt_id": 48,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          18
+        ],
+        "stride": [
+          18,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "a390611102859c25235fbb8d4fbee564cf156cfac7788c9ea1e7488e4576e490",
+    "trace": "prompt_48/dispatch_provider_0.json",
+    "trace_sha256": "2fee0752673c7fbe11345f81e0e822b500a39bde073dc5d23aae20825f13d17f"
+  },
+  {
+    "prompt_id": 48,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          146
+        ],
+        "stride": [
+          146,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "6741f335b5c16b25bea241fcb79d0255a83e2bee5119acb7c23eda99e4475c3a",
+    "trace": "prompt_48/dispatch_reference_0.json",
+    "trace_sha256": "2c44756604d759dc3db359e262e59f63397350f3c6de9b3d2f5d33cf6e3c7ffe"
+  },
+  {
+    "prompt_id": 49,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          21
+        ],
+        "stride": [
+          21,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "c8e9b203472a9c6dbe18272f28ebdf8302e135ab66c0b7d8eba4f0fe2a1d9a4c",
+    "trace": "prompt_49/dispatch_provider_0.json",
+    "trace_sha256": "c81c0b4123197ec79aacc6cb81cfc8678104c2c21ee00defe79933e5842b0901"
+  },
+  {
+    "prompt_id": 49,
+    "role": "provider",
+    "step": 117,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "87d60d945c86b153e5477a7ee7766f95fb890020ba1297e029a888edb70af0d7",
+    "trace": "prompt_49/dispatch_provider_117.json",
+    "trace_sha256": "e6c6d47673883c74c37e96699cbd8567119dac3982fb195d95ac8be896c9ddce"
+  },
+  {
+    "prompt_id": 49,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          149
+        ],
+        "stride": [
+          149,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "d795b1930d5b820aab909a635bbeb5f2964e2e1ec05ec40e3a06f3b5f0b196fa",
+    "trace": "prompt_49/dispatch_reference_0.json",
+    "trace_sha256": "8e6a7539b4afe2af7eb8baede6f12eb9cd4553bad707b60544988c1425b45a2f"
+  },
+  {
+    "prompt_id": 50,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          25
+        ],
+        "stride": [
+          25,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "d82a239bd07a9aff79370f716340db29d50b1cf5219fb07459733b120ea3d9d4",
+    "trace": "prompt_50/dispatch_provider_0.json",
+    "trace_sha256": "7da756deb2a344227177f873006cf5bf02dc9698eaca1a4a5ddf26159733b4af"
+  },
+  {
+    "prompt_id": 50,
+    "role": "provider",
+    "step": 97,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "0ce6a3316ddc489b01b50ddccdb04c258595523572b7ad3fc08acfbd2daab4de",
+    "trace": "prompt_50/dispatch_provider_97.json",
+    "trace_sha256": "289fc234547709a82ed0ba38b6d4982882407e09477166955b4744f4596dafb7"
+  },
+  {
+    "prompt_id": 50,
+    "role": "provider",
+    "step": 99,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "c24af8da14d1cf82e610b558ac0abdcb7f49f3f6820cc43f678f8bcdf186d496",
+    "trace": "prompt_50/dispatch_provider_99.json",
+    "trace_sha256": "eb19136a6463bd8baa2df785d2b714627966e114b63ed454c36fc21e372ad410"
+  },
+  {
+    "prompt_id": 50,
+    "role": "provider",
+    "step": 120,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "ef45d892771fa580604bd34138c49d4f365abd56ad791a1efe3de25481ff979a",
+    "trace": "prompt_50/dispatch_provider_120.json",
+    "trace_sha256": "376493661df7de554badb0b61366092afeb19a8e802f571d713fbdb069213afc"
+  },
+  {
+    "prompt_id": 50,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          153
+        ],
+        "stride": [
+          153,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "0db72012e312ab64c686af271948fe1f6b3a60879797b815d06021a3cc8a2afe",
+    "trace": "prompt_50/dispatch_reference_0.json",
+    "trace_sha256": "b01a7779626eb1ce515c016871fc505b3b1828630bb7abc96b608dcaecfceede"
+  },
+  {
+    "prompt_id": 51,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          21
+        ],
+        "stride": [
+          21,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "c8e9b203472a9c6dbe18272f28ebdf8302e135ab66c0b7d8eba4f0fe2a1d9a4c",
+    "trace": "prompt_51/dispatch_provider_0.json",
+    "trace_sha256": "cb63fd9a47399e781e3bf4d38a16305f6184e0b799b7924bf4866d2d65fe93d2"
+  },
+  {
+    "prompt_id": 51,
+    "role": "provider",
+    "step": 90,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "5000152d46e3509da8ce1678a9536b65bedd1aa02eac6ec4250a003b0e8465d8",
+    "trace": "prompt_51/dispatch_provider_90.json",
+    "trace_sha256": "ae43e204af00df34f25c84b7cd26848bbb179a3d93c4b737359cb10d6d3575c8"
+  },
+  {
+    "prompt_id": 51,
+    "role": "provider",
+    "step": 107,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "963625fff4df08e38d4c53a2cfb26beb003228977df7eae7ea81340dbd68ff15",
+    "trace": "prompt_51/dispatch_provider_107.json",
+    "trace_sha256": "be059e4defd937b43d87d5690531f9644a9c89e5180253464b22c80fff811170"
+  },
+  {
+    "prompt_id": 51,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          149
+        ],
+        "stride": [
+          149,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "d795b1930d5b820aab909a635bbeb5f2964e2e1ec05ec40e3a06f3b5f0b196fa",
+    "trace": "prompt_51/dispatch_reference_0.json",
+    "trace_sha256": "e97a381be7cb0e227e00eca24472901f9aaf1947b958d646222661d926bc92e5"
+  },
+  {
+    "prompt_id": 52,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          32
+        ],
+        "stride": [
+          32,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "ab4d7630366331c24747cc261a1a130b0891b7d67656a22e1f1cbf73aa04a726",
+    "trace": "prompt_52/dispatch_provider_0.json",
+    "trace_sha256": "d567ca5a9f46e2738f2d906315d1df0b33aab404840bebd0a6ac971c1aebd4bf"
+  },
+  {
+    "prompt_id": 52,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          160
+        ],
+        "stride": [
+          160,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "2a407d10995441c7565fe51bd7930373805b372d13380bdbcf3f4203e2c62c1a",
+    "trace": "prompt_52/dispatch_reference_0.json",
+    "trace_sha256": "8506273a64206a95f7d62de3247e0b0ab60c88a42478e8fd2e7caf7f4f1a45e9"
+  },
+  {
+    "prompt_id": 53,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          31
+        ],
+        "stride": [
+          31,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "e4d88a02be952adbd1f1d02982f000fa01014a5d2180a71df33b7ebf801ff281",
+    "trace": "prompt_53/dispatch_provider_0.json",
+    "trace_sha256": "e3c75647d1a56e09fbe8ad05f31b969d4333049becceb6849c77778c0472d45b"
+  },
+  {
+    "prompt_id": 53,
+    "role": "provider",
+    "step": 83,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "ec42ba893169179215d58c9eb22db784762cb11a982d847f9374c41be2fc0734",
+    "trace": "prompt_53/dispatch_provider_83.json",
+    "trace_sha256": "7f21a58ebb34963707df13d3a51a370b5d06ee041e400f432a28ab5b8060486f"
+  },
+  {
+    "prompt_id": 53,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          159
+        ],
+        "stride": [
+          159,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "3c4c2a6a02e6c817f11adcdb001d239b79a9254109e989c4e9bfbc3ace9ab722",
+    "trace": "prompt_53/dispatch_reference_0.json",
+    "trace_sha256": "4086c3e4bd9c24d84b90983942ab5ba1f9378f59e3e7622201549c75525fe0fd"
+  },
+  {
+    "prompt_id": 54,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          32
+        ],
+        "stride": [
+          32,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "ab4d7630366331c24747cc261a1a130b0891b7d67656a22e1f1cbf73aa04a726",
+    "trace": "prompt_54/dispatch_provider_0.json",
+    "trace_sha256": "1947da53ed74ceac297b358c62175edc44a18eac74995d5ec432c7bc0f2ceea5"
+  },
+  {
+    "prompt_id": 54,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          160
+        ],
+        "stride": [
+          160,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "2a407d10995441c7565fe51bd7930373805b372d13380bdbcf3f4203e2c62c1a",
+    "trace": "prompt_54/dispatch_reference_0.json",
+    "trace_sha256": "3abc82ef964100f79d3f9c81b34d4aabdfcb4244faeb8ff5c9fc3d4bd9af5301"
+  },
+  {
+    "prompt_id": 55,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          32
+        ],
+        "stride": [
+          32,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "ab4d7630366331c24747cc261a1a130b0891b7d67656a22e1f1cbf73aa04a726",
+    "trace": "prompt_55/dispatch_provider_0.json",
+    "trace_sha256": "931e551d14e642bf0c9f7f08a45315a5df7b28fc7e9e65855051736d1909e32a"
+  },
+  {
+    "prompt_id": 55,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          160
+        ],
+        "stride": [
+          160,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "2a407d10995441c7565fe51bd7930373805b372d13380bdbcf3f4203e2c62c1a",
+    "trace": "prompt_55/dispatch_reference_0.json",
+    "trace_sha256": "9d8b3eec282f72cdf435601f85d83880181ec55caa375bfaaf1d35eaf60503fa"
+  },
+  {
+    "prompt_id": 56,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          31
+        ],
+        "stride": [
+          31,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "e4d88a02be952adbd1f1d02982f000fa01014a5d2180a71df33b7ebf801ff281",
+    "trace": "prompt_56/dispatch_provider_0.json",
+    "trace_sha256": "d00e246bb3d3e9606270f2a87b128c40916d88f2ba578bb50b08c357b4399028"
+  },
+  {
+    "prompt_id": 56,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          159
+        ],
+        "stride": [
+          159,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "3c4c2a6a02e6c817f11adcdb001d239b79a9254109e989c4e9bfbc3ace9ab722",
+    "trace": "prompt_56/dispatch_reference_0.json",
+    "trace_sha256": "6ed2f5fdb49b1c311e460cc2706e0e255f0116706b43b0f3c9ed422b2bdb4b33"
+  },
+  {
+    "prompt_id": 57,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          31
+        ],
+        "stride": [
+          31,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "e4d88a02be952adbd1f1d02982f000fa01014a5d2180a71df33b7ebf801ff281",
+    "trace": "prompt_57/dispatch_provider_0.json",
+    "trace_sha256": "395c02df7d573b82161fc871ed02b35caf373b723bb6390b3a7385ecc03d3a26"
+  },
+  {
+    "prompt_id": 57,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          159
+        ],
+        "stride": [
+          159,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "3c4c2a6a02e6c817f11adcdb001d239b79a9254109e989c4e9bfbc3ace9ab722",
+    "trace": "prompt_57/dispatch_reference_0.json",
+    "trace_sha256": "93549b3e82a432752c06ce4ee4b79eee8504d3b3e3a802dbfefdfce522837e30"
+  },
+  {
+    "prompt_id": 58,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          25
+        ],
+        "stride": [
+          25,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "d82a239bd07a9aff79370f716340db29d50b1cf5219fb07459733b120ea3d9d4",
+    "trace": "prompt_58/dispatch_provider_0.json",
+    "trace_sha256": "39f97b9a79ea2d4c0e1ab1a9e73cade078dfc4604c5bd3de8bf20352f4564552"
+  },
+  {
+    "prompt_id": 58,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          153
+        ],
+        "stride": [
+          153,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "0db72012e312ab64c686af271948fe1f6b3a60879797b815d06021a3cc8a2afe",
+    "trace": "prompt_58/dispatch_reference_0.json",
+    "trace_sha256": "53568832659f1af58accb81da8ff14ef6323cbfa60cf2b3f205f9f5462c7fb6e"
+  },
+  {
+    "prompt_id": 59,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          23
+        ],
+        "stride": [
+          23,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "fb120a53722f2bf7596755406b8072f96895060810bb2532ca8948e9c129c23a",
+    "trace": "prompt_59/dispatch_provider_0.json",
+    "trace_sha256": "b1f832a5892f29e43dd39ae2c61682ea8881e008e84ef1aeaa0a095b95aeb67c"
+  },
+  {
+    "prompt_id": 59,
+    "role": "provider",
+    "step": 29,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "a19b3ab167009a544cac47d8d3f6d4e702479b059ddcc3d2fe2f0376c9b3e29d",
+    "trace": "prompt_59/dispatch_provider_29.json",
+    "trace_sha256": "acc7b97e9fbd42c4853c82792e273d17ea10b0f797d8580dd4812884921710fa"
+  },
+  {
+    "prompt_id": 59,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          151
+        ],
+        "stride": [
+          151,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "9abb5748f445275d6437f5efbe91d5275f22792a56aca401104c083c61592224",
+    "trace": "prompt_59/dispatch_reference_0.json",
+    "trace_sha256": "f0eda4ba32c1d1d0e0ad2948b1231f65e2769f390769794da7ac9109d04a7969"
+  },
+  {
+    "prompt_id": 60,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          21
+        ],
+        "stride": [
+          21,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "c8e9b203472a9c6dbe18272f28ebdf8302e135ab66c0b7d8eba4f0fe2a1d9a4c",
+    "trace": "prompt_60/dispatch_provider_0.json",
+    "trace_sha256": "3288f3acceded7001a5b0116e24a86d723bc0c2b3961e8f2503f1495375873f7"
+  },
+  {
+    "prompt_id": 60,
+    "role": "provider",
+    "step": 38,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "8ab941a50d44da6888ca4c32310e1a1b5b82f745392c145d809ad34e13fff7ef",
+    "trace": "prompt_60/dispatch_provider_38.json",
+    "trace_sha256": "7ca03b69b6d786603d1c3687586c3e85614c42d12f4dd87f469622f24237d2d7"
+  },
+  {
+    "prompt_id": 60,
+    "role": "provider",
+    "step": 60,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "d2e39770a85aba45c88d3b810ccfa62f523e95b19804e33e638748db52aad621",
+    "trace": "prompt_60/dispatch_provider_60.json",
+    "trace_sha256": "af65a4a735e525c6054ad57e7d6921fdabcf45e8c2b966a5b35ac73a24b18fe6"
+  },
+  {
+    "prompt_id": 60,
+    "role": "provider",
+    "step": 102,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "6aab6dbb8391a4de92f7eb3fc8f74c14f5a286f3df88fee0e3e32f45f49e02a8",
+    "trace": "prompt_60/dispatch_provider_102.json",
+    "trace_sha256": "9a90ed4b4d9f46946df550aa3b23cb2d0bd4f429e9465ddc87fee7b57212f942"
+  },
+  {
+    "prompt_id": 60,
+    "role": "provider",
+    "step": 115,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "81a31d824989eadcdcb55566e347bc56ea09cb46d01bbe8a10e7147d74de2fba",
+    "trace": "prompt_60/dispatch_provider_115.json",
+    "trace_sha256": "e3bd25ae08d8e3cd15286c3434f1f5f0b662655e4ce35a94df1d145aa3056d47"
+  },
+  {
+    "prompt_id": 60,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          149
+        ],
+        "stride": [
+          149,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "d795b1930d5b820aab909a635bbeb5f2964e2e1ec05ec40e3a06f3b5f0b196fa",
+    "trace": "prompt_60/dispatch_reference_0.json",
+    "trace_sha256": "ebde18761231dc871a93e726d71b1f5a1f37ec8e58893fd9b13529d73c1f13b7"
+  },
+  {
+    "prompt_id": 61,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          20
+        ],
+        "stride": [
+          20,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "04fc9c40609d09605c9d0c87f9ac9c47dd0f410741b009e7393c3ed9a392ee6a",
+    "trace": "prompt_61/dispatch_provider_0.json",
+    "trace_sha256": "a9cd9671bdda389aaaf452f0bd052d3262a4c1e6a1653235b57ec630c7a87a6a"
+  },
+  {
+    "prompt_id": 61,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          148
+        ],
+        "stride": [
+          148,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "4d4dd6d544f4dee370e3242a956e464b77717b6aeab189f740b7a2cea517cfa9",
+    "trace": "prompt_61/dispatch_reference_0.json",
+    "trace_sha256": "bc490395e346f90d1af93046c71aea01074fa394fd8c91f3162b15466fbfb7b4"
+  },
+  {
+    "prompt_id": 62,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          32
+        ],
+        "stride": [
+          32,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "ab4d7630366331c24747cc261a1a130b0891b7d67656a22e1f1cbf73aa04a726",
+    "trace": "prompt_62/dispatch_provider_0.json",
+    "trace_sha256": "f3b28b23b699d6184f70283c2d418ebc936a850dd287486411f56037b603a5d5"
+  },
+  {
+    "prompt_id": 62,
+    "role": "provider",
+    "step": 18,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "6ac9f3f0b72ce7c0699acc9633d4381480200353ab05eeb3dbb17b2be0844649",
+    "trace": "prompt_62/dispatch_provider_18.json",
+    "trace_sha256": "592b5f5ce8db90e0304ca4ef528a7f2d1ed4f4586bfca06e55c8a4ae0f5fe838"
+  },
+  {
+    "prompt_id": 62,
+    "role": "provider",
+    "step": 83,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "0f7cce8c40977a60d10a1cade5730f350c2d9edf703746e3604e2b5aaf9a11f8",
+    "trace": "prompt_62/dispatch_provider_83.json",
+    "trace_sha256": "3067d6f4dd87b05028362e398ef812a658d6a8f7b619aed40317273b0d99ca91"
+  },
+  {
+    "prompt_id": 62,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          160
+        ],
+        "stride": [
+          160,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "2a407d10995441c7565fe51bd7930373805b372d13380bdbcf3f4203e2c62c1a",
+    "trace": "prompt_62/dispatch_reference_0.json",
+    "trace_sha256": "1ed8dbbc24ebad027f0cc44f4774b371615b392215add4dcb525fe64e4588851"
+  },
+  {
+    "prompt_id": 63,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          21
+        ],
+        "stride": [
+          21,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "c8e9b203472a9c6dbe18272f28ebdf8302e135ab66c0b7d8eba4f0fe2a1d9a4c",
+    "trace": "prompt_63/dispatch_provider_0.json",
+    "trace_sha256": "f4ffc64c5088d4d1e16b3dd5a8503403550013939f27dddbd8ee29a92021acc0"
+  },
+  {
+    "prompt_id": 63,
+    "role": "provider",
+    "step": 88,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "1099d3ef95096136f3e32d6db68579ec8034e2c89b5a28b3c35694eb3fa99b45",
+    "trace": "prompt_63/dispatch_provider_88.json",
+    "trace_sha256": "b111223b2dc690e70949394edaa9fe65842b9c0174f0c558d388ce31dd438329"
+  },
+  {
+    "prompt_id": 63,
+    "role": "provider",
+    "step": 91,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "7d63fbbe896889f1901bea08c9566e30068db908170592d1f545998c13fafb7f",
+    "trace": "prompt_63/dispatch_provider_91.json",
+    "trace_sha256": "504f2fbd1206d6d24d84b4652d687362ebfca08a122d4394f736f15528d6936e"
+  },
+  {
+    "prompt_id": 63,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          149
+        ],
+        "stride": [
+          149,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "d795b1930d5b820aab909a635bbeb5f2964e2e1ec05ec40e3a06f3b5f0b196fa",
+    "trace": "prompt_63/dispatch_reference_0.json",
+    "trace_sha256": "b19a1595ba3204c57d7deeb153f44ee84dfc4ae81a3d0506d089a30b9cf16a7f"
+  },
+  {
+    "prompt_id": 64,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          18
+        ],
+        "stride": [
+          18,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "a390611102859c25235fbb8d4fbee564cf156cfac7788c9ea1e7488e4576e490",
+    "trace": "prompt_64/dispatch_provider_0.json",
+    "trace_sha256": "a678acbcb12cece8bb7ff9fc23409ffeea7eafaf28ecebdd5f97e35aad50fe69"
+  },
+  {
+    "prompt_id": 64,
+    "role": "provider",
+    "step": 83,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "a0b8861c96ad95b24853918d7c9ceb76cb0470b78c6fe73b2cc218be40278ab5",
+    "trace": "prompt_64/dispatch_provider_83.json",
+    "trace_sha256": "de007bce2cf82141292184604649310d97b19ed72b5acd870fe1258084664f5b"
+  },
+  {
+    "prompt_id": 64,
+    "role": "provider",
+    "step": 121,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "10c9c0de3829e6a3f2a4545cdd23ebfda7c7f3df18109072e892aed80b05502b",
+    "trace": "prompt_64/dispatch_provider_121.json",
+    "trace_sha256": "afc601a85f530869e6d01bc423fdf6111021ec641da1c36f42a4817a1a48ef9d"
+  },
+  {
+    "prompt_id": 64,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          146
+        ],
+        "stride": [
+          146,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "6741f335b5c16b25bea241fcb79d0255a83e2bee5119acb7c23eda99e4475c3a",
+    "trace": "prompt_64/dispatch_reference_0.json",
+    "trace_sha256": "40a22cc8a3a9112bbc298ce2c822f05d849d86460ab36f84e8f4ff45484d3b6a"
+  },
+  {
+    "prompt_id": 65,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          21
+        ],
+        "stride": [
+          21,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "c8e9b203472a9c6dbe18272f28ebdf8302e135ab66c0b7d8eba4f0fe2a1d9a4c",
+    "trace": "prompt_65/dispatch_provider_0.json",
+    "trace_sha256": "a8ea9a4a2e9d8ba851cc3e12c120b6a70d02883aa270522d0fc6bfc18f849007"
+  },
+  {
+    "prompt_id": 65,
+    "role": "provider",
+    "step": 58,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "ca46c31a53a0673c5468aa7ea7f3656c888b150a6470262e56540ce1e7c37ebc",
+    "trace": "prompt_65/dispatch_provider_58.json",
+    "trace_sha256": "ed1c7507d6cae0f9712882ea85748bc2541cac25cc41d0b47c390fd36fcebd42"
+  },
+  {
+    "prompt_id": 65,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          149
+        ],
+        "stride": [
+          149,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "d795b1930d5b820aab909a635bbeb5f2964e2e1ec05ec40e3a06f3b5f0b196fa",
+    "trace": "prompt_65/dispatch_reference_0.json",
+    "trace_sha256": "4f6fe3d6f87f29e58664493bdb92a661e2d944720a9917a2355feb5e95e3be44"
+  },
+  {
+    "prompt_id": 66,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          32
+        ],
+        "stride": [
+          32,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "ab4d7630366331c24747cc261a1a130b0891b7d67656a22e1f1cbf73aa04a726",
+    "trace": "prompt_66/dispatch_provider_0.json",
+    "trace_sha256": "098e5236d3213d1512adbfe013ad786758c461faa458a0c88491275545ecd644"
+  },
+  {
+    "prompt_id": 66,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          160
+        ],
+        "stride": [
+          160,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "2a407d10995441c7565fe51bd7930373805b372d13380bdbcf3f4203e2c62c1a",
+    "trace": "prompt_66/dispatch_reference_0.json",
+    "trace_sha256": "c031824f432c3a637963ed5279b20486e5ea6389641516f523c68c4fcb1e7f29"
+  },
+  {
+    "prompt_id": 67,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          26
+        ],
+        "stride": [
+          26,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "a1edd095bdc61e5159098ee1997b6d9b9049a5fe9bd70cc12080bd0b33aa55c9",
+    "trace": "prompt_67/dispatch_provider_0.json",
+    "trace_sha256": "8ea3f8f3887361aa808f0c0012636e960b890925681d5601fb417aadc8262984"
+  },
+  {
+    "prompt_id": 67,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          154
+        ],
+        "stride": [
+          154,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "f10bb779d56b86fcf8edcc9e5b82fe0ff55f7521fe1533811b5c3750cfb0d280",
+    "trace": "prompt_67/dispatch_reference_0.json",
+    "trace_sha256": "a5dd9a28a191e15b4df9abc097b775d86699ab1b9b018628372cfe77a8ff573d"
+  },
+  {
+    "prompt_id": 68,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          21
+        ],
+        "stride": [
+          21,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "c8e9b203472a9c6dbe18272f28ebdf8302e135ab66c0b7d8eba4f0fe2a1d9a4c",
+    "trace": "prompt_68/dispatch_provider_0.json",
+    "trace_sha256": "b3b43efd51f590d0aec42bb226e7fd851d5880d18dbffdb49218a41e68d918c3"
+  },
+  {
+    "prompt_id": 68,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          149
+        ],
+        "stride": [
+          149,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "d795b1930d5b820aab909a635bbeb5f2964e2e1ec05ec40e3a06f3b5f0b196fa",
+    "trace": "prompt_68/dispatch_reference_0.json",
+    "trace_sha256": "3e6f7f4cd28aed404263b382041d326a48f461ca4b00e61d7b34fb482fc22b2e"
+  },
+  {
+    "prompt_id": 69,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          18
+        ],
+        "stride": [
+          18,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "a390611102859c25235fbb8d4fbee564cf156cfac7788c9ea1e7488e4576e490",
+    "trace": "prompt_69/dispatch_provider_0.json",
+    "trace_sha256": "2312266307d10bc015520703ce1b0d81721b129938ae8be01d6012fc615bda11"
+  },
+  {
+    "prompt_id": 69,
+    "role": "provider",
+    "step": 5,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "5acc3cb1feac48dcb5d8ffbd3a8f7ee9dc84c4ee4ec0fad174e32be3ddd05517",
+    "trace": "prompt_69/dispatch_provider_5.json",
+    "trace_sha256": "afe81486c18d12a817e7ca42dc5d5a304525ae440a7caa7c2e6b740ccbb138d9"
+  },
+  {
+    "prompt_id": 69,
+    "role": "provider",
+    "step": 96,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "ec42ba893169179215d58c9eb22db784762cb11a982d847f9374c41be2fc0734",
+    "trace": "prompt_69/dispatch_provider_96.json",
+    "trace_sha256": "8a82f56544f0a080c690d2fbb321145757206fab13f0a64ff6aee092c1d1995c"
+  },
+  {
+    "prompt_id": 69,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          146
+        ],
+        "stride": [
+          146,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "6741f335b5c16b25bea241fcb79d0255a83e2bee5119acb7c23eda99e4475c3a",
+    "trace": "prompt_69/dispatch_reference_0.json",
+    "trace_sha256": "5874b203c0c9194bff50a817427866a3864630e604265c377c6ea7259b2e7d77"
+  },
+  {
+    "prompt_id": 70,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          21
+        ],
+        "stride": [
+          21,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "c8e9b203472a9c6dbe18272f28ebdf8302e135ab66c0b7d8eba4f0fe2a1d9a4c",
+    "trace": "prompt_70/dispatch_provider_0.json",
+    "trace_sha256": "07c6a3187309b19a73d5c4a8bf4a75319315fc0edbf3730fb2962f251ba4b9fb"
+  },
+  {
+    "prompt_id": 70,
+    "role": "provider",
+    "step": 54,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "7bb05e8dae1ca859cf241090e6696922be0f0f6d31fb683e15670f9f142446c7",
+    "trace": "prompt_70/dispatch_provider_54.json",
+    "trace_sha256": "f44be0da1f6e6f5a8cdaea1bfed344760ca10d09610bbdb673774740ade8c6ae"
+  },
+  {
+    "prompt_id": 70,
+    "role": "provider",
+    "step": 122,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "a6e943f29fbd7473d0bdbfe8f4fbab424e4a525af3617af097e31831c4721dfb",
+    "trace": "prompt_70/dispatch_provider_122.json",
+    "trace_sha256": "4d6b75e4b97eab65fe195ed09efdc8cec9b0023e1bcdc6efe43690a3f8ed0189"
+  },
+  {
+    "prompt_id": 70,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          149
+        ],
+        "stride": [
+          149,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "d795b1930d5b820aab909a635bbeb5f2964e2e1ec05ec40e3a06f3b5f0b196fa",
+    "trace": "prompt_70/dispatch_reference_0.json",
+    "trace_sha256": "f68d1f43cf9f1a57d8ef9676935679aaa006baa46376bc52bc362128d865e503"
+  },
+  {
+    "prompt_id": 71,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          25
+        ],
+        "stride": [
+          25,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "d82a239bd07a9aff79370f716340db29d50b1cf5219fb07459733b120ea3d9d4",
+    "trace": "prompt_71/dispatch_provider_0.json",
+    "trace_sha256": "441b850478c90bd5cad614e680ad043f7df54a54d6c80bde33d5ee716f38cddb"
+  },
+  {
+    "prompt_id": 71,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          153
+        ],
+        "stride": [
+          153,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "0db72012e312ab64c686af271948fe1f6b3a60879797b815d06021a3cc8a2afe",
+    "trace": "prompt_71/dispatch_reference_0.json",
+    "trace_sha256": "e95ab764eb54f0ccee6300be1653580bee20c417bf6532886a249e9b123e2223"
+  },
+  {
+    "prompt_id": 72,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          25
+        ],
+        "stride": [
+          25,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "d82a239bd07a9aff79370f716340db29d50b1cf5219fb07459733b120ea3d9d4",
+    "trace": "prompt_72/dispatch_provider_0.json",
+    "trace_sha256": "7ba2408635401763f8791454d5f11ba29ce041e5a3a3d270bdd57cffef0b65ce"
+  },
+  {
+    "prompt_id": 72,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          153
+        ],
+        "stride": [
+          153,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "0db72012e312ab64c686af271948fe1f6b3a60879797b815d06021a3cc8a2afe",
+    "trace": "prompt_72/dispatch_reference_0.json",
+    "trace_sha256": "e2146bd36807358d17ff5c3d081ad0addc06d433c2e142e789a84581a20fd045"
+  },
+  {
+    "prompt_id": 73,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          21
+        ],
+        "stride": [
+          21,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "c8e9b203472a9c6dbe18272f28ebdf8302e135ab66c0b7d8eba4f0fe2a1d9a4c",
+    "trace": "prompt_73/dispatch_provider_0.json",
+    "trace_sha256": "dff27421099d79aabaa61c8c4c3cf16157372a0e72ac240e768f5162f72b3c50"
+  },
+  {
+    "prompt_id": 73,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          149
+        ],
+        "stride": [
+          149,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "d795b1930d5b820aab909a635bbeb5f2964e2e1ec05ec40e3a06f3b5f0b196fa",
+    "trace": "prompt_73/dispatch_reference_0.json",
+    "trace_sha256": "1e7e8b51a51aa8875b20b4458964e7fa253b87bb48002c2b77462c89dc3a3789"
+  },
+  {
+    "prompt_id": 74,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          18
+        ],
+        "stride": [
+          18,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "a390611102859c25235fbb8d4fbee564cf156cfac7788c9ea1e7488e4576e490",
+    "trace": "prompt_74/dispatch_provider_0.json",
+    "trace_sha256": "2271a774a82341f3626bd44e85e4b3c5901bb8929d767dd4af70df149daf16f3"
+  },
+  {
+    "prompt_id": 74,
+    "role": "provider",
+    "step": 13,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "edb29028d57ba1389ea42c0a2be5c0bd2d9790c377c9909722f3715624018640",
+    "trace": "prompt_74/dispatch_provider_13.json",
+    "trace_sha256": "dc4e5f3caa1004a3aeb7cb62ad644ac9fcf5b6346b34dd803449d2518517135e"
+  },
+  {
+    "prompt_id": 74,
+    "role": "provider",
+    "step": 85,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "c15897a3f6d30dc0ce38a5a9baff5f1d9b35068e125a601811175f5c3c53383c",
+    "trace": "prompt_74/dispatch_provider_85.json",
+    "trace_sha256": "0c2574bc7eb6a56c9c7bfe8d71cfe226290c6ec860cc8459af43c8e89f78b37e"
+  },
+  {
+    "prompt_id": 74,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          146
+        ],
+        "stride": [
+          146,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "6741f335b5c16b25bea241fcb79d0255a83e2bee5119acb7c23eda99e4475c3a",
+    "trace": "prompt_74/dispatch_reference_0.json",
+    "trace_sha256": "1e14eeeb6f8d014345f61f4ed63e3254bed64aa47a7d9e0b9366723c51562979"
+  },
+  {
+    "prompt_id": 75,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          21
+        ],
+        "stride": [
+          21,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "c8e9b203472a9c6dbe18272f28ebdf8302e135ab66c0b7d8eba4f0fe2a1d9a4c",
+    "trace": "prompt_75/dispatch_provider_0.json",
+    "trace_sha256": "46c045e2004cf046f7b595403ff0bd72d07ad8d20d16ce7ba1fa575fa54520ce"
+  },
+  {
+    "prompt_id": 75,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          149
+        ],
+        "stride": [
+          149,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "d795b1930d5b820aab909a635bbeb5f2964e2e1ec05ec40e3a06f3b5f0b196fa",
+    "trace": "prompt_75/dispatch_reference_0.json",
+    "trace_sha256": "2e2a07a93f08a26ee0774b3e6214527bacb1a5e50da8d3ae18fad431145dc3eb"
+  },
+  {
+    "prompt_id": 76,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          26
+        ],
+        "stride": [
+          26,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "a1edd095bdc61e5159098ee1997b6d9b9049a5fe9bd70cc12080bd0b33aa55c9",
+    "trace": "prompt_76/dispatch_provider_0.json",
+    "trace_sha256": "87a9faf4ce6f1c1c658a8b65fb1659ceff212bf25a1854973a07d996ce94036f"
+  },
+  {
+    "prompt_id": 76,
+    "role": "provider",
+    "step": 49,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "7bb05e8dae1ca859cf241090e6696922be0f0f6d31fb683e15670f9f142446c7",
+    "trace": "prompt_76/dispatch_provider_49.json",
+    "trace_sha256": "9faafdd4571a319bb3c3d50392583dc955565c7c18231a6be4ae5f9a2e841e1d"
+  },
+  {
+    "prompt_id": 76,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          154
+        ],
+        "stride": [
+          154,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "f10bb779d56b86fcf8edcc9e5b82fe0ff55f7521fe1533811b5c3750cfb0d280",
+    "trace": "prompt_76/dispatch_reference_0.json",
+    "trace_sha256": "e02ebe1fe0aaa4b8fa8dcb5ed6406409800e0135e7e0be0acb83ac50541b3cd3"
+  },
+  {
+    "prompt_id": 77,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          25
+        ],
+        "stride": [
+          25,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "d82a239bd07a9aff79370f716340db29d50b1cf5219fb07459733b120ea3d9d4",
+    "trace": "prompt_77/dispatch_provider_0.json",
+    "trace_sha256": "23732bae91a8059bbe586ced36433cd47859b15c9718438172a55b987cff2d6c"
+  },
+  {
+    "prompt_id": 77,
+    "role": "provider",
+    "step": 94,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "a6b1ec3d3541d16ad62d6456094fe4c5ea22d06fcea73eb3bd7016544a2f29ab",
+    "trace": "prompt_77/dispatch_provider_94.json",
+    "trace_sha256": "eaa686a441b60dcf32d63c995e845c1d9bfe6facb34c35ebb1d107c002d66969"
+  },
+  {
+    "prompt_id": 77,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          153
+        ],
+        "stride": [
+          153,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "0db72012e312ab64c686af271948fe1f6b3a60879797b815d06021a3cc8a2afe",
+    "trace": "prompt_77/dispatch_reference_0.json",
+    "trace_sha256": "6c7df61578f013d024e3bab1d3ab74c2f8ac30d6c7c94b776f64b4ff6e050731"
+  },
+  {
+    "prompt_id": 78,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          25
+        ],
+        "stride": [
+          25,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "d82a239bd07a9aff79370f716340db29d50b1cf5219fb07459733b120ea3d9d4",
+    "trace": "prompt_78/dispatch_provider_0.json",
+    "trace_sha256": "67e6d81ac9d666a7846fa96a9d345738df06d3a141e83bc747df40ee2253b583"
+  },
+  {
+    "prompt_id": 78,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          153
+        ],
+        "stride": [
+          153,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "0db72012e312ab64c686af271948fe1f6b3a60879797b815d06021a3cc8a2afe",
+    "trace": "prompt_78/dispatch_reference_0.json",
+    "trace_sha256": "11e2593a6a9a11b57bc3a0aa1f38a7653fac4f722ffd541aff059b23cb71121c"
+  },
+  {
+    "prompt_id": 79,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          32
+        ],
+        "stride": [
+          32,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "ab4d7630366331c24747cc261a1a130b0891b7d67656a22e1f1cbf73aa04a726",
+    "trace": "prompt_79/dispatch_provider_0.json",
+    "trace_sha256": "fab551afcaefdcc2589bf3d91d2139512df0b2e36c0c3c5387c556ebbe5ddfc0"
+  },
+  {
+    "prompt_id": 79,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          160
+        ],
+        "stride": [
+          160,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "2a407d10995441c7565fe51bd7930373805b372d13380bdbcf3f4203e2c62c1a",
+    "trace": "prompt_79/dispatch_reference_0.json",
+    "trace_sha256": "260d2e4cae58b8608a623e76205b46ad7dc46cec6514ac930ec63a9c2a9f7da1"
+  },
+  {
+    "prompt_id": 80,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          18
+        ],
+        "stride": [
+          18,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "a390611102859c25235fbb8d4fbee564cf156cfac7788c9ea1e7488e4576e490",
+    "trace": "prompt_80/dispatch_provider_0.json",
+    "trace_sha256": "d9e65d17a32c21b1c61034776999a72ce1e24e5062ad064df71b58195a80a9ed"
+  },
+  {
+    "prompt_id": 80,
+    "role": "provider",
+    "step": 84,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "b0e92fa0dfcb6e79d6e157194dd57f2fb05c41888e1532eafefc6e879aa6553e",
+    "trace": "prompt_80/dispatch_provider_84.json",
+    "trace_sha256": "df4a0d69624da7bdb85e23748a82c3fbda14ce2bf2e8894e8202d23b0c8fad66"
+  },
+  {
+    "prompt_id": 80,
+    "role": "provider",
+    "step": 112,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "cbc5d5d1d83a19811edbc2bdf1dbb4bac7595be1e431dac808e5e5729cf4781c",
+    "trace": "prompt_80/dispatch_provider_112.json",
+    "trace_sha256": "ff740aa6ea9d7ccf8b11c6d5a549f94b96b6254a9c1c92a66926d490807288fd"
+  },
+  {
+    "prompt_id": 80,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          146
+        ],
+        "stride": [
+          146,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "6741f335b5c16b25bea241fcb79d0255a83e2bee5119acb7c23eda99e4475c3a",
+    "trace": "prompt_80/dispatch_reference_0.json",
+    "trace_sha256": "e350b836791a1d5ffdfef360b0871f9e26b334bb4026a78a883750c7e03081bc"
+  },
+  {
+    "prompt_id": 81,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          32
+        ],
+        "stride": [
+          32,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "ab4d7630366331c24747cc261a1a130b0891b7d67656a22e1f1cbf73aa04a726",
+    "trace": "prompt_81/dispatch_provider_0.json",
+    "trace_sha256": "8742f0df351124e073b07535777414c5e11860a1cfa9c7eb50637936692e720d"
+  },
+  {
+    "prompt_id": 81,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          160
+        ],
+        "stride": [
+          160,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "2a407d10995441c7565fe51bd7930373805b372d13380bdbcf3f4203e2c62c1a",
+    "trace": "prompt_81/dispatch_reference_0.json",
+    "trace_sha256": "377fc6c4d951652202da1078a63982c2daf7959cf174a1a51cd53bfbb6385c8e"
+  },
+  {
+    "prompt_id": 82,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          21
+        ],
+        "stride": [
+          21,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "c8e9b203472a9c6dbe18272f28ebdf8302e135ab66c0b7d8eba4f0fe2a1d9a4c",
+    "trace": "prompt_82/dispatch_provider_0.json",
+    "trace_sha256": "be58983543da0b7bc6dc59cd650a073bbcc1dafeb9d73f731328302fffc8d3a8"
+  },
+  {
+    "prompt_id": 82,
+    "role": "provider",
+    "step": 76,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "a82cfd250ad9c9128ad3201be6998e9e24d2b60800ee4de2fbbec2f56287b7c1",
+    "trace": "prompt_82/dispatch_provider_76.json",
+    "trace_sha256": "a2d6e6ca5e28b33a67357ec59bda5a738ca620c1f5a303180e0ffc5c90b69b85"
+  },
+  {
+    "prompt_id": 82,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          149
+        ],
+        "stride": [
+          149,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "d795b1930d5b820aab909a635bbeb5f2964e2e1ec05ec40e3a06f3b5f0b196fa",
+    "trace": "prompt_82/dispatch_reference_0.json",
+    "trace_sha256": "529e85a318b94020cc36894b9ab99f3502b42b98b9b3433401541c8b0160b398"
+  },
+  {
+    "prompt_id": 83,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          26
+        ],
+        "stride": [
+          26,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "a1edd095bdc61e5159098ee1997b6d9b9049a5fe9bd70cc12080bd0b33aa55c9",
+    "trace": "prompt_83/dispatch_provider_0.json",
+    "trace_sha256": "dd75fca89e59f61d94e2040050efd4cf7f5af4c59537adf4c41510bee236106c"
+  },
+  {
+    "prompt_id": 83,
+    "role": "provider",
+    "step": 48,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "7979a0c7b6a1bc86fd1d79f8bfa087e218b57ade7f9017818ea8b2347d85ee2b",
+    "trace": "prompt_83/dispatch_provider_48.json",
+    "trace_sha256": "6ccf98e98e2db496a78261cb3c884b4bfeba32ab4338156967c65981b091da9e"
+  },
+  {
+    "prompt_id": 83,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          154
+        ],
+        "stride": [
+          154,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "f10bb779d56b86fcf8edcc9e5b82fe0ff55f7521fe1533811b5c3750cfb0d280",
+    "trace": "prompt_83/dispatch_reference_0.json",
+    "trace_sha256": "9fb8602075b25211053b62d98293e7c861259846ae2df943f90cbecbd1184a45"
+  },
+  {
+    "prompt_id": 84,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          21
+        ],
+        "stride": [
+          21,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "c8e9b203472a9c6dbe18272f28ebdf8302e135ab66c0b7d8eba4f0fe2a1d9a4c",
+    "trace": "prompt_84/dispatch_provider_0.json",
+    "trace_sha256": "88945fd9c33d3e12e5b3182192889a165957fd12fffd53c685a6af1c56ff4634"
+  },
+  {
+    "prompt_id": 84,
+    "role": "provider",
+    "step": 72,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "fe630b6b93aa1ba0d6644cdb266892b48e84e98112e593a288a4c589c869362e",
+    "trace": "prompt_84/dispatch_provider_72.json",
+    "trace_sha256": "386865c46430b7a1610d9b0dfd5e51ffbecb3e7ce8f7734d6a6cca957d397807"
+  },
+  {
+    "prompt_id": 84,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          149
+        ],
+        "stride": [
+          149,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "d795b1930d5b820aab909a635bbeb5f2964e2e1ec05ec40e3a06f3b5f0b196fa",
+    "trace": "prompt_84/dispatch_reference_0.json",
+    "trace_sha256": "278e8bd429f80d0aec7aeb7ed4d7e972418e94def4a3dbab35e17e4630d5dc61"
+  },
+  {
+    "prompt_id": 85,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          21
+        ],
+        "stride": [
+          21,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "c8e9b203472a9c6dbe18272f28ebdf8302e135ab66c0b7d8eba4f0fe2a1d9a4c",
+    "trace": "prompt_85/dispatch_provider_0.json",
+    "trace_sha256": "c5c9f23990e00b373a8bf9197f98adc5a593186ef2615900d6a25e7ad401f47a"
+  },
+  {
+    "prompt_id": 85,
+    "role": "provider",
+    "step": 10,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "edb29028d57ba1389ea42c0a2be5c0bd2d9790c377c9909722f3715624018640",
+    "trace": "prompt_85/dispatch_provider_10.json",
+    "trace_sha256": "41cbf4b17b327faf8c6a5e8e4213070894aedb94b71c6c871f858d806dd2954b"
+  },
+  {
+    "prompt_id": 85,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          149
+        ],
+        "stride": [
+          149,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "d795b1930d5b820aab909a635bbeb5f2964e2e1ec05ec40e3a06f3b5f0b196fa",
+    "trace": "prompt_85/dispatch_reference_0.json",
+    "trace_sha256": "5c40f22d1841c62c352373437d9f20ef758604d06de5e06567e00337f9833d9d"
+  },
+  {
+    "prompt_id": 86,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          20
+        ],
+        "stride": [
+          20,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "04fc9c40609d09605c9d0c87f9ac9c47dd0f410741b009e7393c3ed9a392ee6a",
+    "trace": "prompt_86/dispatch_provider_0.json",
+    "trace_sha256": "d66cc292d81d92cbf65219fb64a914406646d717edf6a6fd47f62e88b3283b95"
+  },
+  {
+    "prompt_id": 86,
+    "role": "provider",
+    "step": 9,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "ea79686411c70334c4a2d452d3a89dc571daf695628d135e91afa204ae040351",
+    "trace": "prompt_86/dispatch_provider_9.json",
+    "trace_sha256": "1cd095fa6b913d80991784e2732e4468931af396c32f985ea6df0bc7938260a6"
+  },
+  {
+    "prompt_id": 86,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          148
+        ],
+        "stride": [
+          148,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "4d4dd6d544f4dee370e3242a956e464b77717b6aeab189f740b7a2cea517cfa9",
+    "trace": "prompt_86/dispatch_reference_0.json",
+    "trace_sha256": "4c3349ed163ffbb44a3b201f31671d57773f7c277ea8d0fdbbe623bc3f9218cc"
+  },
+  {
+    "prompt_id": 87,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          31
+        ],
+        "stride": [
+          31,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "e4d88a02be952adbd1f1d02982f000fa01014a5d2180a71df33b7ebf801ff281",
+    "trace": "prompt_87/dispatch_provider_0.json",
+    "trace_sha256": "6871a23ce353d2d20443e57820b79df137a65a62781734cd068f4757918b2a9b"
+  },
+  {
+    "prompt_id": 87,
+    "role": "provider",
+    "step": 77,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "1d0f9c1fd6ab543b38e4a7d84a934503bbf3391f3f5d41cb51997822409ca8f6",
+    "trace": "prompt_87/dispatch_provider_77.json",
+    "trace_sha256": "f1eb2b6ba561a79a45c1f53493eb1234659ec610483f5bae61347bdb655de23a"
+  },
+  {
+    "prompt_id": 87,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          159
+        ],
+        "stride": [
+          159,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "3c4c2a6a02e6c817f11adcdb001d239b79a9254109e989c4e9bfbc3ace9ab722",
+    "trace": "prompt_87/dispatch_reference_0.json",
+    "trace_sha256": "9de84913431c9e09b1ce23973a28bcac56549f0da98ed160adbf4a3f600795b6"
+  },
+  {
+    "prompt_id": 88,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          21
+        ],
+        "stride": [
+          21,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "c8e9b203472a9c6dbe18272f28ebdf8302e135ab66c0b7d8eba4f0fe2a1d9a4c",
+    "trace": "prompt_88/dispatch_provider_0.json",
+    "trace_sha256": "aeaf1b7c3d6a0a2d4e2e235665b66f6ede95729b8799d05eae58a08a6da49678"
+  },
+  {
+    "prompt_id": 88,
+    "role": "provider",
+    "step": 93,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "ec42ba893169179215d58c9eb22db784762cb11a982d847f9374c41be2fc0734",
+    "trace": "prompt_88/dispatch_provider_93.json",
+    "trace_sha256": "9b603398b8f0c5565e723108cc763e9cfe71324207dde12063f1c3330345a870"
+  },
+  {
+    "prompt_id": 88,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          149
+        ],
+        "stride": [
+          149,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "d795b1930d5b820aab909a635bbeb5f2964e2e1ec05ec40e3a06f3b5f0b196fa",
+    "trace": "prompt_88/dispatch_reference_0.json",
+    "trace_sha256": "9bdec99064319485eef35654445919c5157a5358f4c321fa1f2a6ba08af19e0f"
+  },
+  {
+    "prompt_id": 89,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          21
+        ],
+        "stride": [
+          21,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "c8e9b203472a9c6dbe18272f28ebdf8302e135ab66c0b7d8eba4f0fe2a1d9a4c",
+    "trace": "prompt_89/dispatch_provider_0.json",
+    "trace_sha256": "a8934d5e5fd6cb441f8c395a0b12eeea740e0874b3873d98102482e51a93c65e"
+  },
+  {
+    "prompt_id": 89,
+    "role": "provider",
+    "step": 72,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "fe630b6b93aa1ba0d6644cdb266892b48e84e98112e593a288a4c589c869362e",
+    "trace": "prompt_89/dispatch_provider_72.json",
+    "trace_sha256": "a9a7569255d7300228c044bcb1afc92a872ce82af7dd5a0f7ed75312fda9ddbd"
+  },
+  {
+    "prompt_id": 89,
+    "role": "provider",
+    "step": 73,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "293accce45478c93a5d16c136a3222fd9b50327f85a29fdef7accf780822d238",
+    "trace": "prompt_89/dispatch_provider_73.json",
+    "trace_sha256": "9de8e96906ecbe3f37cc47c1ecab9c0180b876bec85db8c100dcd1cd703f9cc6"
+  },
+  {
+    "prompt_id": 89,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          149
+        ],
+        "stride": [
+          149,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "d795b1930d5b820aab909a635bbeb5f2964e2e1ec05ec40e3a06f3b5f0b196fa",
+    "trace": "prompt_89/dispatch_reference_0.json",
+    "trace_sha256": "3dd686fad9ac1ea1723b0709db0b469cfee7adc7e46894b3a4234104d51b560a"
+  },
+  {
+    "prompt_id": 90,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          26
+        ],
+        "stride": [
+          26,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "a1edd095bdc61e5159098ee1997b6d9b9049a5fe9bd70cc12080bd0b33aa55c9",
+    "trace": "prompt_90/dispatch_provider_0.json",
+    "trace_sha256": "3344ee825bcdc2273b56bc493cbc8c522b8ca068175b60141548ef34614e30fc"
+  },
+  {
+    "prompt_id": 90,
+    "role": "provider",
+    "step": 121,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "6ed46ea45a18c653551d98bb8bf6542c23f9a997ff13de121ff0bfab3e81af25",
+    "trace": "prompt_90/dispatch_provider_121.json",
+    "trace_sha256": "f6852ed3f4a1fb4714d656f8d116198cf34f1c8dd2ba268e78b9ba7617f96b35"
+  },
+  {
+    "prompt_id": 90,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          154
+        ],
+        "stride": [
+          154,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "f10bb779d56b86fcf8edcc9e5b82fe0ff55f7521fe1533811b5c3750cfb0d280",
+    "trace": "prompt_90/dispatch_reference_0.json",
+    "trace_sha256": "cbcfeb03f4770a1a006bfa89589c06d19a80368f9d0410fbad71c3cca03fccbb"
+  },
+  {
+    "prompt_id": 91,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          32
+        ],
+        "stride": [
+          32,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "ab4d7630366331c24747cc261a1a130b0891b7d67656a22e1f1cbf73aa04a726",
+    "trace": "prompt_91/dispatch_provider_0.json",
+    "trace_sha256": "57178335a941bc53500e73b58a86bccf85f2f565c78be79bf2253ecc3c5cdb9c"
+  },
+  {
+    "prompt_id": 91,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          160
+        ],
+        "stride": [
+          160,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "2a407d10995441c7565fe51bd7930373805b372d13380bdbcf3f4203e2c62c1a",
+    "trace": "prompt_91/dispatch_reference_0.json",
+    "trace_sha256": "c3597a303652a15c09a420a679d28b17239cf83109667758dd99032150ed034b"
+  },
+  {
+    "prompt_id": 92,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          20
+        ],
+        "stride": [
+          20,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "04fc9c40609d09605c9d0c87f9ac9c47dd0f410741b009e7393c3ed9a392ee6a",
+    "trace": "prompt_92/dispatch_provider_0.json",
+    "trace_sha256": "202082925909bc587e88630f53737c3eed62c5f2de9a9a5f4fedf2c9bdbb0adf"
+  },
+  {
+    "prompt_id": 92,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          148
+        ],
+        "stride": [
+          148,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "4d4dd6d544f4dee370e3242a956e464b77717b6aeab189f740b7a2cea517cfa9",
+    "trace": "prompt_92/dispatch_reference_0.json",
+    "trace_sha256": "f1657df800fdc61617f3df723db847fcfd5b4973b924efac1c62f5acb722514f"
+  },
+  {
+    "prompt_id": 93,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          18
+        ],
+        "stride": [
+          18,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "a390611102859c25235fbb8d4fbee564cf156cfac7788c9ea1e7488e4576e490",
+    "trace": "prompt_93/dispatch_provider_0.json",
+    "trace_sha256": "c22f3aeba3730c855640b17e7a69e2cbf1696754f83419915dc1bfa5b56bd356"
+  },
+  {
+    "prompt_id": 93,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          146
+        ],
+        "stride": [
+          146,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "6741f335b5c16b25bea241fcb79d0255a83e2bee5119acb7c23eda99e4475c3a",
+    "trace": "prompt_93/dispatch_reference_0.json",
+    "trace_sha256": "380c9d0f6da418fb988c8ea940ca9114c4a498eeea4ac42f4aa951b5487bf3c7"
+  },
+  {
+    "prompt_id": 94,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          24
+        ],
+        "stride": [
+          24,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "fc697454159aba0679d08c3fd144f79d49b0f442b42cfd729f53facd329fda2b",
+    "trace": "prompt_94/dispatch_provider_0.json",
+    "trace_sha256": "61e6b63404d9ef1bd2373dc69e08239396c288fc31e0bc0fcc3b4da8dfcb0944"
+  },
+  {
+    "prompt_id": 94,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          152
+        ],
+        "stride": [
+          152,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "b719bad06c12bc06081badf23d001ac930377f01798c89f2d9cb49c0186e054f",
+    "trace": "prompt_94/dispatch_reference_0.json",
+    "trace_sha256": "c00706b549f41dfca7634f5da96471050db4a73862f4db64d48ed54623248cfc"
+  },
+  {
+    "prompt_id": 95,
+    "role": "provider",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          25
+        ],
+        "stride": [
+          25,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1987,
+    "launches_sha256": "d82a239bd07a9aff79370f716340db29d50b1cf5219fb07459733b120ea3d9d4",
+    "trace": "prompt_95/dispatch_provider_0.json",
+    "trace_sha256": "8d6b20188e2840cbc919387ef6b805eca389c2c62ac53792f03d9d312bd92f4d"
+  },
+  {
+    "prompt_id": 95,
+    "role": "provider",
+    "step": 120,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          1
+        ],
+        "stride": [
+          1,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1819,
+    "launches_sha256": "ef45d892771fa580604bd34138c49d4f365abd56ad791a1efe3de25481ff979a",
+    "trace": "prompt_95/dispatch_provider_120.json",
+    "trace_sha256": "2804aef550e837588d6bca20bdcb005f06a5a28616a8797b16d932b0b093b6b1"
+  },
+  {
+    "prompt_id": 95,
+    "role": "reference",
+    "step": 0,
+    "inputs": [
+      {
+        "dtype": "torch.int64",
+        "shape": [
+          1,
+          153
+        ],
+        "stride": [
+          153,
+          1
+        ],
+        "device": "cuda:0"
+      }
+    ],
+    "kernels": 1875,
+    "launches_sha256": "0db72012e312ab64c686af271948fe1f6b3a60879797b815d06021a3cc8a2afe",
+    "trace": "prompt_95/dispatch_reference_0.json",
+    "trace_sha256": "fd07a0c6e21cf2126461cc021ecf25b0bb933c31d21e22eedb7e891d01c8a165"
+  }
+]

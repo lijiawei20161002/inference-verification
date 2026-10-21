@@ -43,6 +43,33 @@ def tensor_array(t):
     return (x.view(torch.uint16) if x.dtype == torch.bfloat16 else x).cpu().numpy().copy()
 
 
+class ProfiledCall:
+    """Trace complete selected forwards after naturally reconstructing their state."""
+
+    def __init__(self, model, role, selected, directory, records):
+        self.model, self.role, self.selected = model, role, set(selected)
+        self.directory, self.records, self.step = directory, records, 0
+
+    def __call__(self, *args, **kwargs):
+        import torch
+
+        step = self.step
+        self.step += 1
+        if self.role == "provider" and step not in self.selected:
+            return self.model(*args, **kwargs)
+        name = f"dispatch_{self.role}_{step}.json"
+        inputs = [tensor_meta(x) for x in args if hasattr(x, "shape")]
+        with torch.profiler.profile(
+            activities=[torch.profiler.ProfilerActivity.CPU,
+                        torch.profiler.ProfilerActivity.CUDA],
+            record_shapes=True,
+        ) as trace:
+            out = self.model(*args, **kwargs)
+        trace.export_chrome_trace(str(self.directory / name))
+        self.records.append(dict(role=self.role, step=step, file=name, inputs=inputs))
+        return out
+
+
 class Observer:
     def __init__(self, directory, selected):
         self.directory, self.selected = directory, set(selected)
@@ -163,7 +190,10 @@ def main(argv=None):
     parser.add_argument("--selection-from", type=Path)
     parser.add_argument("--limit", type=int, default=64)
     parser.add_argument("--tokens", type=int, default=128)
-    parser.add_argument("--profile", action="store_true")
+    profiling = parser.add_mutually_exclusive_group()
+    profiling.add_argument("--profile", action="store_true")
+    profiling.add_argument("--profile-events", action="store_true",
+                           help="Trace each selected provider forward and full reference forward")
     args = parser.parse_args(argv)
     if args.phase == "capture" and args.selection_from is None:
         parser.error("Capture requires a completed baseline for event selection")
@@ -172,7 +202,10 @@ def main(argv=None):
         parser.error("Invalid discovery subset")
     args.output.mkdir(parents=True, exist_ok=False)
     manifest = dict(schema="ivgym-paired-bf16-v1", status="running",
-                    phase=args.phase, profiling=args.profile, injected_noise=False,
+                    phase=args.phase, profiling=args.profile or args.profile_events,
+                    profile_mode="selected_forwards" if args.profile_events else
+                                 "full_sequence" if args.profile else "none",
+                    injected_noise=False,
                     started_utc=datetime.now(timezone.utc).isoformat(),
                     pid=os.getpid(), source_sha256=source_snapshot(args.output))
     started = time.monotonic()
@@ -224,7 +257,9 @@ def main(argv=None):
             native_logits="torch.bfloat16", no_model_arithmetic_replacement=True,
             control_position="first position without an archived cap for each sequence",
             selection_from=str(args.selection_from) if args.selection_from else None,
-            dispatch_scope="profiled subset only" if args.profile else "module metadata; kernel tracing in separate controls")
+            dispatch_scope="selected provider forwards and complete reference forward"
+                           if args.profile_events else "profiled subset only" if args.profile
+                           else "module metadata; kernel tracing in separate controls")
         write_json(args.output / "corpus.json", rows)
         write_json(args.output / "manifest.json", manifest)
         with ExitStack() as stack:
@@ -268,15 +303,22 @@ def main(argv=None):
                     profiler = torch.profiler.profile(
                         activities=[torch.profiler.ProfilerActivity.CPU, torch.profiler.ProfilerActivity.CUDA],
                         record_shapes=True) if args.profile else nullcontext()
+                    provider_call = observer.wrapped_model(provider, "provider", row) if observer else provider
+                    reference_call = observer.wrapped_model(reference_model, "reference", row) if observer else reference_model
+                    dispatch_records = []
+                    if args.profile_events:
+                        provider_call = ProfiledCall(provider_call, "provider", selected,
+                                                     directory, dispatch_records)
+                        reference_call = ProfiledCall(reference_call, "reference", selected,
+                                                      directory, dispatch_records)
                     with profiler as trace:
-                        claimed, fps, served = legacy.generate(
-                            observer.wrapped_model(provider, "provider", row) if observer else provider,
-                            row, args.tokens, proj)
-                        ref_logits, ref_hidden = legacy.reference(
-                            observer.wrapped_model(reference_model, "reference", row) if observer else reference_model,
-                            row, claimed)
+                        claimed, fps, served = legacy.generate(provider_call, row, args.tokens, proj)
+                        ref_logits, ref_hidden = legacy.reference(reference_call, row, claimed)
                     if args.profile:
                         trace.export_chrome_trace(str(directory / "dispatch.json"))
+                    if args.profile_events:
+                        write_json(directory / "dispatch_index.json", dict(
+                            prompt_id=pid, selected_positions=sorted(selected), calls=dispatch_records))
                     if observer:
                         observer.role, observer.noise_index, observer.position = "reference", 0, -1
                     scores = legacy.score(row, claimed, fps, ref_logits, ref_hidden, proj)

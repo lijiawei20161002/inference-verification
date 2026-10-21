@@ -1,0 +1,84 @@
+{
+  "schema": "ivgym-m1-dispatch-review-v1",
+  "reviewed_utc": "2026-10-21T01:45:42.757261+00:00",
+  "result": "passed",
+  "regression_tests": {
+    "command": ".venv/bin/python -m pytest tests/ -q --ignore=tests/test_audit_protocol.py --ignore=tests/test_audit_conformance.py --ignore=tests/test_service.py",
+    "passed": 220,
+    "warnings": 1,
+    "warning": "Expected RatioCeilingWarning in test_batched_auc_floor_needs_seed_averaging",
+    "elapsed_seconds": 108.75
+  },
+  "counts": {
+    "sequences": 64,
+    "positions": 8192,
+    "selected_provider_calls": 113,
+    "reference_calls": 64,
+    "calls_per_profiled_worker": 177,
+    "profiled_workers": 4,
+    "historical_events": 49,
+    "historical_reproduced": 49
+  },
+  "campaign_artifact_hashes_checked": 12,
+  "frozen_source_files_checked": 337,
+  "parent_baseline_artifact_hashes_checked": 3,
+  "workers": {
+    "baseline": {
+      "artifacts_checked": 3,
+      "source_files_checked": 50,
+      "manifest_sha256": "0cf7ba836ff1b4ecc4ec06a13ae7f68276991bc0744d9542e163335a7b5b3966"
+    },
+    "capture": {
+      "artifacts_checked": 357,
+      "source_files_checked": 50,
+      "manifest_sha256": "615924c163097ff6a8231ecd0656ed4e219b5c906d7e4fdb05039b09cb376f32"
+    },
+    "profile_baseline_1": {
+      "artifacts_checked": 244,
+      "source_files_checked": 50,
+      "manifest_sha256": "a9f20a5013112c232940459323f12183b9503fc1da83f41e3e31335eb559c3db",
+      "traces_checked": 177,
+      "kernels_checked": 336299
+    },
+    "profile_capture_1": {
+      "artifacts_checked": 598,
+      "source_files_checked": 50,
+      "manifest_sha256": "cebe91c3cfc7a35a08c1e0e51ce1107f8440cd7a6e7a123e9876673ba8009f52",
+      "traces_checked": 177,
+      "kernels_checked": 336299
+    },
+    "profile_baseline_2": {
+      "artifacts_checked": 244,
+      "source_files_checked": 50,
+      "manifest_sha256": "1526d12aeafff7a04ef518d34d4d12d4dd8ef8f38b31f5b207faac5bb097ed90",
+      "traces_checked": 177,
+      "kernels_checked": 336299
+    },
+    "profile_capture_2": {
+      "artifacts_checked": 598,
+      "source_files_checked": 50,
+      "manifest_sha256": "01a8c7cf04c65cb7cf7a921092867343e84d541eeb589d64eb970c238534c661",
+      "traces_checked": 177,
+      "kernels_checked": 336299
+    }
+  },
+  "worker_artifact_hashes_checked": 2044,
+  "raw_traces_recomputed": 708,
+  "kernel_launches_recomputed": 1345196,
+  "source_sha256": {
+    "experiments/numerical/dispatch_validation.py": "084c6f93fb660ff5f41cb2b7d046d3a5bf1a13462b707d632217eb57549940da",
+    "experiments/numerical/run_dispatch_campaign.py": "7c374d7ba135c841181d52cadb1e0bfbda4a83150d55ef24ed4dae4a09a8d31c",
+    "tests/test_dispatch_validation.py": "bd384ed9e6c6b282d74e355695cb3a8e153154ede85ad52bc9eae417dc68d28f",
+    "experiments/numerical/__init__.py": "60c4df1a4ae36e41c62a32be4d9f62da0db8fedfa754cbdbfb9f326d29b98782",
+    "experiments/numerical/capture_bf16.py": "9b755b695c9d4708f624eda56d9aed44d721e54e2452562d29aaa6f91de587f0",
+    "experiments/numerical/frozen_logits.py": "781d7b2d9842eecc7bc92f5269e8f3e98ec2d2cddaaf4658bd5e5cb8ab26fe01",
+    "experiments/numerical/run_e0_campaign.py": "65f4c08d1f4a0a69c667ae4e220fe9e73562c612e5309ce1e4093dcef96212d1",
+    "experiments/numerical/sampler_contract.py": "e6b2fd80e1ec2932e15f38a4f7519aa40ce382bb76c410fc23a9145147dc8a09",
+    "experiments/numerical/score_tails.py": "23c6cb5224e1b50722093caa94e52122c4d9a49b3178d9521d8007734e0e1f0f"
+  },
+  "summary_sha256": "afaf5d6d8427203c7adeb81bc474c1d0adb82cfce26ff117d63f5cb4dd0660cd",
+  "original_report_sha256": "3569327ad2ce12ac8cd064633fde56aa931f4ab355b29c857bcb6adffde79265",
+  "run_bytes": 11281195321,
+  "run_files": 2745,
+  "scope": "Recomputed hashes, full trajectory comparisons, capture equivalence and selected-forward kernel signatures from retained files; no fresh GPU run or mechanism attribution."
+}
