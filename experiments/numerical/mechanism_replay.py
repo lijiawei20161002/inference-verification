@@ -27,6 +27,7 @@ from experiments.numerical.capture_bf16 import tensor_array
 from experiments.numerical.dispatch_validation import kernel_launches
 from experiments.numerical.frozen_logits import array_hash, widen_bf16
 from experiments.numerical.mechanism_ops import calculate, sampling_matrix, validate_controls
+from experiments.numerical.mechanism_diagnostics import native_reference, partition_coverage
 from experiments.numerical.run_e0_campaign import now, status
 
 ROOT = Path(__file__).resolve().parents[2]
@@ -45,10 +46,14 @@ def operand_hashes(operands):
     return {key: tensor_hash(value) for key, value in operands.items()}
 
 
+def tensor_layouts(tensors):
+    return {key: dict(dtype=str(value.dtype), shape=list(value.shape), stride=list(value.stride()))
+            for key, value in tensors.items()}
+
+
 def save_tensors(directory, stem, tensors):
     np.savez(directory / f"{stem}.npz", **{key: tensor_array(value) for key, value in tensors.items()})
-    write_json(directory / f"{stem}.json", {key: dict(dtype=str(value.dtype), shape=list(value.shape))
-                                           for key, value in tensors.items()})
+    write_json(directory / f"{stem}.json", tensor_layouts(tensors))
 
 
 def load_tensors(directory, stem, device):
@@ -67,7 +72,12 @@ def load_tensors(directory, stem, device):
                 value = value.view(torch.bfloat16)
             if str(value.dtype) != detail["dtype"] or list(value.shape) != detail["shape"]:
                 raise ValueError("Tensor metadata differs")
-            result[key] = value.to(device)
+            if "stride" in detail:
+                restored = torch.empty_strided(detail["shape"], detail["stride"], dtype=value.dtype, device=device)
+                restored.copy_(value)
+                result[key] = restored
+            else:
+                result[key] = value.to(device)
     return result
 
 
@@ -86,7 +96,8 @@ class OperationHook:
         self.model, self.case, self.recipe = model, case, recipe
         self.operands, self.replacements, self.mode = operands, replacements or {}, mode
         self.expected = operand_hashes(operands) if operands is not None else None
-        self.calls, self.native = 0, None
+        self.expected_layouts = tensor_layouts(operands) if operands is not None else None
+        self.calls, self.native, self.full_native = 0, None, None
 
     def process(self, operands, output):
         import torch
@@ -97,12 +108,19 @@ class OperationHook:
         hashes = operand_hashes(operands)
         if self.expected is not None and hashes != self.expected:
             raise ValueError("Operation operands drifted during model replay")
+        if self.expected_layouts is not None and tensor_layouts(operands) != self.expected_layouts:
+            raise ValueError("Operation operand layout drifted during model replay")
         if self.operands is None:
             self.operands = operands
         self.native = output.clone()
         if self.mode == "capture":
             return output
-        side = "a" if self.mode in ("a", "sham_a", "forward") else "b"
+        if self.mode == "native_sham":
+            result = self.replacements["native_replay"].clone()
+            if not torch.equal(result, output):
+                raise ValueError("Native replay differs at intervention site")
+            return result
+        side = "a" if self.mode in ("a", "sham_a", "forward", "native_restore") else "b"
         result = calculate(self.case["family"], operands, self.recipe,
                            "ascending" if side == "a" else "descending")
         if not torch.equal(result, self.replacements[side]):
@@ -110,6 +128,8 @@ class OperationHook:
         if self.mode in ("sham_a", "sham_b", "forward", "reverse"):
             target = "b" if self.mode == "forward" else "a" if self.mode == "reverse" else side
             result = self.replacements[target].clone()
+        if self.mode == "native_restore":
+            result = self.replacements["native_replay"].clone()
         if result.shape != output.shape or result.dtype != output.dtype:
             raise ValueError("Replacement changes shape or dtype")
         return result
@@ -128,6 +148,9 @@ class OperationHook:
             def hook(module, inputs, output):
                 operands = dict(x=inputs[0][:, idx:idx + 1].detach().contiguous(),
                                 weight=module.weight.detach().contiguous())
+                if self.recipe.get("diagnostics"):
+                    operands["full_x"] = inputs[0].detach()
+                    self.full_native = output.detach().clone()
                 replacement = self.process(operands, output[:, idx:idx + 1])
                 if self.mode == "capture":
                     return output
@@ -153,6 +176,9 @@ class OperationHook:
                                 key=qwen.repeat_kv(key, module.num_key_value_groups).detach().contiguous(),
                                 value=qwen.repeat_kv(value, module.num_key_value_groups).detach().contiguous(),
                                 mask=attention_mask[:, :, idx:idx + 1, :key.shape[-2]].detach().contiguous())
+                if self.recipe.get("diagnostics"):
+                    operands.update(full_query=query.detach(), full_mask=attention_mask.detach().contiguous())
+                    self.full_native = output.detach().clone()
                 replacement = self.process(operands, output[:, idx:idx + 1])
                 if self.mode == "capture":
                     return output, weights
@@ -217,6 +243,55 @@ def metrics(a, b):
     af, bf = a.float().cpu().numpy(), b.float().cpu().numpy()
     return dict(changed=int(np.count_nonzero(av != bv)), elements=int(av.size),
                 max_abs=float(np.max(np.abs(af - bf))), rms=float(np.sqrt(np.mean((af - bf).astype(np.float64)**2))))
+
+
+def collect_diagnostics(directory, case, recipe, operands, full_native, replacements):
+    import torch
+
+    family = case["family"]
+    coverage = None
+    if family == "attention":
+        coverage = partition_coverage(operands["mask"].float().cpu().numpy(), recipe["attention_chunk"],
+                                      recipe["minimum_active_partitions"])
+    with torch.inference_mode():
+        details = {}
+        for side, order in (("a", "ascending"), ("b", "descending")):
+            output, details[side] = calculate(family, operands, recipe, order, return_details=True)
+            if not torch.equal(output, replacements[side]):
+                raise ValueError("FP32 instrumentation changed the local output")
+            save_tensors(directory, f"fp32_{side}", details[side])
+        common = set(details["a"]) - {"precast", "numerator", "denominator"}
+        if any(not torch.equal(details["a"][k], details["b"][k]) for k in common):
+            raise ValueError("Reduction orders did not use identical partials")
+        replay = native_reference(family, operands, recipe)
+        if not torch.equal(replay, full_native):
+            raise ValueError("Full-shape native operator bridge differs")
+        with torch.profiler.profile(activities=[torch.profiler.ProfilerActivity.CPU,
+                                               torch.profiler.ProfilerActivity.CUDA],
+                                    record_shapes=True) as trace:
+            traced = native_reference(family, operands, recipe)
+        if not torch.equal(traced, full_native):
+            raise ValueError("Profiling changed the native bridge")
+        trace.export_chrome_trace(str(directory / "native_bridge_trace.json"))
+        launches = kernel_launches(directory / "native_bridge_trace.json")
+        save_tensors(directory, "native_full", dict(native=full_native, replay=replay))
+        selected = replay[:, case["token_index"]:case["token_index"] + 1].clone()
+        diagnostics = dict(coverage=coverage, operand_layouts=tensor_layouts(operands),
+                           native_full_exact=True, native_full_hashes=operand_hashes(dict(native=full_native, replay=replay)),
+                           native_dispatch=dict(kernels=len(launches), launches_sha256=hashlib.sha256(json.dumps(launches).encode()).hexdigest()),
+                           fp32_hashes={side: operand_hashes(values) for side, values in details.items()},
+                           fp32_difference=metrics(details["a"]["precast"], details["b"]["precast"]),
+                           partials_exact=True)
+        if family == "attention":
+            previous_recipe = dict(recipe, attention_chunk=32)
+            previous = {side: calculate(family, operands, previous_recipe, order)
+                        for side, order in (("a", "ascending"), ("b", "descending"))}
+            save_tensors(directory, "chunk32_control", previous)
+            diagnostics["chunk32_control"] = dict(hashes=operand_hashes(previous),
+                coverage=partition_coverage(operands["mask"].float().cpu().numpy(), 32, minimum=1),
+                local_difference=metrics(previous["a"], previous["b"]),
+                to_chunk8={side: metrics(previous[side], replacements[side]) for side in ("a", "b")})
+    return diagnostics, selected
 
 
 def run(args):
@@ -325,6 +400,10 @@ def run(args):
                                     for side, order in (("a", "ascending"), ("b", "descending"))}
                     if any(not torch.isfinite(t).all() for t in replacements.values()):
                         raise ValueError("Nonfinite local intervention")
+                diagnostics, native_replay = None, None
+                if recipe.get("diagnostics"):
+                    diagnostics, native_replay = collect_diagnostics(
+                        directory, case, recipe, operands, observer.full_native, replacements)
                 save_tensors(directory, "operands", operands)
                 save_tensors(directory, "local", dict(native=native, **replacements))
                 traces = {side: trace_recipe(directory, case["family"], operands, recipe, order, replacements[side])
@@ -332,7 +411,16 @@ def run(args):
                 for mode in MODES[1:]:
                     with OperationHook(model, case, recipe, operands, replacements, mode):
                         states[mode], logits[mode] = forward(model, input_ids, case["token_index"], plen)
+                if diagnostics is not None:
+                    for mode in ("native_sham", "native_restore"):
+                        with OperationHook(model, case, recipe, operands,
+                                           dict(replacements, native_replay=native_replay), mode):
+                            states[mode], logits[mode] = forward(model, input_ids, case["token_index"], plen)
+                        if states[mode] != states["native"]:
+                            raise ValueError(f"Native bridge state control failed: {mode}")
                 controls = validate_controls(states, case["layer"])
+                if diagnostics is not None:
+                    controls.update(native_sham_exact=True, native_restore_exact=True)
                 matrix = sampling_matrix(widen_bf16(logits["a"]), widen_bf16(logits["b"]), noise)
                 primary = next(c for c in matrix if c["dtype"] == "float32" and c["convention"] == "legacy"
                                and c["mode"] == "top_k_top_p")
@@ -345,12 +433,22 @@ def run(args):
                               explanation="controlled_reduction_order_effect" if primary["token_changed"]
                               else "no_primary_sampling_effect", historical_attribution="not_established",
                               conformance="allowed_variation_under_explicit_experimental_contract")
+                if diagnostics is not None:
+                    diagnostics["selected_logits_changed"] = not np.array_equal(logits["a"], logits["b"])
+                    diagnostics["native_sampling"] = {side: sampling_matrix(
+                        widen_bf16(logits["native"]), widen_bf16(logits[side]), noise) for side in ("a", "b")}
+                    record["diagnostics"] = diagnostics
                 if args.replay_from:
                     if read(old_dir / "record.json") != record:
                         raise ValueError("Independent saved-operand replay differs")
                     saved_local = load_tensors(old_dir, "local", "cuda")
                     if operand_hashes(saved_local) != record["local_hashes"]:
                         raise ValueError("Saved local outputs do not replay")
+                    if diagnostics is not None:
+                        for side in ("a", "b"):
+                            saved_detail = load_tensors(old_dir, f"fp32_{side}", "cuda")
+                            if operand_hashes(saved_detail) != diagnostics["fp32_hashes"][side]:
+                                raise ValueError("Saved FP32 intermediates do not replay")
                 write_json(directory / "record.json", record)
                 np.savez(directory / "logits.npz", **logits, gumbel=noise,
                          input_ids=input_ids.cpu().numpy())

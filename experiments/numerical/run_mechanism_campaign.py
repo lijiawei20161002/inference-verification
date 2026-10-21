@@ -19,11 +19,12 @@ import time
 
 from experiments.analyze_real_quantization import digest, write_json
 from experiments.numerical.mechanism_ops import select_cases
+from experiments.numerical.mechanism_diagnostics import summarize_diagnostics
 from experiments.numerical.mechanism_replay import read, verify_artifacts
 from experiments.numerical.run_e0_campaign import freeze_source, now, status
 
 ROOT = Path(__file__).resolve().parents[2]
-TESTS = ["tests/test_mechanism_ops.py", "tests/test_mechanism_campaign.py",
+TESTS = ["tests/test_mechanism_ops.py", "tests/test_mechanism_campaign.py", "tests/test_mechanism_diagnostics.py",
          "tests/test_dispatch_validation.py", "tests/test_e0_campaign.py",
          "tests/test_frozen_logits.py", "tests/test_numerical_diagnostics.py",
          "tests/test_real_quantization.py"]
@@ -59,6 +60,15 @@ def launch(args):
     if digest(events_path) != pm["artifacts_sha256"]["events.json"]:
         raise ValueError("Parent event ledger changed")
     cases = select_cases(read(events_path), args.cases_per_family)
+    recipe = dict(gemm_chunk=64, attention_chunk=8 if args.partition_bridge else 32,
+                  accumulation="float32", a="ascending", b="descending", final_cast="captured BF16 dtype")
+    if args.partition_bridge:
+        recipe.update(diagnostics=True, minimum_active_partitions=3)
+        corpus = {r["prompt_id"]: r for r in read(parent / "capture/corpus.json")}
+        for case in cases:
+            allowed_keys = len(corpus[case["prompt_id"]]["prompt_tokens"]) + case["position"]
+            if case["family"] == "attention" and (allowed_keys + 7) // 8 < 3:
+                raise ValueError("Selected attention case has fewer than three active partitions")
     if args.cases_per_family > 2:
         if args.repeats != 3 or args.preflight_from is None:
             raise ValueError("Full pilot requires three repeats and a completed preflight")
@@ -68,6 +78,9 @@ def launch(args):
         ps = read(pf / "summary.json")
         if ps["saved_operand_replay"]["exact"] is not True or ps["cases_per_family"] != 2:
             raise ValueError("Preflight did not validate both mechanisms")
+        preflight_plan = read(pf / "plan.json")
+        if preflight_plan["recipe"] != recipe or preflight_plan["parent_m1"] != str(parent):
+            raise ValueError("Preflight used a different recipe or parent")
         pi = read(pf / "source_inventory.json")
         for name, sha in pi.items():
             if name.endswith(".py") and digest(ROOT / name) != sha:
@@ -78,8 +91,7 @@ def launch(args):
                 parent_summary_sha256=digest(parent / "summary.json"),
                 parent_capture_manifest_sha256=digest(parent / "capture/manifest.json"),
                 cases=cases, cases_per_family=args.cases_per_family, repeats=args.repeats,
-                recipe=dict(gemm_chunk=64, attention_chunk=32, accumulation="float32",
-                            a="ascending", b="descending", final_cast="captured BF16 dtype"),
+                recipe=recipe, round="partition_bridge" if args.partition_bridge else "original_pilot",
                 selection="Equally spaced historical/control positions, half each, layers 0/14/27; frozen before outcomes",
                 discovery_only=True, injected_noise=False,
                 primary_sampling="Matched float32, legacy top-k 50 then top-p 0.95, actual saved Gumbel",
@@ -187,6 +199,8 @@ def run(args):
                                     primary_support_changed=sum(r["primary_support_delta"] > 0 for r in rows),
                                     primary_token_changed=sum(r["primary_token_changed"] for r in rows),
                                     any_sampling_cell_changed=sum(any(c["token_changed"] for c in r["sampling"]) for r in rows))
+            if plan["recipe"].get("diagnostics"):
+                families[family]["diagnostics"] = summarize_diagnostics(rows)
         summary = dict(schema="ivgym-m3-pilot-summary-v1", finished_utc=now(), discovery_only=True,
                        cases_per_family=plan["cases_per_family"], families=families,
                        independent_repeats=plan["repeats"], comparisons=comparisons[:-1],
@@ -194,7 +208,7 @@ def run(args):
                        m3_gate="pilot_complete_full_mechanism_gate_pending",
                        historical_attribution="not_established", native_kernel_internals="not_inferred",
                        elapsed_seconds=time.monotonic() - started,
-                       scope=plan["mechanism_scope"], peak_cuda_allocated_bytes=max(
+                       scope=plan["mechanism_scope"], round=plan.get("round", "original_pilot"), peak_cuda_allocated_bytes=max(
                            read(output / c["worker"] / "manifest.json")["peak_cuda_allocated_bytes"] for c in comparisons))
         write_json(output / "summary.json", summary)
         lines = ["# M3 controlled reduction-order pilot", "", f"Finished: {summary['finished_utc']}", "",
@@ -203,6 +217,12 @@ def run(args):
                  "- Capture, both shams, forward/reverse swaps and ancestor checks passed.",
                  "- Fresh saved-operand replay reproduced all recorded outputs and controls.", ""]
         lines += [f"- {family}: {json.dumps(result)}" for family, result in families.items()]
+        if plan["recipe"].get("diagnostics"):
+            lines += ["", "Partition/bridge follow-up: attention chunks of 8 with at least 3 active partitions per case.",
+                      "FP32 partials and pre-cast outputs are retained; same-input chunk-32 controls are saved.",
+                      "Full-shape native operator outputs, native sham and restore controls matched exactly.",
+                      "Native-to-recipe sampling comparisons are distinct from the A/B reduction-order comparisons.",
+                      "The legacy any_sampling_cell_changed field counts token changes only; diagnostic support counts are explicit."]
         lines += ["", "These are explicit diagnostic FP32 reduction recipes on historical inputs.",
                   "They are not evidence of native cuBLAS split-K or a native attention merge policy.",
                   "No historical mechanism attribution, deployment rate, fault or attack is established.",
@@ -236,6 +256,8 @@ def main():
     parser.add_argument("--repeats", type=int, default=3)
     parser.add_argument("--preflight-from", type=Path)
     parser.add_argument("--max-seconds", type=int, default=14400)
+    parser.add_argument("--partition-bridge", action="store_true",
+                        help="Require attention coverage, save FP32 partials, and validate full-shape native bridges")
     modes = parser.add_mutually_exclusive_group(required=True)
     modes.add_argument("--detach", action="store_true")
     modes.add_argument("--run", action="store_true")

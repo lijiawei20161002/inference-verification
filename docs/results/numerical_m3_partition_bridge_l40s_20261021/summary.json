@@ -1,0 +1,110 @@
+{
+  "schema": "ivgym-m3-pilot-summary-v1",
+  "finished_utc": "2026-10-21T08:58:18.546213+00:00",
+  "discovery_only": true,
+  "cases_per_family": 32,
+  "families": {
+    "gemm": {
+      "cases": 32,
+      "strata": {
+        "historical": 16,
+        "control": 16
+      },
+      "local_changed": 7,
+      "logits_changed": 2,
+      "primary_support_changed": 0,
+      "primary_token_changed": 0,
+      "any_sampling_cell_changed": 0,
+      "diagnostics": {
+        "fp32_local_changed": 32,
+        "selected_logits_changed": 2,
+        "any_sampling_token_changed": 0,
+        "any_sampling_support_changed": 2,
+        "native_full_exact_cases": 32,
+        "native_sham_exact_cases": 32,
+        "native_restore_exact_cases": 32,
+        "native_to_a": {
+          "local_changed": 32,
+          "primary_token_changed": 6,
+          "primary_support_changed": 21,
+          "any_token_changed": 9,
+          "any_support_changed": 27
+        },
+        "native_to_b": {
+          "local_changed": 32,
+          "primary_token_changed": 6,
+          "primary_support_changed": 21,
+          "any_token_changed": 9,
+          "any_support_changed": 28
+        }
+      }
+    },
+    "attention": {
+      "cases": 32,
+      "strata": {
+        "historical": 16,
+        "control": 16
+      },
+      "local_changed": 2,
+      "logits_changed": 1,
+      "primary_support_changed": 0,
+      "primary_token_changed": 0,
+      "any_sampling_cell_changed": 1,
+      "diagnostics": {
+        "fp32_local_changed": 32,
+        "selected_logits_changed": 1,
+        "any_sampling_token_changed": 1,
+        "any_sampling_support_changed": 1,
+        "native_full_exact_cases": 32,
+        "native_sham_exact_cases": 32,
+        "native_restore_exact_cases": 32,
+        "native_to_a": {
+          "local_changed": 32,
+          "primary_token_changed": 8,
+          "primary_support_changed": 20,
+          "any_token_changed": 12,
+          "any_support_changed": 28
+        },
+        "native_to_b": {
+          "local_changed": 32,
+          "primary_token_changed": 8,
+          "primary_support_changed": 20,
+          "any_token_changed": 13,
+          "any_support_changed": 29
+        },
+        "active_partitions_min": 3,
+        "active_partitions_max": 19
+      }
+    }
+  },
+  "independent_repeats": 3,
+  "comparisons": [
+    {
+      "worker": "repeat_1",
+      "exact": true,
+      "cases": 64
+    },
+    {
+      "worker": "repeat_2",
+      "exact": true,
+      "cases": 64
+    },
+    {
+      "worker": "repeat_3",
+      "exact": true,
+      "cases": 64
+    }
+  ],
+  "saved_operand_replay": {
+    "worker": "saved_operand_replay",
+    "exact": true,
+    "cases": 64
+  },
+  "m3_gate": "pilot_complete_full_mechanism_gate_pending",
+  "historical_attribution": "not_established",
+  "native_kernel_internals": "not_inferred",
+  "elapsed_seconds": 804.135689843999,
+  "scope": "Explicit FP32 K-partition/softmax-merge reduction order, not undocumented native kernel attribution",
+  "round": "partition_bridge",
+  "peak_cuda_allocated_bytes": 3642030080
+}

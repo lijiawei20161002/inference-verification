@@ -27,7 +27,7 @@ The proposed algorithm and its novelty remain to be validated against prior work
 | Legacy sampler boundary illustrations and regression checks | Implemented, synthetic examples only | [Sampler checks](../experiments/numerical/sampler_contract.py); not a GPU conformance result |
 | Paired full-logit, support, RNG, and state capture | M1 passed for the historical evaluation corpus and selected complete forwards on L40S | [Reviewed M1 report](../docs/results/numerical_m1_dispatch_l40s_20261021.md) |
 | Dtype / filtering factorial replay | Discovery matrix complete; 49 residuals under the matched legacy protocol | Milestone M2 |
-| State-consistent operator interventions | 64-case controlled reduction-order pilot reviewed; full mechanism gate pending | [M3 results and limits](../docs/results/numerical_m3_pilot_l40s_20261021.md) |
+| State-consistent operator interventions | Two 64-case pilots reviewed, including partition coverage and native bridges; full mechanism gate pending | [Latest M3 results and limits](../docs/results/numerical_m3_partition_bridge_l40s_20261021.md) |
 | Automatic localizer, witness reduction, independent witness checker | Pending | Milestone M4 |
 | Locked comparison, benign controls, transfer, natural-case evaluation | Pending | Milestone M5 |
 
@@ -151,9 +151,23 @@ local outputs in 7 cases and selected logits in 2; no sampled tokens changed.
 Two cases changed top-k-only support. Attention had no A/B output changes,
 but 18/32 cases had only one unmasked partition. Both diagnostic recipes
 differed from native outputs in all cases. These results do not pass the full
-M3 gate or attribute the historical BF16 discrepancies. Next, ensure attention
-cases exercise multiple active partitions and establish the bridge to native
-execution before making a mechanism claim. See the [runner instructions](../experiments/numerical/README.md#detached-m3-controlled-reduction-order-pilot).
+M3 gate or attribute the historical BF16 discrepancies. The follow-up below
+addresses partition coverage and observable native-output equivalence. See the
+[runner instructions](../experiments/numerical/README.md#detached-m3-controlled-reduction-order-pilot).
+
+The [reviewed partition/bridge round](../docs/results/numerical_m3_partition_bridge_l40s_20261021.md)
+completed the same 64 cases, three repeats and saved-operand replay. Attention
+chunks of 8 exercised 3–19 active partitions per case; the same-input chunk-32
+local controls remained A/B-equal. FP32 pre-cast outputs changed in all 32 cases
+of each family. Final BF16 outputs changed in 7 GEMM and 2 attention cases;
+selected logits changed in 2 and 1 respectively. The primary sampler had no
+support or token changes. One attention case changed the legacy top-p-only
+token in both arithmetic dtypes. Full-shape native operator replay, native sham
+and restoration controls passed, with operand strides preserved. Native-to-A/B
+sampling changes are reported separately from the A/B order contrast.
+The [second-round instructions](../experiments/numerical/README.md#second-m3-pilot-partition-coverage-and-native-bridges)
+give reproduction commands. These remain historical discovery experiments;
+the native bridge checks output equivalence and does not identify kernel internals.
 
 Start with one GEMM/reduction case and one attention/reduction case on L40S.
 Do not begin with a full model-wide dependency engine.
@@ -263,10 +277,12 @@ run must repeat these checks and use a fresh output directory.
 
 ## Immediate handoff
 
-The next implementation task is **M3: matched-input operation replay and
-state-consistent interventions**. The 21 October follow-up passed the selected
-event-shape dispatch gate on L40S; the controlled M3 pilot has now been launched,
-while the full scientific gate remains pending. The 20 October
+The next task is **M3: independently replayable witnesses and evidence connecting
+the controlled operator contrast to the historical native discrepancy**.
+The two reviewed pilots now cover FP32 intermediates, multi-partition attention,
+full-shape native output replay and native restoration. The full scientific gate
+remains pending: native-to-recipe differences alone do not identify the historical
+mechanism. Keep M4 deferred until that gate is met. The 20 October
 campaign completed the M2 discovery
 matrix (113 captured events, 30 cells each); all 49 historical capped events
 remain residuals under matched filtering arithmetic with the legacy nucleus
@@ -279,7 +295,10 @@ The [reviewed E0 report](../docs/results/numerical_e0_l40s_20261020.md) and
 results and evidence hashes. The full local evidence remains in
 `runs/numerical-e0-20261020/` and `runs/numerical-m1-dispatch-20261020/`, including
 raw captures, traces and source snapshots. Both directories are intentionally
-ignored by Git; preserve them before releasing the host. The dispatch prerequisite
+ignored by Git; preserve them before releasing the host. Both M3 runs
+(`runs/numerical-m3-20261021/` and
+`runs/numerical-m3-partition-bridge-20261021/`, with their preflights) must remain
+available for offline review. The dispatch prerequisite
 now permits M3 investigation within the validated scope; no mechanism has been
 attributed. A new detector, automatic localizer, or MLSys contribution should
 not be claimed before the later intervention and evaluation gates pass.

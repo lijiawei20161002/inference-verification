@@ -272,6 +272,54 @@ small-pool ratio warning. The focused command is:
   tests/test_numerical_diagnostics.py tests/test_real_quantization.py -q
 ```
 
+## Second M3 pilot: partition coverage and native bridges
+
+The [reviewed 21 October campaign](../../docs/results/numerical_m3_partition_bridge_l40s_20261021.md)
+completed 64 cases with three independent repeats and saved-operand replay.
+FP32 pre-cast outputs changed in every case; BF16 outputs changed in 7 GEMM
+and 2 attention cases. Native bridge controls passed. The primary sampler had
+no token changes; one attention case changed the legacy top-p-only token.
+
+The `--partition-bridge` round keeps the first pilot's deterministic case
+selection and GEMM K partitions of 64. Attention uses KV partitions of 8, and
+every selected query must have at least three unmasked partitions. Same-input
+chunk-32 outputs remain a local control. This isolates a partition-size change
+on the historical corpus; it is not a new long-context or confirmatory sample.
+
+Both orders save their identical FP32 partials and distinct merged/pre-cast
+outputs, separately from the final BF16 outputs. Full-shape native GEMM and
+the pinned Qwen eager attention arithmetic are replayed from saved operands,
+including their tensor strides, and must match the captured full native output.
+Native-output sham and A-to-native restoration must reproduce full-model
+output/hidden/KV hashes. Native-to-A/B sampling effects are reported separately
+from the A/B reduction-order effects, with explicit support-change counts.
+These checks do not identify undocumented native reduction internals or prove
+that a recipe explains the historical provider/reference discrepancy.
+
+Use a fresh preflight with the same flag and unchanged Python sources:
+
+```sh
+.venv/bin/python -m experiments.numerical.run_mechanism_campaign \
+  --detach --partition-bridge --parent-m1 runs/numerical-m1-dispatch-20261020 \
+  --output runs/numerical-m3-partition-bridge-preflight-20261021 \
+  --cases-per-family 2 --repeats 2 --max-seconds 1800
+```
+
+After the preflight passes and the complete regression suite passes:
+
+```sh
+.venv/bin/python -m experiments.numerical.run_mechanism_campaign \
+  --detach --partition-bridge --parent-m1 runs/numerical-m1-dispatch-20261020 \
+  --preflight-from runs/numerical-m3-partition-bridge-preflight-20261021 \
+  --output runs/numerical-m3-partition-bridge-20261021 \
+  --cases-per-family 32 --repeats 3 --max-seconds 14400
+```
+
+Preserve failed attempts. If a path already exists, select a new name and use
+that exact preflight path for the full round. Source snapshots and status/log
+files follow the original pilot's detached-process lifecycle. The full M3
+scientific gate stays pending even when all technical controls pass.
+
 ## Cleanup validation — 20 October 2026
 
 The focused suite passed 37 tests. The existing NumPy-core CI command passed

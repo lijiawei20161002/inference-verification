@@ -21,7 +21,7 @@ def ordered_sum(parts, order):
     return result
 
 
-def gemm(x, weight, *, chunk, order):
+def gemm(x, weight, *, chunk, order, return_details=False):
     """Bias-free linear map with fixed K partitions and FP32 partial GEMMs."""
     import torch
 
@@ -30,10 +30,14 @@ def gemm(x, weight, *, chunk, order):
     xf, wf = x.float(), weight.float()
     parts = [torch.matmul(xf[..., i:i + chunk], wf[:, i:i + chunk].T)
              for i in range(0, weight.shape[1], chunk)]
-    return ordered_sum(parts, order).to(x.dtype)
+    precast = ordered_sum(parts, order)
+    output = precast.to(x.dtype)
+    if return_details:
+        return output, dict(partials=torch.stack(parts), precast=precast)
+    return output
 
 
-def attention(query, key, value, mask, *, scale, chunk, order):
+def attention(query, key, value, mask, *, scale, chunk, order, return_details=False):
     """Fixed split-KV softmax partials, rescaled by a common maximum.
 
 Q/K/V already include RoPE, GQA expansion, and the exact captured mask. Entirely
@@ -62,17 +66,29 @@ Only the final numerator/denominator summation order differs between A and B.
     if not torch.isfinite(maximum).all():
         raise ValueError("Attention query has no allowed keys")
     factors = [torch.exp(m - maximum) for m in maxima]
-    numerator = ordered_sum([n * f for n, f in zip(numerators, factors)], order)
-    denominator = ordered_sum([d * f for d, f in zip(denominators, factors)], order)
-    return (numerator / denominator).to(query.dtype).transpose(1, 2).contiguous()
+    scaled_numerators = [n * f for n, f in zip(numerators, factors)]
+    scaled_denominators = [d * f for d, f in zip(denominators, factors)]
+    numerator = ordered_sum(scaled_numerators, order)
+    denominator = ordered_sum(scaled_denominators, order)
+    merged = numerator / denominator
+    output = merged.to(query.dtype).transpose(1, 2).contiguous()
+    if return_details:
+        return output, dict(partition_maxima=torch.stack(maxima),
+                            partial_numerators=torch.stack(scaled_numerators),
+                            partial_denominators=torch.stack(scaled_denominators),
+                            numerator=numerator, denominator=denominator,
+                            precast=merged.transpose(1, 2).contiguous())
+    return output
 
 
-def calculate(family, operands, recipe, order):
+def calculate(family, operands, recipe, order, *, return_details=False):
     if family == "gemm":
-        return gemm(operands["x"], operands["weight"], chunk=recipe["gemm_chunk"], order=order)
+        return gemm(operands["x"], operands["weight"], chunk=recipe["gemm_chunk"], order=order,
+                    return_details=return_details)
     if family == "attention":
         return attention(operands["query"], operands["key"], operands["value"], operands["mask"],
-                         scale=recipe["attention_scale"], chunk=recipe["attention_chunk"], order=order)
+                         scale=recipe["attention_scale"], chunk=recipe["attention_chunk"], order=order,
+                         return_details=return_details)
     raise ValueError("Unsupported mechanism family")
 
 

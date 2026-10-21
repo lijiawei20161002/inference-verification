@@ -28,8 +28,14 @@ M1 passed for this historical corpus and execution path. The
 completed 32 cases per family with three repeats and saved-operand replay.
 GEMM changed local outputs in 7 cases and selected logits in 2, with no sampled
 token changes; attention produced no A/B output changes. The report records
-auxiliary support changes and limited attention partition coverage. The full
-M3 mechanism gate and automatic causal localization remain pending.
+auxiliary support changes and limited attention partition coverage. The
+[partition/bridge follow-up](../docs/results/numerical_m3_partition_bridge_l40s_20261021.md)
+reviewed the same 64 cases with 3–19 active attention partitions, saved FP32
+intermediates, exact full-shape native-output replay and native restoration
+controls. Attention changed 2 local BF16 outputs and 1 selected-logit vector;
+one case changed a token under legacy top-p-only sampling. The primary
+top-k/top-p sampler remained unchanged in both families. The full M3 mechanism
+gate and automatic causal localization remain pending.
 
 ## Existing campaigns and reusable runners
 
