@@ -20,7 +20,8 @@ detached E0 campaign require the pinned CUDA/model environment.
 | [Frozen-logit replay](frozen_logits.py) | CPU dtype/nucleus/sampling matrix on captured evidence | Implemented; production sampling unchanged |
 | [Detached campaign](run_e0_campaign.py) | Frozen source, independent processes, equivalence gates and persistent status/logs | Implemented |
 | [Event-shape dispatch follow-up](run_dispatch_campaign.py) | Complete selected-forward traces, independent repeats and unprofiled controls | Validated on L40S; [reviewed report](../../docs/results/numerical_m1_dispatch_l40s_20261021.md) |
-| Interventions, localizer, witness checker | Explain residual numerical events with validated witnesses | Planned |
+| [Controlled mechanism pilot](run_mechanism_campaign.py) | Explicit GEMM/attention reduction orders, full-state interventions and saved-operand replay | 64-case pilot reviewed; [results and limits](../../docs/results/numerical_m3_pilot_l40s_20261021.md); full M3 gate pending |
+| Automatic localizer and general witness checker | Explain residual numerical events with validated witnesses | Planned |
 
 Imports perform no archive I/O. The slides script
 [`analyze_score_tails.py`](../../slides/mlsys-paper-plan/analyze_score_tails.py)
@@ -191,6 +192,84 @@ Run the focused CPU checks, including dispatch coverage and state-drift checks:
 python3 -m pytest tests/test_dispatch_validation.py tests/test_e0_campaign.py \
   tests/test_frozen_logits.py tests/test_numerical_diagnostics.py \
   tests/test_real_quantization.py -q
+```
+
+## Detached M3 controlled reduction-order pilot
+
+This first M3 pilot compares explicit diagnostic FP32 reduction implementations.
+GEMM uses fixed K partitions of 64; attention uses fixed KV partitions of 32,
+per-partition softmax statistics and a common maximum for merging. A and B use
+the same partials and final BF16 cast, but sum in ascending and descending
+partition order. These are explicit recipes, not inferred cuBLAS split-K or
+native attention kernel internals. Their bridge to the native output is recorded
+separately; they do not automatically explain the historical BF16 disagreements.
+
+The full pilot freezes 32 cases per family, equally split between historical
+events and controls and distributed across layers 0, 14 and 27. Selection uses
+the existing discovery ledger before examining intervention outcomes. Every
+model replay starts from the original full reference token sequence with empty
+KV, changes one operation output row and recomputes all descendants and caches.
+Capture-only, two sham, forward and reverse replacements must agree exactly
+with their corresponding controls; preceding outputs and ancestor KV cannot
+change. Three fresh workers must reproduce all case records and kernel
+signatures. A fourth worker reloads saved operands and independently replays all
+cases. Raw local tensors, full selected logits/noise, token checkpoints, complete
+output/KV hashes and operator traces are retained. This is fixed-prefix replay,
+not free generation under a modified model.
+
+Run a new preflight before the full pilot:
+
+```sh
+.venv/bin/python -m experiments.numerical.run_mechanism_campaign \
+  --detach --parent-m1 runs/numerical-m1-dispatch-20261020 \
+  --output runs/numerical-m3-preflight-new \
+  --cases-per-family 2 --repeats 2 --max-seconds 1800
+```
+
+After its `status.json` is `complete`, launch the full pilot with unchanged
+Python sources and a new output directory:
+
+```sh
+.venv/bin/python -m experiments.numerical.run_mechanism_campaign \
+  --detach --parent-m1 runs/numerical-m1-dispatch-20261020 \
+  --preflight-from runs/numerical-m3-preflight-new \
+  --output runs/numerical-m3-new --cases-per-family 32 --repeats 3
+```
+
+The source/plan snapshot is frozen before the independent OS session starts.
+Standard input is disconnected, logs use files, and the supervisor ignores
+SIGHUP. The top-level `status.json` includes the active worker and case progress;
+each worker also writes `progress.json`. Errors, timeouts and integrity failures
+are recorded as failures. The default budget is four hours; workers stop before
+free disk space falls below 12 GiB. The machine and container must remain running.
+No hardware performance-counter permission is needed for this explicit-recipe
+pilot. Raw traces do not establish native reduction internals.
+
+The 21 October four-case preflight completed in 58.45 seconds. Both repeats and
+saved-operand replay agreed. One GEMM case changed local BF16 elements; no
+preflight case changed the primary sampled token. These results validate the
+runner, not the full M3 scientific gate. Zero effects and unresolved cases remain
+in the full-run denominator. The full M3 gate is never passed automatically by
+this discovery pilot.
+
+The [reviewed full pilot](../../docs/results/numerical_m3_pilot_l40s_20261021.md)
+completed three independent repeats plus saved-operand replay over 32 cases per
+family. GEMM changed local BF16 outputs in 7 cases and selected logits in 2;
+attention changed neither. No sampled token changed in the 20-cell matrix.
+Two GEMM cases did change top-k-only support; the original summary field
+`any_sampling_cell_changed` counts token changes only. Eighteen attention cases
+had just one unmasked partition, limiting the reduction-order negative result.
+Both recipes differed from native local outputs in every case, so the native
+historical discrepancy remains unattributed. The full M3 gate is still pending.
+
+The focused CPU contract suite passed 68 tests. The review reran the CI
+NumPy-core command: 227 tests passed in 108.22 seconds, with the expected
+small-pool ratio warning. The focused command is:
+
+```sh
+.venv/bin/python -m pytest tests/test_mechanism_ops.py tests/test_mechanism_campaign.py \
+  tests/test_dispatch_validation.py tests/test_e0_campaign.py tests/test_frozen_logits.py \
+  tests/test_numerical_diagnostics.py tests/test_real_quantization.py -q
 ```
 
 ## Cleanup validation — 20 October 2026

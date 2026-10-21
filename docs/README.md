@@ -37,6 +37,7 @@ The signed-artifact protocol is a separate, optional experiment.
 ## Follow a claim to its evidence
 
 - [Claim → experiment → artifact index](RESEARCH_GUIDE.md#which-experiment-backs-which-claim)
+- [21 October L40S M3: controlled reduction-order pilot, replay checks and negative-result limits](results/numerical_m3_pilot_l40s_20261021.md)
 - [21 October L40S M1: selected-forward dispatch equivalence and unprofiled controls](results/numerical_m1_dispatch_l40s_20261021.md)
 - [20 October L40S E0: historical BF16 events and frozen-logit discovery replay](results/numerical_e0_l40s_20261020.md)
 - [19 October L40S scheduling diagnostics: token budgets, iteration traces, and arrival windows](results/scheduling_l40s_20261019.md)

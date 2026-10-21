@@ -27,7 +27,7 @@ The proposed algorithm and its novelty remain to be validated against prior work
 | Legacy sampler boundary illustrations and regression checks | Implemented, synthetic examples only | [Sampler checks](../experiments/numerical/sampler_contract.py); not a GPU conformance result |
 | Paired full-logit, support, RNG, and state capture | M1 passed for the historical evaluation corpus and selected complete forwards on L40S | [Reviewed M1 report](../docs/results/numerical_m1_dispatch_l40s_20261021.md) |
 | Dtype / filtering factorial replay | Discovery matrix complete; 49 residuals under the matched legacy protocol | Milestone M2 |
-| State-consistent operator interventions | Pending | Milestone M3 |
+| State-consistent operator interventions | 64-case controlled reduction-order pilot reviewed; full mechanism gate pending | [M3 results and limits](../docs/results/numerical_m3_pilot_l40s_20261021.md) |
 | Automatic localizer, witness reduction, independent witness checker | Pending | Milestone M4 |
 | Locked comparison, benign controls, transfer, natural-case evaluation | Pending | Milestone M5 |
 
@@ -142,6 +142,19 @@ before building a general causal system.
 
 ## M3 — E1 mechanism proof of concept
 
+On 21 October, the explicit reduction-order pilot was implemented with full
+token-checkpoint replay, fresh KV reconstruction, capture/sham controls and
+forward/reverse swaps. Its four-case preflight passed two independent repeats
+and saved-operand replay. The [reviewed 32-case-per-family campaign](../docs/results/numerical_m3_pilot_l40s_20261021.md)
+completed three independent repeats and saved-operand replay. GEMM changed
+local outputs in 7 cases and selected logits in 2; no sampled tokens changed.
+Two cases changed top-k-only support. Attention had no A/B output changes,
+but 18/32 cases had only one unmasked partition. Both diagnostic recipes
+differed from native outputs in all cases. These results do not pass the full
+M3 gate or attribute the historical BF16 discrepancies. Next, ensure attention
+cases exercise multiple active partitions and establish the bridge to native
+execution before making a mechanism claim. See the [runner instructions](../experiments/numerical/README.md#detached-m3-controlled-reduction-order-pilot).
+
 Start with one GEMM/reduction case and one attention/reduction case on L40S.
 Do not begin with a full model-wide dependency engine.
 
@@ -252,7 +265,8 @@ run must repeat these checks and use a fresh output directory.
 
 The next implementation task is **M3: matched-input operation replay and
 state-consistent interventions**. The 21 October follow-up passed the selected
-event-shape dispatch gate on L40S; M3 itself has not started. The 20 October
+event-shape dispatch gate on L40S; the controlled M3 pilot has now been launched,
+while the full scientific gate remains pending. The 20 October
 campaign completed the M2 discovery
 matrix (113 captured events, 30 cells each); all 49 historical capped events
 remain residuals under matched filtering arithmetic with the legacy nucleus

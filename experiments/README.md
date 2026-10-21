@@ -23,8 +23,13 @@ capture and frozen-logit replay are now implemented. The
 [21 October M1 dispatch report](../docs/results/numerical_m1_dispatch_l40s_20261021.md)
 confirms matching selected-forward kernel dispatch across two independent
 baseline/capture pairs and matching trajectories against unprofiled controls.
-M1 passed for this historical corpus and execution path; M3 interventions and
-causal localization remain unimplemented.
+M1 passed for this historical corpus and execution path. The
+[21 October M3 controlled reduction-order pilot](../docs/results/numerical_m3_pilot_l40s_20261021.md)
+completed 32 cases per family with three repeats and saved-operand replay.
+GEMM changed local outputs in 7 cases and selected logits in 2, with no sampled
+token changes; attention produced no A/B output changes. The report records
+auxiliary support changes and limited attention partition coverage. The full
+M3 mechanism gate and automatic causal localization remain pending.
 
 ## Existing campaigns and reusable runners
 
