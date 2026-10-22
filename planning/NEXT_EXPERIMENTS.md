@@ -1,6 +1,6 @@
 # Next experiments: implementation and execution plan
 
-**Updated: 21 October 2026.** This is the active work queue. The
+**Updated: 22 October 2026.** This is the active work queue. The
 [full experimental design](../docs/NUMERICAL_CAUSAL_DIAGNOSIS_EXPERIMENTS.md)
 specifies E0–E5, statistical units, blinded evaluation, and paper claims.
 The [previous verification agenda](LEGACY_VERIFICATION_EXPERIMENTS.md) is
@@ -27,8 +27,8 @@ The proposed algorithm and its novelty remain to be validated against prior work
 | Legacy sampler boundary illustrations and regression checks | Implemented, synthetic examples only | [Sampler checks](../experiments/numerical/sampler_contract.py); not a GPU conformance result |
 | Paired full-logit, support, RNG, and state capture | M1 passed for the historical evaluation corpus and selected complete forwards on L40S | [Reviewed M1 report](../docs/results/numerical_m1_dispatch_l40s_20261021.md) |
 | Dtype / filtering factorial replay | Discovery matrix complete; 49 residuals under the matched legacy protocol | Milestone M2 |
-| State-consistent operator interventions | Two 64-case pilots reviewed, including partition coverage and native bridges; full mechanism gate pending | [Latest M3 results and limits](../docs/results/numerical_m3_partition_bridge_l40s_20261021.md) |
-| Automatic localizer, witness reduction, independent witness checker | Pending | Milestone M4 |
+| State-consistent operator interventions | Two 64-case pilots reviewed; native-shape preflight passed, but the full native-shape round stopped on missing GPU trace evidence; full mechanism gate pending | [Reviewed pilot](../docs/results/numerical_m3_partition_bridge_l40s_20261021.md) and [22 October status](../docs/results/numerical_native_shape_status_l40s_20261022.json) |
+| Automatic localizer and witness reduction | Pending; a standalone checker prototype has passed the four-case native-shape preflight only | Milestone M4 |
 | Locked comparison, benign controls, transfer, natural-case evaluation | Pending | Milestone M5 |
 
 The archived BF16 evaluation pool has **49 capped token-DiFR positions among
@@ -276,6 +276,33 @@ and exclusive GPU use is confirmed. The 20 October E0 campaign completed; a new
 run must repeat these checks and use a fresh output directory.
 
 ## Immediate handoff
+
+The 22 October native-shape implementation has passed preflight, but the full
+campaign is **incomplete**. This workspace did not retain the previous ignored
+`runs/` directories, so E0 and the complete M1 dispatch controls were reacquired in
+`runs/numerical-e0-reacquire-20261022/` and
+`runs/numerical-m1-reacquire-20261022/` directories. These are new acquisitions,
+not restored copies of the earlier evidence. Both completed, with 49/49
+historical events reproduced. The latest four-case native-shape preflight
+passed two independent repeats and its standalone checker verified 4/4 cases.
+The full core suite passed 249 tests and the preflight focused suite passed 90.
+See the
+[new runner protocol](../experiments/numerical/README.md#third-m3-round-native-execution-shapes-and-independent-witnesses).
+
+Both 64-case attempts stopped during the first repeat after four completed
+case records: `gemm_p60_t60_l14/provider_trace.json` contained CPU launch
+events but no GPU kernels. The second attempt added explicit CUDA
+synchronization, which did not resolve the missing trace. Neither attempt
+produced a full summary or completed independent review. Partial outcomes
+must not be aggregated as a completed campaign or used to advance M3.
+The [status and integrity review](../docs/results/numerical_native_shape_status_l40s_20261022.json)
+records the evidence. Preserve the original failed queue at
+`runs/numerical-round-20261022/`, the original native-shape attempt, and the
+fresh `runs/numerical-m3-native-shape-preflight-sync-20261022/` and
+`runs/numerical-m3-native-shape-sync-20261022/` directories. No campaign is
+currently running. The immediate execution task is to repair and validate
+trace collection, then repeat preflight and the full campaign in new
+directories; the next scientific task below remains unchanged.
 
 The next task is **M3: independently replayable witnesses and evidence connecting
 the controlled operator contrast to the historical native discrepancy**.

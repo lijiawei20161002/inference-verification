@@ -320,6 +320,99 @@ that exact preflight path for the full round. Source snapshots and status/log
 files follow the original pilot's detached-process lifecycle. The full M3
 scientific gate stays pending even when all technical controls pass.
 
+## Third M3 round: native execution shapes and independent witnesses
+
+The native-shape runner tests the observed provider operation geometry and
+layout on the reference path's identical **effective** BF16 inputs. GEMM uses
+the provider call's row extent. Attention changes query extent/layout and
+removes a fully masked KV suffix; a query-only local control separates those
+two local contrasts. No native reduction tree is inferred from a shape change.
+
+Cases use the same deterministic 32-per-family historical/control selection as
+the earlier pilots. Every reference intervention starts from the complete saved
+token checkpoint with empty KV, replaces one output row and recomputes all
+descendants. Capture, native sham, forward/reverse, prefix and ancestor-KV
+controls are required. The actual sequential provider path is independently
+rebuilt and checked against parent selected logits and KV, and its operands
+are retained separately. Agreement with a provider token after an intervention
+measures influence; it does not establish a unique historical root cause.
+
+Each case exports `bundle.json`, exact operands/layouts, the original E0 event,
+local outputs, selected logits/noise, token checkpoint and descendant-state
+hashes. The standalone `check_native_witness.py` imports neither IVGym nor the
+diagnosis runner. In a separate process it verifies the externally pinned
+bundle inventory, reconstructs native operators and the model's descendants,
+rebuilds the provider KV, and independently recomputes all sampling contrasts.
+Model weights are an explicit external dependency, pinned by revision and
+asset hashes. The checker requires the recorded environment/GPU; transfer is
+a separate experiment. All cases, including no-effect cases, enter its index.
+
+Run only after a complete M1 parent and the CPU regression suite have passed.
+Use fresh paths, with unchanged Python sources between preflight and full run:
+
+```sh
+.venv/bin/python -m experiments.numerical.run_native_campaign \
+  --detach --parent-m1 runs/numerical-m1-reacquire-20261022 \
+  --output runs/numerical-m3-native-shape-preflight-new \
+  --cases-per-family 2 --repeats 2 --max-seconds 1800
+
+# After preflight status.json reports complete:
+.venv/bin/python -m experiments.numerical.run_native_campaign \
+  --detach --parent-m1 runs/numerical-m1-reacquire-20261022 \
+  --preflight-from runs/numerical-m3-native-shape-preflight-new \
+  --output runs/numerical-m3-native-shape-new \
+  --cases-per-family 32 --repeats 3 --max-seconds 14400
+```
+
+The full runner launches three fresh GPU workers followed by the standalone
+checker. `status.json`, `supervisor.log`, worker `progress.json` and failed
+artifacts persist across SSH/chat disconnects; the host/container must stay
+running. On success it writes `summary.json`, `report.md`, and
+`independent_review.json`. A technical pass never automatically passes the
+full M3 scientific gate. M4 remains deferred.
+
+For a separate replay, copy the first worker's directory and the exported
+checker, retain the pinned model cache, and pass the witness-index SHA256
+recorded in the campaign summary as `--expected-sha256`:
+
+```sh
+HF_HOME=/workspace/.cache/huggingface HF_HUB_OFFLINE=1 \
+  .venv/bin/python runs/numerical-m3-native-shape-new/check_native_witness.py \
+  --index runs/numerical-m3-native-shape-new/repeat_1/witnesses.json \
+  --expected-sha256 RECORDED_INDEX_SHA256 --output /tmp/native-independent-new.json
+```
+
+The 22 October implementation passed 16 new evidence/intervention tests,
+including a small CPU Qwen model exercising both families and both prefill and
+decode shapes. The full NumPy-core CI selection passed 249 tests. These are
+implementation checks; GPU campaign results are recorded separately.
+
+### Observed status on 22 October
+
+E0 and M1 reacquisition completed on the current L40S: all 49 historical
+events reproduced, and the selected dispatch/output/state controls passed.
+The four-case native-shape preflight completed two fresh repeats and its
+standalone checker verified all four cases. The preflight's focused suite
+passed 90 tests. These results are limited to the tested historical corpus
+and pinned HF execution path.
+
+The 64-case campaign did **not** complete. Both the initial attempt and the
+retry with explicit CUDA synchronization stopped in `repeat_1`, after four
+completed case records. The fifth case, `gemm_p60_t60_l14`, retained a
+`provider_trace.json` with a CPU `cudaLaunchKernel` event but no GPU kernel
+events. The worker rejects that trace; neither attempt produced a full
+summary or completed independent review. Synchronization alone did not fix
+the collection failure. The partial records are not accepted campaign results,
+and the trace failure does not identify a numerical fault.
+
+The [status and integrity review](../../docs/results/numerical_native_shape_status_l40s_20261022.json)
+records the completed prerequisites, preflight, both failed attempts and
+evidence hashes. Retain the original directories and logs under `runs/`.
+The latest preflight is `runs/numerical-m3-native-shape-preflight-sync-20261022/`;
+the failed retry is `runs/numerical-m3-native-shape-sync-20261022/`.
+Repair trace collection and repeat preflight in a fresh directory before
+attempting another full campaign. The full M3 gate remains pending.
+
 ## Cleanup validation — 20 October 2026
 
 The focused suite passed 37 tests. The existing NumPy-core CI command passed

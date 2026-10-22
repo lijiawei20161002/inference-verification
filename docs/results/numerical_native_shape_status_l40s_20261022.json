@@ -1,0 +1,150 @@
+{
+  "schema": "ivgym-native-shape-status-review-v1",
+  "reviewed_utc": "2026-10-22T14:38:10.721038+00:00",
+  "scope": "Offline inventory, output/control, dispatch and preflight sampler checks; recorded independent GPU checker receipt validated, not rerun. No new GPU inference.",
+  "e0_integrity": {
+    "campaign_hashes_checked": 6,
+    "frozen_source_files_checked": 346,
+    "worker_artifact_hashes_checked": {
+      "baseline_1": 3,
+      "baseline_2": 3,
+      "capture_1": 357,
+      "capture_2": 357,
+      "profile_baseline": 4,
+      "profile_capture": 8,
+      "smoke_baseline": 3,
+      "smoke_capture": 7
+    }
+  },
+  "e0": {
+    "state": "complete",
+    "finished_utc": "2026-10-22T09:41:55.752998+00:00",
+    "sequences": 64,
+    "positions": 8192,
+    "historical_reproduced": 49,
+    "historical_total": 49,
+    "summary_sha256": "05db88d98aa14c268e8a66c9045175dd9dbc2b8729b76b168ae5343978d6fd64"
+  },
+  "m1_integrity": {
+    "campaign_hashes_checked": 12,
+    "frozen_source_files_checked": 351,
+    "worker_artifact_hashes_checked": {
+      "baseline": 3,
+      "capture": 357,
+      "profile_baseline_1": 244,
+      "profile_baseline_2": 244,
+      "profile_capture_1": 598,
+      "profile_capture_2": 598
+    }
+  },
+  "m1": {
+    "state": "complete",
+    "finished_utc": "2026-10-22T10:08:04.484933+00:00",
+    "gate": "passed_for_historical_evaluation_corpus",
+    "historical_reproduced": 49,
+    "provider_calls_per_worker": 113,
+    "reference_calls_per_worker": 64,
+    "profiled_workers": 4,
+    "raw_traces_recomputed": 708,
+    "kernel_launches_recomputed": 1345196,
+    "summary_sha256": "1e5b0b8207f561e962864ff9e919328dc7dcba99dd6204e5fae55bace15e6651"
+  },
+  "preflight_integrity": {
+    "campaign_hashes_checked": 7,
+    "frozen_source_files_checked": 351,
+    "worker_artifact_hashes_checked": {
+      "repeat_1": 54,
+      "repeat_2": 54
+    }
+  },
+  "current_python_sources_matched": 341,
+  "preflight": {
+    "state": "complete",
+    "finished_utc": "2026-10-22T13:56:57.202843+00:00",
+    "cases": 4,
+    "independent_repeats": 2,
+    "independent_checker": {
+      "verified": true,
+      "cases": 4,
+      "checker_sha256": "9c40a95f05b646ef9241f1f6e24028f3a8bd93a66b7b2f0d3e13de2e1ed1fcae",
+      "index_sha256": "e4581014e1738bd67ac9c5a0d07b7ed23a23fbdc676b86146c02bbeb1f2a0912"
+    },
+    "families": {
+      "gemm": {
+        "cases": 2,
+        "historical_cases": 1,
+        "local_changed": 2,
+        "selected_logits_changed": 2,
+        "primary_token_changed": 0,
+        "primary_support_changed": 0,
+        "any_token_changed": 0,
+        "any_support_changed": 2,
+        "effective_provider_operands_exact": 0,
+        "local_provider_output_exact": 0,
+        "selected_provider_logits_exact": 0,
+        "primary_disagreement_removed": 0,
+        "primary_disagreement_introduced": 0
+      },
+      "attention": {
+        "cases": 2,
+        "historical_cases": 1,
+        "local_changed": 0,
+        "selected_logits_changed": 0,
+        "primary_token_changed": 0,
+        "primary_support_changed": 0,
+        "any_token_changed": 0,
+        "any_support_changed": 0,
+        "effective_provider_operands_exact": 0,
+        "local_provider_output_exact": 0,
+        "selected_provider_logits_exact": 0,
+        "primary_disagreement_removed": 0,
+        "primary_disagreement_introduced": 0
+      }
+    },
+    "raw_traces_recomputed": 24,
+    "sampling_cells_recomputed": 480,
+    "summary_sha256": "abab6422efb3911a26ceb1e27bbaa8dd8db7ffb70168988c4cbfd162fe0f4ce9"
+  },
+  "full_campaign_attempts": [
+    {
+      "run": "runs/numerical-m3-native-shape-20261022",
+      "state": "failed",
+      "updated_utc": "2026-10-22T10:09:58.934166+00:00",
+      "stage": "repeat_1",
+      "completed_partial_records": 4,
+      "planned_cases": 64,
+      "failed_case": "gemm_p60_t60_l14",
+      "reason": "Provider operator trace contains CPU launch events but no GPU kernel events",
+      "trace_sha256": "85c80871ce34b4ebbfc9350266879bad88ee05b0f55a49e605dd6bcb37d3316b",
+      "status_sha256": "30a91a3f6d53b9ae5079355de5cb172adccfd7bbb6f4d11386c6041918982731",
+      "worker_manifest_sha256": "408446a071eced88ef1ce88e7246afed07439449f3d00720a221a24b23c8537b",
+      "full_summary_present": false,
+      "independent_checker_completed": false,
+      "outcome_aggregates_accepted": false
+    },
+    {
+      "run": "runs/numerical-m3-native-shape-sync-20261022",
+      "state": "failed",
+      "updated_utc": "2026-10-22T13:57:48.879293+00:00",
+      "stage": "repeat_1",
+      "completed_partial_records": 4,
+      "planned_cases": 64,
+      "failed_case": "gemm_p60_t60_l14",
+      "reason": "Provider operator trace contains CPU launch events but no GPU kernel events",
+      "trace_sha256": "06fbd5dcf47b79110e03b0614e413091a27b4bc56d00272c9f12b6d7bfce92a1",
+      "status_sha256": "38491509709c1b8a6989008f6764211c64e2eeb34f0ec43d35e1834d4af20703",
+      "worker_manifest_sha256": "673d18a8f8843908dc57b24927d3431a0cd6c6964c626fecd1e28d39251ee37a",
+      "full_summary_present": false,
+      "independent_checker_completed": false,
+      "outcome_aggregates_accepted": false
+    }
+  ],
+  "m3_gate": "pending",
+  "historical_root_cause": "not_established",
+  "tests": {
+    "core_suite": "249 passed, 1 expected small-pool warning",
+    "core_log_sha256": "806658ed0a1989a526897311fa77adc197fa8fbaf7841aef617cb10f6ccc21d2",
+    "preflight_focused": "90 passed",
+    "preflight_log_sha256": "7c9b1596b1f606e3d37acf0122db697f3c18b584bbbb463aff2fdee801c04590"
+  }
+}
