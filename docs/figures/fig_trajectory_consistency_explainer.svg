@@ -1,0 +1,585 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1152pt" height="885.6pt" viewBox="0 0 1152 885.6" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-11-12T11:56:18.592586</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.8, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 885.6
+L 1152 885.6
+L 1152 0
+L 0 0
+z
+" style="fill: #f7f9fc"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 41.12064 411.804
+L 552.15936 411.804
+Q 564.48 411.804 564.48 404.776764
+L 564.48 113.299236
+Q 564.48 106.272 552.15936 106.272
+L 41.12064 106.272
+Q 28.8 106.272 28.8 113.299236
+L 28.8 404.776764
+Q 28.8 411.804 41.12064 411.804
+z
+" clip-path="url(#pbb5fb09118)" style="fill: #ffffff; stroke: #d8e2ea; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 58.79808 155.768184
+L 81.83232 155.768184
+Q 94.15296 155.768184 94.15296 148.740948
+L 94.15296 126.437112
+Q 94.15296 119.409876 81.83232 119.409876
+L 58.79808 119.409876
+Q 46.47744 119.409876 46.47744 126.437112
+L 46.47744 148.740948
+Q 46.47744 155.768184 58.79808 155.768184
+z
+" clip-path="url(#pbb5fb09118)" style="fill: #172c40; stroke: #172c40; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 72.19008 284.091624
+L 162.18432 284.091624
+Q 174.50496 284.091624 174.50496 277.064388
+L 174.50496 234.900972
+Q 174.50496 227.873736 162.18432 227.873736
+L 72.19008 227.873736
+Q 59.86944 227.873736 59.86944 234.900972
+L 59.86944 277.064388
+Q 59.86944 284.091624 72.19008 284.091624
+z
+" clip-path="url(#pbb5fb09118)" style="fill: #eaf2fc; stroke: #2563a6; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 248.96448 284.091624
+L 338.95872 284.091624
+Q 351.27936 284.091624 351.27936 277.064388
+L 351.27936 234.900972
+Q 351.27936 227.873736 338.95872 227.873736
+L 248.96448 227.873736
+Q 236.64384 227.873736 236.64384 234.900972
+L 236.64384 277.064388
+Q 236.64384 284.091624 248.96448 284.091624
+z
+" clip-path="url(#pbb5fb09118)" style="fill: #eaf2fc; stroke: #2563a6; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 425.73888 284.091624
+L 515.73312 284.091624
+Q 528.05376 284.091624 528.05376 277.064388
+L 528.05376 234.900972
+Q 528.05376 227.873736 515.73312 227.873736
+L 425.73888 227.873736
+Q 413.41824 227.873736 413.41824 234.900972
+L 413.41824 277.064388
+Q 413.41824 284.091624 425.73888 284.091624
+z
+" clip-path="url(#pbb5fb09118)" style="fill: #eaf2fc; stroke: #2563a6; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 180.788084 255.98268
+Q 205.573878 255.98268 228.123605 255.98268
+" clip-path="url(#pbb5fb09118)" style="fill: none; stroke: #2563a6; stroke-width: 2; stroke-linecap: round"/>
+    <path d="M 221.723605 252.78268
+L 228.123605 255.98268
+L 221.723605 259.18268
+z
+" clip-path="url(#pbb5fb09118)" style="fill: #2563a6; stroke: #2563a6; stroke-width: 2; stroke-linecap: round"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 357.562484 255.98268
+Q 382.348278 255.98268 404.898005 255.98268
+" clip-path="url(#pbb5fb09118)" style="fill: none; stroke: #2563a6; stroke-width: 2; stroke-linecap: round"/>
+    <path d="M 398.498005 252.78268
+L 404.898005 255.98268
+L 398.498005 259.18268
+z
+" clip-path="url(#pbb5fb09118)" style="fill: #2563a6; stroke: #2563a6; stroke-width: 2; stroke-linecap: round"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 64.15488 395.610804
+L 529.12512 395.610804
+Q 541.44576 395.610804 541.44576 388.583568
+L 541.44576 361.696752
+Q 541.44576 354.669516 529.12512 354.669516
+L 64.15488 354.669516
+Q 51.83424 354.669516 51.83424 361.696752
+L 51.83424 388.583568
+Q 51.83424 395.610804 64.15488 395.610804
+z
+" clip-path="url(#pbb5fb09118)" style="fill: #e6f5ee; stroke: #e6f5ee; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="text_1">
+    <text style="font-weight: 700; font-size: 15px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="70.3152" y="141.728093" transform="rotate(-0 70.3152 141.728093)">1</text>
+   </g>
+   <g id="text_2">
+    <text style="font-weight: 700; font-size: 16px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172c40" x="101.1168" y="141.545732" transform="rotate(-0 101.1168 141.545732)">Fixed deterministic semantics</text>
+   </g>
+   <g id="text_3">
+    <text style="font-size: 11.4px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #596a7a" x="52.9056" y="174.190472" transform="rotate(-0 52.9056 174.190472)">FlashProve’s setting: a specified integer model, greedy decoding</text>
+   </g>
+   <g id="text_4">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #596a7a" x="296.64" y="209.994904" transform="rotate(-0 296.64 209.994904)">ONE SPECIFIED NEXT-TOKEN FUNCTION</text>
+   </g>
+   <g id="text_5">
+    <text style="font-size: 12px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #172c40" x="117.1872" y="259.29393" transform="rotate(-0 117.1872 259.29393)">Prompt</text>
+   </g>
+   <g id="text_6">
+    <text style="font-weight: 700; font-size: 15px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #2563a6" x="293.9616" y="260.121742" transform="rotate(-0 293.9616 260.121742)">“cat”</text>
+   </g>
+   <g id="text_7">
+    <text style="font-weight: 700; font-size: 15px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #2563a6" x="470.736" y="260.121742" transform="rotate(-0 470.736 260.121742)">“runs”</text>
+   </g>
+   <g id="text_8">
+    <text style="font-size: 10.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #167358" x="293.9616" y="304.709824" transform="rotate(-0 293.9616 304.709824)">check 1</text>
+   </g>
+   <g id="text_9">
+    <text style="font-size: 10.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #167358" x="470.736" y="304.709824" transform="rotate(-0 470.736 304.709824)">check 2</text>
+   </g>
+   <g id="text_10">
+    <text style="font-size: 11.1px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #596a7a" x="296.64" y="338.483906" transform="rotate(-0 296.64 338.483906)">Each proof checks the computation for the correct prefix.</text>
+   </g>
+   <g id="text_11">
+    <text style="font-weight: 700; font-size: 12.2px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #167358" x="296.64" y="378.458941" transform="rotate(-0 296.64 378.458941)">Every token checked  →  the sequence is verified</text>
+   </g>
+  </g>
+  <g id="axes_2">
+   <g id="patch_10">
+    <path d="M 599.84064 411.804
+L 1110.87936 411.804
+Q 1123.2 411.804 1123.2 404.776764
+L 1123.2 113.299236
+Q 1123.2 106.272 1110.87936 106.272
+L 599.84064 106.272
+Q 587.52 106.272 587.52 113.299236
+L 587.52 404.776764
+Q 587.52 411.804 599.84064 411.804
+z
+" clip-path="url(#pedeb60a5e2)" style="fill: #ffffff; stroke: #d8e2ea; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_11">
+    <path d="M 617.51808 155.768184
+L 640.55232 155.768184
+Q 652.87296 155.768184 652.87296 148.740948
+L 652.87296 126.437112
+Q 652.87296 119.409876 640.55232 119.409876
+L 617.51808 119.409876
+Q 605.19744 119.409876 605.19744 126.437112
+L 605.19744 148.740948
+Q 605.19744 155.768184 617.51808 155.768184
+z
+" clip-path="url(#pedeb60a5e2)" style="fill: #172c40; stroke: #172c40; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_12">
+    <path d="M 746.08128 282.563964
+L 870.89472 282.563964
+Q 883.21536 282.563964 883.21536 275.536728
+L 883.21536 239.483952
+Q 883.21536 232.456716 870.89472 232.456716
+L 746.08128 232.456716
+Q 733.76064 232.456716 733.76064 239.483952
+L 733.76064 275.536728
+Q 733.76064 282.563964 746.08128 282.563964
+z
+" clip-path="url(#pedeb60a5e2)" style="fill: #eaf2fc; stroke: #2563a6; stroke-width: 2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_13">
+    <path d="M 917.49888 282.563964
+L 1066.41792 282.563964
+Q 1078.73856 282.563964 1078.73856 275.536728
+L 1078.73856 239.483952
+Q 1078.73856 232.456716 1066.41792 232.456716
+L 917.49888 232.456716
+Q 905.17824 232.456716 905.17824 239.483952
+L 905.17824 275.536728
+Q 905.17824 282.563964 917.49888 282.563964
+z
+" clip-path="url(#pedeb60a5e2)" style="fill: #f4f6f8; stroke: #d8e2ea; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_14">
+    <path d="M 746.08128 337.559724
+L 870.89472 337.559724
+Q 883.21536 337.559724 883.21536 330.532488
+L 883.21536 294.479712
+Q 883.21536 287.452476 870.89472 287.452476
+L 746.08128 287.452476
+Q 733.76064 287.452476 733.76064 294.479712
+L 733.76064 330.532488
+Q 733.76064 337.559724 746.08128 337.559724
+z
+" clip-path="url(#pedeb60a5e2)" style="fill: #f4f6f8; stroke: #d8e2ea; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_15">
+    <path d="M 917.49888 337.559724
+L 1066.41792 337.559724
+Q 1078.73856 337.559724 1078.73856 330.532488
+L 1078.73856 294.479712
+Q 1078.73856 287.452476 1066.41792 287.452476
+L 917.49888 287.452476
+Q 905.17824 287.452476 905.17824 294.479712
+L 905.17824 330.532488
+Q 905.17824 337.559724 917.49888 337.559724
+z
+" clip-path="url(#pedeb60a5e2)" style="fill: #fff2df; stroke: #a96312; stroke-width: 2; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_16">
+    <path d="M 622.87488 401.721444
+L 1087.84512 401.721444
+Q 1100.16576 401.721444 1100.16576 394.694208
+L 1100.16576 373.918032
+Q 1100.16576 366.890796 1087.84512 366.890796
+L 622.87488 366.890796
+Q 610.55424 366.890796 610.55424 373.918032
+L 610.55424 394.694208
+Q 610.55424 401.721444 622.87488 401.721444
+z
+" clip-path="url(#pedeb60a5e2)" style="fill: #edf1f6; stroke: #edf1f6; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="text_12">
+    <text style="font-weight: 700; font-size: 15px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="629.0352" y="141.728093" transform="rotate(-0 629.0352 141.728093)">2</text>
+   </g>
+   <g id="text_13">
+    <text style="font-weight: 700; font-size: 16px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172c40" x="659.8368" y="141.545732" transform="rotate(-0 659.8368 141.545732)">Separate BF16 token explanations</text>
+   </g>
+   <g id="text_14">
+    <text style="font-size: 11.4px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #596a7a" x="611.6256" y="174.190472" transform="rotate(-0 611.6256 174.190472)">Same weights; different arithmetic can change the cache and output</text>
+   </g>
+   <g id="text_15">
+    <text style="font-weight: 700; font-size: 11.7px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #172c40" x="812.5056" y="213.381349" transform="rotate(-0 812.5056 213.381349)">First token</text>
+   </g>
+   <g id="text_16">
+    <text style="font-weight: 700; font-size: 11.7px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #172c40" x="991.9584" y="213.381349" transform="rotate(-0 991.9584 213.381349)">Next token after “cat”</text>
+   </g>
+   <g id="text_17">
+    <text style="font-weight: 700; font-size: 12px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #2563a6" x="622.3392" y="260.82159" transform="rotate(-0 622.3392 260.82159)">Mode A</text>
+   </g>
+   <g id="text_18">
+    <text style="font-weight: 700; font-size: 12px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #a96312" x="622.3392" y="315.81735" transform="rotate(-0 622.3392 315.81735)">Mode B</text>
+   </g>
+   <g id="text_19">
+    <text style="font-weight: 700; font-size: 15px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #2563a6" x="808.488" y="261.649403" transform="rotate(-0 808.488 261.649403)">“cat”  ✓</text>
+   </g>
+   <g id="text_20">
+    <text style="font-size: 14px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #596a7a" x="991.9584" y="261.373465" transform="rotate(-0 991.9584 261.373465)">“sleeps”</text>
+   </g>
+   <g id="text_21">
+    <text style="font-size: 14px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #596a7a" x="808.488" y="316.369225" transform="rotate(-0 808.488 316.369225)">“dog”</text>
+   </g>
+   <g id="text_22">
+    <text style="font-weight: 700; font-size: 15px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #a96312" x="991.9584" y="316.645162" transform="rotate(-0 991.9584 316.645162)">“runs”  ✓</text>
+   </g>
+   <g id="text_23">
+    <text style="font-size: 10.7px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #596a7a" x="855.36" y="358.233111" transform="rotate(-0 855.36 358.233111)">For column 2, both modes are given the observed prefix “cat”.</text>
+   </g>
+   <g id="text_24">
+    <text style="font-weight: 700; font-size: 11.6px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #172c40" x="855.36" y="387.506995" transform="rotate(-0 855.36 387.506995)">Each token has an explanation. Can A’s state connect to B’s?</text>
+   </g>
+  </g>
+  <g id="axes_3">
+   <g id="patch_17">
+    <path d="M 41.12064 752.76
+L 552.15936 752.76
+Q 564.48 752.76 564.48 745.732764
+L 564.48 454.255236
+Q 564.48 447.228 552.15936 447.228
+L 41.12064 447.228
+Q 28.8 447.228 28.8 454.255236
+L 28.8 745.732764
+Q 28.8 752.76 41.12064 752.76
+z
+" clip-path="url(#pacbdb093e6)" style="fill: #ffffff; stroke: #d8e2ea; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_18">
+    <path d="M 58.79808 496.724184
+L 81.83232 496.724184
+Q 94.15296 496.724184 94.15296 489.696948
+L 94.15296 467.393112
+Q 94.15296 460.365876 81.83232 460.365876
+L 58.79808 460.365876
+Q 46.47744 460.365876 46.47744 467.393112
+L 46.47744 489.696948
+Q 46.47744 496.724184 58.79808 496.724184
+z
+" clip-path="url(#pacbdb093e6)" style="fill: #172c40; stroke: #172c40; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_19">
+    <path d="M 74.86848 628.102944
+L 229.14432 628.102944
+Q 241.46496 628.102944 241.46496 621.075708
+L 241.46496 557.525052
+Q 241.46496 550.497816 229.14432 550.497816
+L 74.86848 550.497816
+Q 62.54784 550.497816 62.54784 557.525052
+L 62.54784 621.075708
+Q 62.54784 628.102944 74.86848 628.102944
+z
+" clip-path="url(#pacbdb093e6)" style="fill: #eaf2fc; stroke: #2563a6; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_20">
+    <path d="M 361.45728 628.102944
+L 515.73312 628.102944
+Q 528.05376 628.102944 528.05376 621.075708
+L 528.05376 557.525052
+Q 528.05376 550.497816 515.73312 550.497816
+L 361.45728 550.497816
+Q 349.13664 550.497816 349.13664 557.525052
+L 349.13664 621.075708
+Q 349.13664 628.102944 361.45728 628.102944
+z
+" clip-path="url(#pacbdb093e6)" style="fill: #fff2df; stroke: #a96312; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_21">
+    <path d="M 247.749473 589.30038
+Q 295.30022 589.30038 340.614898 589.30038
+" clip-path="url(#pacbdb093e6)" style="fill: none; stroke-dasharray: 8,6; stroke-dashoffset: 0; stroke: #b23a47; stroke-width: 2; stroke-linecap: round"/>
+    <path d="M 334.214898 586.10038
+L 340.614898 589.30038
+L 334.214898 592.50038
+z
+" clip-path="url(#pacbdb093e6)" style="fill: #b23a47; stroke-dasharray: 8,6; stroke-dashoffset: 0; stroke: #b23a47; stroke-width: 2; stroke-linecap: round"/>
+   </g>
+   <g id="patch_22">
+    <path d="M 64.15488 707.541264
+L 529.12512 707.541264
+Q 541.44576 707.541264 541.44576 700.514028
+L 541.44576 673.627212
+Q 541.44576 666.599976 529.12512 666.599976
+L 64.15488 666.599976
+Q 51.83424 666.599976 51.83424 673.627212
+L 51.83424 700.514028
+Q 51.83424 707.541264 64.15488 707.541264
+z
+" clip-path="url(#pacbdb093e6)" style="fill: #fcecef; stroke: #fcecef; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="text_25">
+    <text style="font-weight: 700; font-size: 15px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="70.3152" y="482.684093" transform="rotate(-0 70.3152 482.684093)">3</text>
+   </g>
+   <g id="text_26">
+    <text style="font-weight: 700; font-size: 16px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172c40" x="101.1168" y="482.439232" transform="rotate(-0 101.1168 482.439232)">IF there is no legal connection</text>
+   </g>
+   <g id="text_27">
+    <text style="font-size: 11.4px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #596a7a" x="52.9056" y="515.146471" transform="rotate(-0 52.9056 515.146471)">Whole-trajectory check: follow the state across token decisions</text>
+   </g>
+   <g id="text_28">
+    <text style="font-weight: 700; font-size: 14px; font-family: 'DejaVu Sans'; fill: #2563a6" transform="translate(108.141556 584.261255)">After “cat”</text>
+    <text style="font-weight: 700; font-size: 14px; font-family: 'DejaVu Sans'; fill: #2563a6" transform="translate(108.119681 602.065755)">KV cache A</text>
+   </g>
+   <g id="text_29">
+    <text style="font-weight: 700; font-size: 12.7px; font-family: 'DejaVu Sans'; fill: #a96312" transform="translate(375.915739 576.653561)">To explain “runs”</text>
+    <text style="font-weight: 700; font-size: 12.7px; font-family: 'DejaVu Sans'; fill: #a96312" transform="translate(378.967708 592.804786)">need KV cache B</text>
+    <text style="font-weight: 700; font-size: 12.7px; font-family: 'DejaVu Sans'; fill: #a96312" transform="translate(383.46827 608.956011)">for prefix “cat”</text>
+   </g>
+   <g id="text_30">
+    <g id="patch_23">
+     <path d="M 282.9125 600.5224
+L 310.3675 600.5224
+L 310.3675 568.9124
+L 282.9125 568.9124
+z
+" style="fill: #ffffff"/>
+    </g>
+    <text style="font-weight: 700; font-size: 32px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #b23a47" x="296.64" y="593.5474" transform="rotate(-0 296.64 593.5474)">×</text>
+   </g>
+   <g id="text_31">
+    <text style="font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #b23a47" x="296.64" y="650.524741" transform="rotate(-0 296.64 650.524741)">All allowed switches and rebuilds must be ruled out.</text>
+   </g>
+   <g id="text_32">
+    <text style="font-weight: 700; font-size: 12.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #b23a47" x="296.64" y="690.471011" transform="rotate(-0 296.64 690.471011)">Local checks pass; the joint check rejects.</text>
+   </g>
+   <g id="text_33">
+    <text style="font-size: 11.3px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #596a7a" x="296.64" y="732.963194" transform="rotate(-0 296.64 732.963194)">This is the possible gap we still need to demonstrate.</text>
+   </g>
+  </g>
+  <g id="axes_4">
+   <g id="patch_24">
+    <path d="M 599.84064 752.76
+L 1110.87936 752.76
+Q 1123.2 752.76 1123.2 745.732764
+L 1123.2 454.255236
+Q 1123.2 447.228 1110.87936 447.228
+L 599.84064 447.228
+Q 587.52 447.228 587.52 454.255236
+L 587.52 745.732764
+Q 587.52 752.76 599.84064 752.76
+z
+" clip-path="url(#pe1bca6e2d8)" style="fill: #ffffff; stroke: #d8e2ea; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_25">
+    <path d="M 617.51808 496.724184
+L 640.55232 496.724184
+Q 652.87296 496.724184 652.87296 489.696948
+L 652.87296 467.393112
+Q 652.87296 460.365876 640.55232 460.365876
+L 617.51808 460.365876
+Q 605.19744 460.365876 605.19744 467.393112
+L 605.19744 489.696948
+Q 605.19744 496.724184 617.51808 496.724184
+z
+" clip-path="url(#pe1bca6e2d8)" style="fill: #172c40; stroke: #172c40; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_26">
+    <path d="M 622.87488 623.519964
+L 734.29632 623.519964
+Q 746.61696 623.519964 746.61696 616.492728
+L 746.61696 568.218672
+Q 746.61696 561.191436 734.29632 561.191436
+L 622.87488 561.191436
+Q 610.55424 561.191436 610.55424 568.218672
+L 610.55424 616.492728
+Q 610.55424 623.519964 622.87488 623.519964
+z
+" clip-path="url(#pe1bca6e2d8)" style="fill: #eaf2fc; stroke: #2563a6; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_27">
+    <path d="M 802.32768 634.213584
+L 924.46272 634.213584
+Q 936.78336 634.213584 936.78336 627.186348
+L 936.78336 557.525052
+Q 936.78336 550.497816 924.46272 550.497816
+L 802.32768 550.497816
+Q 790.00704 550.497816 790.00704 557.525052
+L 790.00704 627.186348
+Q 790.00704 634.213584 802.32768 634.213584
+z
+" clip-path="url(#pe1bca6e2d8)" style="fill: #e6f5ee; stroke: #167358; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_28">
+    <path d="M 992.49408 623.519964
+L 1087.84512 623.519964
+Q 1100.16576 623.519964 1100.16576 616.492728
+L 1100.16576 568.218672
+Q 1100.16576 561.191436 1087.84512 561.191436
+L 992.49408 561.191436
+Q 980.17344 561.191436 980.17344 568.218672
+L 980.17344 616.492728
+Q 980.17344 623.519964 992.49408 623.519964
+z
+" clip-path="url(#pe1bca6e2d8)" style="fill: #fff2df; stroke: #a96312; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_29">
+    <path d="M 750.220049 592.3557
+Q 768.310317 592.3557 784.164518 592.3557
+" clip-path="url(#pe1bca6e2d8)" style="fill: none; stroke: #167358; stroke-width: 2; stroke-linecap: round"/>
+    <path d="M 777.764518 589.1557
+L 784.164518 592.3557
+L 777.764518 595.5557
+z
+" clip-path="url(#pe1bca6e2d8)" style="fill: #167358; stroke: #167358; stroke-width: 2; stroke-linecap: round"/>
+   </g>
+   <g id="patch_30">
+    <path d="M 940.386449 592.3557
+Q 958.476717 592.3557 974.330918 592.3557
+" clip-path="url(#pe1bca6e2d8)" style="fill: none; stroke: #167358; stroke-width: 2; stroke-linecap: round"/>
+    <path d="M 967.930918 589.1557
+L 974.330918 592.3557
+L 967.930918 595.5557
+z
+" clip-path="url(#pe1bca6e2d8)" style="fill: #167358; stroke: #167358; stroke-width: 2; stroke-linecap: round"/>
+   </g>
+   <g id="patch_31">
+    <path d="M 1040.1696 627.352503
+Q 1040.1696 641.700309 1040.1696 653.812046
+" clip-path="url(#pe1bca6e2d8)" style="fill: none; stroke: #167358; stroke-width: 2; stroke-linecap: round"/>
+    <path d="M 1043.3696 647.412046
+L 1040.1696 653.812046
+L 1036.9696 647.412046
+z
+" clip-path="url(#pe1bca6e2d8)" style="fill: #167358; stroke: #167358; stroke-width: 2; stroke-linecap: round"/>
+   </g>
+   <g id="patch_32">
+    <path d="M 622.87488 727.400844
+L 1087.84512 727.400844
+Q 1100.16576 727.400844 1100.16576 720.373608
+L 1100.16576 693.486792
+Q 1100.16576 686.459556 1087.84512 686.459556
+L 622.87488 686.459556
+Q 610.55424 686.459556 610.55424 693.486792
+L 610.55424 720.373608
+Q 610.55424 727.400844 622.87488 727.400844
+z
+" clip-path="url(#pe1bca6e2d8)" style="fill: #e6f5ee; stroke: #e6f5ee; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="text_34">
+    <text style="font-weight: 700; font-size: 15px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #ffffff" x="629.0352" y="482.684093" transform="rotate(-0 629.0352 482.684093)">4</text>
+   </g>
+   <g id="text_35">
+    <text style="font-weight: 700; font-size: 16px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172c40" x="659.8368" y="482.439232" transform="rotate(-0 659.8368 482.439232)">IF rebuilding the state is allowed</text>
+   </g>
+   <g id="text_36">
+    <text style="font-size: 11.4px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #596a7a" x="611.6256" y="515.146471" transform="rotate(-0 611.6256 515.146471)">The same checker must include that legal transition</text>
+   </g>
+   <g id="text_37">
+    <text style="font-weight: 700; font-size: 12.5px; font-family: 'DejaVu Sans'; fill: #2563a6" transform="translate(639.420561 587.856481)">After “cat”</text>
+    <text style="font-weight: 700; font-size: 12.5px; font-family: 'DejaVu Sans'; fill: #2563a6" transform="translate(639.40103 603.753356)">KV cache A</text>
+   </g>
+   <g id="text_38">
+    <text style="font-weight: 700; font-size: 12.4px; font-family: 'DejaVu Sans'; fill: #167358" transform="translate(814.195294 587.892475)">Rebuild prefix</text>
+    <text style="font-weight: 700; font-size: 12.4px; font-family: 'DejaVu Sans'; fill: #167358" transform="translate(807.320075 603.662175)">“cat” in mode B</text>
+   </g>
+   <g id="text_39">
+    <text style="font-weight: 700; font-size: 12.3px; font-family: 'DejaVu Sans'; fill: #a96312" transform="translate(1001.684053 587.928469)">KV cache B</text>
+    <text style="font-weight: 700; font-size: 12.3px; font-family: 'DejaVu Sans'; fill: #a96312" transform="translate(1009.27642 603.570994)">for “cat”</text>
+   </g>
+   <g id="text_40">
+    <text style="font-weight: 700; font-size: 12.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #167358" x="1040.1696" y="675.243239" transform="rotate(-0 1040.1696 675.243239)">emit “runs”</text>
+   </g>
+   <g id="text_41">
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; fill: #596a7a" transform="translate(616.9824 657.141088)">“cat” is already observed;</text>
+    <text style="font-size: 11px; font-family: 'DejaVu Sans'; fill: #596a7a" transform="translate(616.9824 671.130337)">rebuilding does not emit it again.</text>
+   </g>
+   <g id="text_42">
+    <text style="font-weight: 700; font-size: 12px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #167358" x="855.36" y="710.194575" transform="rotate(-0 855.36 710.194575)">Accept: a legal full path exists. The gap disappears.</text>
+   </g>
+  </g>
+  <g id="text_43">
+   <text style="font-weight: 700; font-size: 24px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172c40" x="40.32" y="49.23225" transform="rotate(-0 40.32 49.23225)">Can the token explanations form one legal execution?</text>
+  </g>
+  <g id="text_44">
+   <text style="font-size: 13.3px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #596a7a" x="40.32" y="83.610722" transform="rotate(-0 40.32 83.610722)">Toy response: “cat runs”     •     KV cache = the model’s stored memory of the prefix</text>
+  </g>
+  <g id="text_45">
+   <text style="font-weight: 700; font-size: 14px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #172c40" x="576" y="789.0696" transform="rotate(-0 576 789.0696)">The experiment asks whether case 3 survives every transition a real service permits.</text>
+  </g>
+  <g id="text_46">
+   <text style="font-size: 13px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #596a7a" x="576" y="816.5232" transform="rotate(-0 576 816.5232)">We cannot create an advantage by banning legitimate switching or recomputation.</text>
+  </g>
+  <g id="text_47">
+   <text style="font-size: 10.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #596a7a" x="40.32" y="856.3752" transform="rotate(-0 40.32 856.3752)">Conceptual example, not a measured result. Panels 2–4 describe the proposed BF16 question, not a flaw in FlashProve.</text>
+  </g>
+  <g id="text_48">
+   <text style="font-size: 9.6px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #596a7a" x="40.32" y="873.2016" transform="rotate(-0 40.32 873.2016)">Reference: anthropic.com/document/flashprove-technical-report, §5.3.  •  Fixed-model composition is our deduction.</text>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="pbb5fb09118">
+   <rect x="28.8" y="106.272" width="535.68" height="305.532"/>
+  </clipPath>
+  <clipPath id="pedeb60a5e2">
+   <rect x="587.52" y="106.272" width="535.68" height="305.532"/>
+  </clipPath>
+  <clipPath id="pacbdb093e6">
+   <rect x="28.8" y="447.228" width="535.68" height="305.532"/>
+  </clipPath>
+  <clipPath id="pe1bca6e2d8">
+   <rect x="587.52" y="447.228" width="535.68" height="305.532"/>
+  </clipPath>
+ </defs>
+</svg>

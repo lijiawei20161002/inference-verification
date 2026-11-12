@@ -1,0 +1,352 @@
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
+<!DOCTYPE svg PUBLIC "-//W3C//DTD SVG 1.1//EN"
+  "http://www.w3.org/Graphics/SVG/1.1/DTD/svg11.dtd">
+<svg xmlns:xlink="http://www.w3.org/1999/xlink" width="1152pt" height="864pt" viewBox="0 0 1152 864" xmlns="http://www.w3.org/2000/svg" version="1.1">
+ <metadata>
+  <rdf:RDF xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:cc="http://creativecommons.org/ns#" xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#">
+   <cc:Work>
+    <dc:type rdf:resource="http://purl.org/dc/dcmitype/StillImage"/>
+    <dc:date>2026-11-12T11:56:19.097853</dc:date>
+    <dc:format>image/svg+xml</dc:format>
+    <dc:creator>
+     <cc:Agent>
+      <dc:title>Matplotlib v3.10.8, https://matplotlib.org/</dc:title>
+     </cc:Agent>
+    </dc:creator>
+   </cc:Work>
+  </rdf:RDF>
+ </metadata>
+ <defs>
+  <style type="text/css">*{stroke-linejoin: round; stroke-linecap: butt}</style>
+ </defs>
+ <g id="figure_1">
+  <g id="patch_1">
+   <path d="M 0 864
+L 1152 864
+L 1152 0
+L 0 0
+z
+" style="fill: #f7f9fc"/>
+  </g>
+  <g id="axes_1">
+   <g id="patch_2">
+    <path d="M 52.992 167.616
+L 1099.008 167.616
+Q 1125.504 167.616 1125.504 147.744
+L 1125.504 110.592
+Q 1125.504 90.72 1099.008 90.72
+L 52.992 90.72
+Q 26.496 90.72 26.496 110.592
+L 26.496 147.744
+Q 26.496 167.616 52.992 167.616
+z
+" clip-path="url(#p95e303afad)" style="fill: #edf1f6; stroke: #edf1f6; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_3">
+    <path d="M 277.632 243.648
+L 563.328 243.648
+Q 589.824 243.648 589.824 223.776
+L 589.824 186.624
+Q 589.824 166.752 563.328 166.752
+L 277.632 166.752
+Q 251.136 166.752 251.136 186.624
+L 251.136 223.776
+Q 251.136 243.648 277.632 243.648
+z
+" clip-path="url(#p95e303afad)" style="fill: #eaf2fc; stroke: #2563a6; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_4">
+    <path d="M 595.28127 205.632
+Q 636.479997 205.632 675.442656 205.632
+" clip-path="url(#p95e303afad)" style="fill: none; stroke: #2563a6; stroke-width: 2; stroke-linecap: round"/>
+    <path d="M 669.042656 202.432
+L 675.442656 205.632
+L 669.042656 208.832
+z
+" clip-path="url(#p95e303afad)" style="fill: #2563a6; stroke: #2563a6; stroke-width: 2; stroke-linecap: round"/>
+   </g>
+   <g id="patch_5">
+    <path d="M 709.632 243.648
+L 1064.448 243.648
+Q 1090.944 243.648 1090.944 223.776
+L 1090.944 186.624
+Q 1090.944 166.752 1064.448 166.752
+L 709.632 166.752
+Q 683.136 166.752 683.136 186.624
+L 683.136 223.776
+Q 683.136 243.648 709.632 243.648
+z
+" clip-path="url(#p95e303afad)" style="fill: #eaf2fc; stroke: #2563a6; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_6">
+    <path d="M 52.992 455.328
+L 1099.008 455.328
+Q 1125.504 455.328 1125.504 435.456
+L 1125.504 311.904
+Q 1125.504 292.032 1099.008 292.032
+L 52.992 292.032
+Q 26.496 292.032 26.496 311.904
+L 26.496 435.456
+Q 26.496 455.328 52.992 455.328
+z
+" clip-path="url(#p95e303afad)" style="fill: #ffffff; stroke: #d8e2ea; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_7">
+    <path d="M 346.752 429.408
+L 574.848 429.408
+Q 601.344 429.408 601.344 409.536
+L 601.344 359.424
+Q 601.344 339.552 574.848 339.552
+L 346.752 339.552
+Q 320.256 339.552 320.256 359.424
+L 320.256 409.536
+Q 320.256 429.408 346.752 429.408
+z
+" clip-path="url(#p95e303afad)" style="fill: #fcecef; stroke: #b23a47; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_8">
+    <path d="M 606.799336 384.48
+Q 636.477838 384.48 663.920273 384.48
+" clip-path="url(#p95e303afad)" style="fill: none; stroke: #b23a47; stroke-width: 2; stroke-linecap: round"/>
+    <path d="M 657.520273 381.28
+L 663.920273 384.48
+L 657.520273 387.68
+z
+" clip-path="url(#p95e303afad)" style="fill: #b23a47; stroke: #b23a47; stroke-width: 2; stroke-linecap: round"/>
+   </g>
+   <g id="patch_9">
+    <path d="M 698.112 429.408
+L 880.128 429.408
+Q 906.624 429.408 906.624 409.536
+L 906.624 359.424
+Q 906.624 339.552 880.128 339.552
+L 698.112 339.552
+Q 671.616 339.552 671.616 359.424
+L 671.616 409.536
+Q 671.616 429.408 698.112 429.408
+z
+" clip-path="url(#p95e303afad)" style="fill: #f4f6f8; stroke: #d8e2ea; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_10">
+    <path d="M 909.775266 384.48
+Q 931.966839 384.48 951.922345 384.48
+" clip-path="url(#p95e303afad)" style="fill: none; stroke: #596a7a; stroke-width: 2; stroke-linecap: round"/>
+    <path d="M 945.522345 381.28
+L 951.922345 384.48
+L 945.522345 387.68
+z
+" clip-path="url(#p95e303afad)" style="fill: #596a7a; stroke: #596a7a; stroke-width: 2; stroke-linecap: round"/>
+   </g>
+   <g id="patch_11">
+    <path d="M 986.112 429.408
+L 1064.448 429.408
+Q 1090.944 429.408 1090.944 409.536
+L 1090.944 359.424
+Q 1090.944 339.552 1064.448 339.552
+L 986.112 339.552
+Q 959.616 339.552 959.616 359.424
+L 959.616 409.536
+Q 959.616 429.408 986.112 429.408
+z
+" clip-path="url(#p95e303afad)" style="fill: #e6f5ee; stroke: #167358; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_12">
+    <path d="M 52.992 654.048
+L 1099.008 654.048
+Q 1125.504 654.048 1125.504 634.176
+L 1125.504 510.624
+Q 1125.504 490.752 1099.008 490.752
+L 52.992 490.752
+Q 26.496 490.752 26.496 510.624
+L 26.496 634.176
+Q 26.496 654.048 52.992 654.048
+z
+" clip-path="url(#p95e303afad)" style="fill: #ffffff; stroke: #d8e2ea; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_13">
+    <path d="M 346.752 628.128
+L 574.848 628.128
+Q 601.344 628.128 601.344 608.256
+L 601.344 558.144
+Q 601.344 538.272 574.848 538.272
+L 346.752 538.272
+Q 320.256 538.272 320.256 558.144
+L 320.256 608.256
+Q 320.256 628.128 346.752 628.128
+z
+" clip-path="url(#p95e303afad)" style="fill: #fff2df; stroke: #a96312; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_14">
+    <path d="M 606.799336 583.2
+Q 636.477838 583.2 663.920273 583.2
+" clip-path="url(#p95e303afad)" style="fill: none; stroke: #a96312; stroke-width: 2; stroke-linecap: round"/>
+    <path d="M 657.520273 580
+L 663.920273 583.2
+L 657.520273 586.4
+z
+" clip-path="url(#p95e303afad)" style="fill: #a96312; stroke: #a96312; stroke-width: 2; stroke-linecap: round"/>
+   </g>
+   <g id="patch_15">
+    <path d="M 698.112 628.128
+L 880.128 628.128
+Q 906.624 628.128 906.624 608.256
+L 906.624 558.144
+Q 906.624 538.272 880.128 538.272
+L 698.112 538.272
+Q 671.616 538.272 671.616 558.144
+L 671.616 608.256
+Q 671.616 628.128 698.112 628.128
+z
+" clip-path="url(#p95e303afad)" style="fill: #f4f6f8; stroke: #d8e2ea; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_16">
+    <path d="M 909.775266 583.2
+Q 931.966839 583.2 951.922345 583.2
+" clip-path="url(#p95e303afad)" style="fill: none; stroke: #596a7a; stroke-width: 2; stroke-linecap: round"/>
+    <path d="M 945.522345 580
+L 951.922345 583.2
+L 945.522345 586.4
+z
+" clip-path="url(#p95e303afad)" style="fill: #596a7a; stroke: #596a7a; stroke-width: 2; stroke-linecap: round"/>
+   </g>
+   <g id="patch_17">
+    <path d="M 986.112 628.128
+L 1064.448 628.128
+Q 1090.944 628.128 1090.944 608.256
+L 1090.944 558.144
+Q 1090.944 538.272 1064.448 538.272
+L 986.112 538.272
+Q 959.616 538.272 959.616 558.144
+L 959.616 608.256
+Q 959.616 628.128 986.112 628.128
+z
+" clip-path="url(#p95e303afad)" style="fill: #e6f5ee; stroke: #167358; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="patch_18">
+    <path d="M 52.992 712.8
+L 1099.008 712.8
+Q 1125.504 712.8 1125.504 692.928
+L 1125.504 679.968
+Q 1125.504 660.096 1099.008 660.096
+L 52.992 660.096
+Q 26.496 660.096 26.496 679.968
+L 26.496 692.928
+Q 26.496 712.8 52.992 712.8
+z
+" clip-path="url(#p95e303afad)" style="fill: #e6f5ee; stroke: #e6f5ee; stroke-width: 1.3; stroke-linejoin: miter"/>
+   </g>
+   <g id="text_1">
+    <text style="font-weight: 700; font-size: 25px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172c40" x="40.32" y="39.730437" transform="rotate(-0 40.32 39.730437)">Exact tokens can hide an invalid KV-cache handoff</text>
+   </g>
+   <g id="text_2">
+    <text style="font-size: 13.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #596a7a" x="40.32" y="71.117156" transform="rotate(-0 40.32 71.117156)">Model A → model B  •  Different weights  •  Exact arithmetic  •  Toy response: “cat runs”</text>
+   </g>
+   <g id="text_3">
+    <text style="font-weight: 700; font-size: 12.8px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172c40" x="63.36" y="126.17" transform="rotate(-0 63.36 126.17)">ASSUMED CONTRACT: switching models is allowed; B must receive a cache valid for B.</text>
+   </g>
+   <g id="text_4">
+    <text style="font-size: 11.8px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #596a7a" x="63.36" y="147.544062" transform="rotate(-0 63.36 147.544062)">Rebuilding the observed prefix or using a validated conversion is permitted. Unvalidated reuse is not.</text>
+   </g>
+   <g id="text_5">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #596a7a" x="63.36" y="202.619312" transform="rotate(-0 63.36 202.619312)">SHARED START</text>
+   </g>
+   <g id="text_6">
+    <text style="font-weight: 700; font-size: 15px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #2563a6" x="420.48" y="209.339063" transform="rotate(-0 420.48 209.339063)">Model A emits “cat”</text>
+   </g>
+   <g id="text_7">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #2563a6" x="887.04" y="208.736406" transform="rotate(-0 887.04 208.736406)">After processing “cat”: cache A</text>
+   </g>
+   <g id="text_8">
+    <text style="font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #167358" x="420.48" y="259.781281" transform="rotate(-0 420.48 259.781281)">Exact token check 1: PASS</text>
+   </g>
+   <g id="text_9">
+    <text style="font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #2563a6" x="887.04" y="259.781281" transform="rotate(-0 887.04 259.781281)">One-slot toy: K = 1, V = 2</text>
+   </g>
+   <g id="text_10">
+    <text style="font-weight: 700; font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #b23a47" x="63.36" y="334.085281" transform="rotate(-0 63.36 334.085281)">ACTUAL SERVER</text>
+   </g>
+   <g id="text_11">
+    <text style="font-weight: 700; font-size: 12.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172c40" x="63.36" y="367.193219" transform="rotate(-0 63.36 367.193219)">Switches A → B</text>
+   </g>
+   <g id="text_12">
+    <text style="font-size: 11.7px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #b23a47" x="63.36" y="393.756469" transform="rotate(-0 63.36 393.756469)">Skips cache rebuild</text>
+   </g>
+   <g id="text_13">
+    <text style="font-weight: 700; font-size: 14px; font-family: 'DejaVu Sans'; fill: #b23a47" transform="translate(397.882031 379.440875)">B reads cache A</text>
+    <text style="font-weight: 700; font-size: 14px; font-family: 'DejaVu Sans'; fill: #b23a47" transform="translate(413.642969 397.245375)">K = 1, V = 2</text>
+   </g>
+   <g id="text_14">
+    <text style="font-size: 12.8px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #172c40" x="789.12" y="388.012" transform="rotate(-0 789.12 388.012)">runs: 3   sleeps: 2</text>
+   </g>
+   <g id="text_15">
+    <text style="font-weight: 700; font-size: 16px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #167358" x="1025.28" y="388.895" transform="rotate(-0 1025.28 388.895)">“runs”</text>
+   </g>
+   <g id="text_16">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #596a7a" x="460.8" y="333.809344" transform="rotate(-0 460.8 333.809344)">CARRIED CACHE</text>
+   </g>
+   <g id="text_17">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #596a7a" x="789.12" y="333.809344" transform="rotate(-0 789.12 333.809344)">B’S EXACT LOGITS</text>
+   </g>
+   <g id="text_18">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #596a7a" x="1025.28" y="333.809344" transform="rotate(-0 1025.28 333.809344)">SERVED TOKEN</text>
+   </g>
+   <g id="text_19">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #b23a47" x="460.8" y="477.059188" transform="rotate(-0 460.8 477.059188)">Cache values differ: 2 ≠ 4</text>
+   </g>
+   <g id="text_20">
+    <text style="font-weight: 700; font-size: 13px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #167358" x="1025.28" y="477.059188" transform="rotate(-0 1025.28 477.059188)">Tokens match ✓</text>
+   </g>
+   <g id="text_21">
+    <text style="font-weight: 700; font-size: 11.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #167358" x="63.36" y="532.805281" transform="rotate(-0 63.36 532.805281)">TOKEN VERIFIER</text>
+   </g>
+   <g id="text_22">
+    <text style="font-weight: 700; font-size: 12.5px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172c40" x="63.36" y="565.864391" transform="rotate(-0 63.36 565.864391)">Replays prefix “cat”</text>
+   </g>
+   <g id="text_23">
+    <text style="font-size: 11.7px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #a96312" x="63.36" y="592.476469" transform="rotate(-0 63.36 592.476469)">Rebuilds under B</text>
+   </g>
+   <g id="text_24">
+    <text style="font-weight: 700; font-size: 14px; font-family: 'DejaVu Sans'; fill: #a96312" transform="translate(375.133125 578.160875)">B reads fresh cache B</text>
+    <text style="font-weight: 700; font-size: 14px; font-family: 'DejaVu Sans'; fill: #a96312" transform="translate(413.642969 595.965375)">K = 1, V = 4</text>
+   </g>
+   <g id="text_25">
+    <text style="font-size: 12.8px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #172c40" x="789.12" y="586.732" transform="rotate(-0 789.12 586.732)">runs: 5   sleeps: 2</text>
+   </g>
+   <g id="text_26">
+    <text style="font-weight: 700; font-size: 16px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #167358" x="1025.28" y="587.615" transform="rotate(-0 1025.28 587.615)">“runs”</text>
+   </g>
+   <g id="text_27">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #596a7a" x="460.8" y="532.529344" transform="rotate(-0 460.8 532.529344)">RECOMPUTED CACHE</text>
+   </g>
+   <g id="text_28">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #596a7a" x="789.12" y="532.529344" transform="rotate(-0 789.12 532.529344)">B’S EXACT LOGITS</text>
+   </g>
+   <g id="text_29">
+    <text style="font-weight: 700; font-size: 10.5px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #596a7a" x="1025.28" y="532.529344" transform="rotate(-0 1025.28 532.529344)">EXPECTED TOKEN</text>
+   </g>
+   <g id="text_30">
+    <text style="font-weight: 700; font-size: 14px; font-family: 'DejaVu Sans'; text-anchor: middle; fill: #167358" x="576" y="690.256437" transform="rotate(-0 576 690.256437)">Both exact token checks pass. They do not establish which cache the server used.</text>
+   </g>
+   <g id="text_31">
+    <text style="font-weight: 700; font-size: 11px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172c40" x="51.84" y="741.755313" transform="rotate(-0 51.84 741.755313)">WHAT A STATE-AWARE CHECK ADDS</text>
+   </g>
+   <g id="text_32">
+    <text style="font-size: 12.7px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #172c40" x="51.84" y="767.280406" transform="rotate(-0 51.84 767.280406)">With trusted handoff evidence, it rejects B reading A’s unvalidated cache. A legal rebuild must pass.</text>
+   </g>
+   <g id="text_33">
+    <text style="font-size: 12.4px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #596a7a" x="51.84" y="799.165625" transform="rotate(-0 51.84 799.165625)">Tokens alone still have a legal explanation: A → rebuild the prefix under B → “runs”.</text>
+   </g>
+   <g id="text_34">
+    <text style="font-size: 11.3px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #596a7a" x="51.84" y="819.598094" transform="rotate(-0 51.84 819.598094)">This is a limit on verifying execution history, not a counterexample to FlashProve’s fixed-model output proof.</text>
+   </g>
+   <g id="text_35">
+    <text style="font-size: 10.2px; font-family: 'DejaVu Sans'; text-anchor: start; fill: #596a7a" x="51.84" y="847.806563" transform="rotate(-0 51.84 847.806563)">Declared toy: one cached value v; B’s logits (runs, sleeps) = (v + 1, 2). Greedy decoding picks the larger logit. Not measured model outputs.</text>
+   </g>
+  </g>
+ </g>
+ <defs>
+  <clipPath id="p95e303afad">
+   <rect x="0" y="0" width="1152" height="864"/>
+  </clipPath>
+ </defs>
+</svg>

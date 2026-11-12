@@ -15,6 +15,13 @@ The first milestone must establish whether such a gap can exist under the
 chosen contract. A finding that legal recomputation closes the gap is a useful
 result and stops the corresponding detector claim.
 
+![Fixed-model verification, independent BF16 token explanations, and the effect of legal cache reconstruction](figures/fig_trajectory_consistency_explainer.png)
+
+Conceptual example: a joint gap requires excluding every legal connection
+between the relevant states. Allowed reconstruction can remove the gap.
+[Editable figure](figures/fig_trajectory_consistency_explainer.svg) ·
+[Figure source](../experiments/plot_trajectory_consistency_explainer.py)
+
 ## 1 Comparison with FlashProve
 
 Anthropic's FlashProve proves that checked tokens are the committed integer
@@ -73,6 +80,23 @@ Keep two labels separate. A captured run can violate the contract while its
 tokens remain compatible with another legal run. A token-only verifier must not
 be scored as missing a provably incompatible transcript in that case. Report
 execution-violation detection and observable incompatibility separately.
+
+The [model-switch cache illustration](figures/fig_model_switch_kv_four_steps.png)
+illustrates that distinction with exact integer arithmetic: stale and rebuilt
+caches yield different logits but the same greedy token. Trusted evidence of
+the actual handoff can expose invalid reuse; tokens alone retain a legal rebuild
+explanation. This is a state-lineage control, not a token-only joint-gap witness.
+[Exact arithmetic detail](figures/fig_model_switch_kv_exact_tokens.png) ·
+[Editable detail](figures/fig_model_switch_kv_exact_tokens.svg) ·
+[Figure source](../experiments/plot_model_switch_kv_explainer.py).
+
+For the separate model-switch detection question, keep the verifier fixed to A.
+Compare A with A's cache, B with a rebuilt B cache, and B retaining A's cache,
+using matched prompts, sampling conditions, and audit coverage. Measure whether
+cache retention reduces detection relative to the rebuilt-cache switch baseline.
+The figure's second-token verifier uses B, so it does not demonstrate this form
+of evasion. State explicitly that serving B violates the claimed model contract;
+permission to reuse a cache does not by itself authorize model substitution.
 
 ## 3 Contract and recomputation closure
 
