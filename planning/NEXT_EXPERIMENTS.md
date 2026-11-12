@@ -1,8 +1,10 @@
 # Next experiments: implementation and execution plan
 
-**Updated: 22 October 2026.** This is the active work queue. The
+**Updated: 12 November 2026.** This is the active work queue. The
 [full experimental design](../docs/NUMERICAL_CAUSAL_DIAGNOSIS_EXPERIMENTS.md)
 specifies E0–E5, statistical units, blinded evaluation, and paper claims.
+The separate [trajectory consistency plan](../docs/TRAJECTORY_CONSISTENCY_EXPERIMENTS.md)
+adds T0–T4 feasibility gates under realistic switching and recomputation rules.
 The [previous verification agenda](LEGACY_VERIFICATION_EXPERIMENTS.md) is
 preserved for historical context and is not the current execution order.
 
@@ -242,7 +244,24 @@ replay failures. Runtime/storage are supporting measurements.
 The main paper is viable only if explanations survive independent replay,
 state-correctness controls, and blinded comparisons. If success is limited to
 hand-picked cases or one backend, narrow the claim accordingly. The optional
-trajectory-consistency and identifiability directions remain separate projects.
+trajectory-consistency and identifiability directions retain separate claims.
+
+## Trajectory consistency feasibility track
+
+Follow [T0–T4](../docs/TRAJECTORY_CONSISTENCY_EXPERIMENTS.md#5-experiments-and-decision-gates)
+for the proposed extension beyond fixed deterministic verification semantics.
+Start with **T0: an externally justified execution contract** and **T1: a CPU
+oracle with exhaustive bounded paths**. Include every permitted switch, state
+transfer, and prefix recomputation. Check the control where legal reconstruction
+connects all local witnesses and removes the trajectory gap.
+
+Only then undertake the 64-pair exploratory GPU capture in T2. Gains must survive
+strong local, pooled-score, complete-replay, and direct-transition baselines
+with the same evidence. An illegal original run may still have tokens compatible
+with a legal run; preserve that distinction in labels and claims. The
+[message draft](TRAJECTORY_VERIFICATION_MESSAGE.md) describes the conditional
+improvement over the released FlashProve setting without claiming a weakness in
+its cryptographic guarantee.
 
 ## Next machine and launch gate
 
@@ -276,6 +295,9 @@ and exclusive GPU use is confirmed. The 20 October E0 campaign completed; a new
 run must repeat these checks and use a fresh output directory.
 
 ## Immediate handoff
+
+For the trajectory study, the next tasks are **T0 and T1**, before GPU work.
+The numerical diagnosis handoff follows.
 
 The 22 October native-shape implementation has passed preflight, but the full
 campaign is **incomplete**. This workspace did not retain the previous ignored

@@ -579,28 +579,26 @@ fault family using locked results and continue calling the evaluation held out.
 
 This is a separate claim and is not required for the diagnosis paper.
 
-**Hypothesis:** per-position compatibility can miss inconsistencies that become
-visible when legal state transitions are enforced jointly.
+The [12 November trajectory experiment plan](TRAJECTORY_CONSISTENCY_EXPERIMENTS.md)
+defines the current scope and T0–T4 execution gates, including the comparison
+with Anthropic's FlashProve. Its primary hypothesis is that independently
+compatible token explanations can lack a jointly legal state history under a
+realistic execution contract.
 
-Begin with a finite, explicitly declared two-backend state model and 64 fresh
-prompt/seed pairs. Test fixed A, fixed B, legal A→B with valid state transfer or
-reconstruction, and contract-violating state changes such as stale-KV reuse.
-Do not declare ordinary kernel switching illegal just to obtain separation.
+First test whether permitted switching and prefix recomputation connect all
+local explanations. If they do, report that the gap closes. Never obtain a
+separation by excluding legitimate state transfer, cache reconstruction, or
+kernel changes. Fixed deterministic semantics are a composition control:
+complete token verification already establishes the sequence.
 
-Compare per-position best-match scoring, pooled sequence scores, and a
-dependency-constrained path checker. Use exhaustive path enumeration on short
-traces as an oracle. Validate a state abstraction by checking that every legal
-trace in the bounded test model is represented.
-
-Report detection of inconsistent traces, legal-path false rejection, spurious
-abstract paths, and minimal inconsistent witness sets. The important result is
-joint consistency beyond marginal scores, not faster path search.
-
-Run with full trusted diagnostic state, reduced metadata, and tokens/shared
-noise only. If partial observations do not constrain paths sufficiently, report
-that limitation. A provider's unverified trace must not become trusted input.
-This extension must differentiate itself from IMMACULATE's commitments and
-Bit-Exact Verification's replay model.
+Proceed through an exhaustive bounded oracle, a 64-pair exploratory real-model
+capture, equal-evidence baseline comparisons, and observation/transfer studies.
+Distinguish an illegal captured execution from an observable transcript with no
+legal explanation. Search exhaustion yields unresolved, not incompatibility.
+The new plan specifies artifact contracts, statistical gates, and a draft
+message stating the conditional improvement. Positioning must also distinguish
+the proposal from IMMACULATE's commitments and Bit-Exact Verification's replay
+model before making a novelty claim.
 
 ## 15. Optional extension B — observability and identifiability
 

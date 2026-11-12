@@ -26,6 +26,7 @@ The signed-artifact protocol is a separate, optional experiment.
 | Results, methodology, costs, and limitations | [Research guide](RESEARCH_GUIDE.md) · [paper](../paper/paper.pdf) · [poster](../paper/mats_poster.pdf) |
 | Attacker/verifier game and evaluation pipeline | [Game specification](GAME.md) |
 | Design numerical causal diagnosis experiments | [English experiment plan](NUMERICAL_CAUSAL_DIAGNOSIS_EXPERIMENTS.md) — BF16 mechanisms, controlled interventions, reproducible witnesses, baselines, and decision gates; proposed, not measured |
+| Test whole-trajectory consistency under realistic serving rules | [Trajectory experiment plan](TRAJECTORY_CONSISTENCY_EXPERIMENTS.md) — FlashProve comparison, legal switching/recomputation, bounded oracle, observation tiers, and falsification gates; proposed, not measured |
 | What timing can detect | [Clock measurements](CLOCK_MEASURED.md) · [clock algorithms](CLOCK_ALGORITHMS.md) |
 | Design hardware-based performance probes | [Performance probe experiments](PERFORMANCE_PROBE_EXPERIMENTS.md) (中文) — proposed mechanisms, controls, hardware, and falsification criteria |
 | Continue performance probes through a production serving engine | [vLLM serving experiment](VLLM_SERVING_EXPERIMENT.md) — pinned configuration, cache controls, and measurement contract |
